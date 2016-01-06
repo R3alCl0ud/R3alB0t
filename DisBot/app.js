@@ -59,7 +59,7 @@ bot.on("message", function (msg) {
     
     
     if (msg.content.startsWith("admin")) {
-        if (array.indexOf(msg.author.username.toString()) != -1) {
+        if (array.indexOf(msg.author.toString()) != -1) {
             x = array.legnth;
             array[x] = msg.content.split(" ").slice(1).join(" ");
             fs.appendFile("file.txt", "\n" + array[x]);
