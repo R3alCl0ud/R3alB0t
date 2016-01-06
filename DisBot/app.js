@@ -1,7 +1,7 @@
 ﻿//include discord
 
 var Discord = require("discord.js");
-var opus = require('node-opus');
+//var opus = require('node-opus');
 var bot = new Discord.Client();
 var i = 0;
 var x = 0;
