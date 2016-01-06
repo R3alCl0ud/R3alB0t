@@ -43,7 +43,10 @@ bot.on("disconnected", function () {
 //when the bot receives a message
 bot.on("message", function (msg) {
     
-    if (msg.content.startsWith("https://discord.gg/") && msg.channel.isPrivate == true) {
+    
+    var dm = msg.channel.isPrivate;
+      
+    if (msg.content.startsWith("https://discord.gg/") && dm) {
         bot.joinServer(msg.content);
         console.log("joined a new server");
     }
@@ -52,8 +55,7 @@ bot.on("message", function (msg) {
     var usr = msg.author;
     
     msg.content = msg.content.substr(2);
-    
-    var dm = msg.channel.isPrivate;
+
     
     
     if (msg.content.startsWith("admin")) {
@@ -134,9 +136,14 @@ bot.on("message", function (msg) {
         bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
     }
     if (msg.content.startsWith("stop") && dm) {
+        
         console.log("Disconnected!");
         
         //exit node.js with an error
         process.exit(1);
+    } else {
+        channel = msg.channel;
+        bot.deleteMessage(msg)
+        bot.sendMessage(channel, "nothing");
     }
 });
