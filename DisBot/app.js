@@ -1,7 +1,7 @@
 ﻿//include discord
 
 var Discord = require("discord.js");
-//var opus = require('node-opus');
+var opus = require('node-opus');
 var bot = new Discord.Client();
 var i = 0;
 var x = 0;
@@ -133,5 +133,10 @@ bot.on("message", function (msg) {
         var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
         bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
     }
-
+    if (msg.content.startsWith("stop") && dm) {
+        console.log("Disconnected!");
+        
+        //exit node.js with an error
+        process.exit(1);
+    }
 });
