@@ -135,15 +135,16 @@ bot.on("message", function (msg) {
         var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
         bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
     }
-    if (msg.content.startsWith("stop") ) {
+    if (msg.content.startsWith("stop")) {
         if (dm) {
             console.log("Disconnected!");
             
             //exit node.js with an error
             process.exit(1);
         } else {
-        channel = msg.channel;
-        bot.deleteMessage(msg)
-        bot.sendMessage(channel, "nothing");
+            channel = msg.channel;
+            bot.deleteMessage(msg)
+            bot.sendMessage(channel, "nothing");
+        }
     }
 });
