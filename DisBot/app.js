@@ -45,7 +45,7 @@ bot.on("message", function (msg) {
     
     
     var dm = msg.channel.isPrivate;
-      
+    var fourchan = msg.channel;
     if (msg.content.startsWith("https://discord.gg/") && dm) {
         bot.joinServer(msg.content);
         console.log("joined a new server");
@@ -76,12 +76,12 @@ bot.on("message", function (msg) {
         bot.sendMessage(msg.channel, [
             "**~means it requires user to be on admin list~**",
             "Available commands are:",
-            "`##ping:` PONG!",
-            "`##help:` Displays the list of commands",
-            "`##slap:` Hit a user with a random object",
-            "`~##play:` set game being played **Must be run in DM**",
-            "`~##stop:` Stops R3alB0t **Can only be run by @R3alCl0ud**",
-        ].join("\n"));
+            "`##ping:` PONG!",].join("\n"));
+        bot.sendMessage(fourchan, "`##help:` Displays the list of commands");
+        bot.sendMessage(fourchan, "`##slap:` Hit a user with a random object");
+        bot.sendMessage(fourchan, "`~##play:` set game being played **Must be run in DM**");
+        bot.sendMessage(fourchan, "`~##stop:` Stops R3alB0t **Can only be run by @R3alCl0ud**");
+        
         console.log("The user " + msg.author.username.toString() + " used the help command");
     }
     
