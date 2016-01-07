@@ -59,14 +59,14 @@ bot.on("message", function (msg) {
     
     
     if (msg.content.startsWith("admin")) {
-        if (array.indexOf(msg.author.toString()) != -1) {
+        if (array.indexOf(("<@" + msg.author.toString() + ">") != -1)) {
             x = array.legnth;
             array[x] = msg.content.split(" ").slice(1).join(" ");
             fs.appendFile("file.txt", "\n" + array[x]);
             msg.reply(" successfully added: " + msg.content.split(" ").slice(1).join(" "));
-            console.log(msg.author.username.toString() + " successfully added: " + msg.content.split(" ").slice(1).join(" "));
+            console.log(msg.author.id.toString() + " successfully added: " + msg.content.split(" ").slice(1).join(" "));
         } else {
-            console.log(msg.author.username.toString() + " unsuccessfully tried to add: " + msg.content.split(" ").slice(1).join(" "));
+            console.log(msg.author.toString() + " unsuccessfully tried to add: " + msg.content.split(" ").slice(1).join(" "));
             msg.reply(" warning you tried to add: " + msg.content.split(" ").slice(1).join(" ") + " but don't have perms! do it again and an admin will be notified");
         }
     }
@@ -106,8 +106,8 @@ bot.on("message", function (msg) {
     
     if (msg.content == "test") {
         if (!msg.channel.isPrivate) {
-            bot.sendMessage(msg.channel, msg.channel.server.rolesOf(msg.author));
-            console.log(msg.channel.server.rolesOf(usr));
+            bot.sendMessage(msg.channel, "Thank you for choosing Cl0ud Air. Have a nice flight");
+            console.log(usr.id.toString());
         } else {
             bot.sendMessage(msg.channel, "This command can not be used in private chat");
         }
@@ -137,7 +137,7 @@ bot.on("message", function (msg) {
     }
     if (msg.content.startsWith("stop")) {
         if (dm) {
-            console.log("Disconnected!");
+            console.log("Disconnected by dm!");
             
             //exit node.js with an error
             process.exit(1);
