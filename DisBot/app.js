@@ -59,7 +59,7 @@ bot.on("message", function (msg) {
     
     
     if (msg.content.startsWith("admin")) {
-        if (array.indexOf(msg.author.toString()) != -1) {
+        if (array.indexOf(("@" + msg.author.username.toString()) != -1)) {
             x = array.legnth;
             array[x] = msg.content.split(" ").slice(1).join(" ");
             fs.appendFile("file.txt", "\n" + array[x]);
@@ -87,13 +87,13 @@ bot.on("message", function (msg) {
     }
     
     if (msg.content.startsWith("play")) {
-        if (array.indexOf(msg.author.username.toString()) != -1 && dm) {
+        if (array.indexOf( ("@" + msg.author.username.toString()) != -1 && dm)) {
             var game = msg.content.split(" ").slice(1).join(" ");
             bot.setPlayingGame(game);
-            console.log("The user " + msg.author.username.toString() + " used the play command");
+            console.log("The user " + msg.author.toString() + " used the play command");
         } else {
             msg.reply("You do not have permission to use this command and/or this is not private messages");
-            console.log("The user " + msg.author.username.toString() + " tried to use the play command");
+            console.log("The user " + msg.author.toString() + " tried to use the play command");
         }
 
 		
