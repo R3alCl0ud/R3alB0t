@@ -73,10 +73,9 @@ bot.on("message", function (msg) {
     }
     
     if (msg.content == "help") {
-        bot.sendMessage(msg.channel, [
-            "**~means it requires user to be on admin list~**",
-            "Available commands are:",
-            "`##ping:` PONG!",].join("\n"));
+        bot.sendMessage(fourchan, "**~means it requires user to be on admin list~**");
+        bot.sendMessage(fourchan, "Available commands are:");
+        bot.sendMessage(fourchan, "`##ping:` PONG!");
         bot.sendMessage(fourchan, "`##help:` Displays the list of commands");
         bot.sendMessage(fourchan, "`##slap:` Hit a user with a random object");
         bot.sendMessage(fourchan, "`~##play:` set game being played **Must be run in DM**");
