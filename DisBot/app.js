@@ -73,13 +73,13 @@ bot.on("message", function (msg) {
     
     if (msg.content == "help") {
         bot.sendMessage(msg.channel, [
-            "**~ means it requires user to be on admin list**",
-            "Available commands are",
-            "##ping",
-            "##help: displays the list of commands",
-            "##slap: hit a user with a random object",
-            "~##play: set game being played **Must be ran in DM**",
-            "~##stop: Stops R3alB0t **Can Only Be Ran By @R3alCl0ud",
+            "**~means it requires user to be on admin list~**",
+            "Available commands are:",
+            "`##ping:` PONG!",
+            "`##help:` displays the list of commands",
+            "`##slap:` hit a user with a random object",
+            "`~##play:` set game being played **Must be ran in DM**",
+            "`~##stop:` Stops R3alB0t **Can Only Be Ran By @R3alCl0ud**",
         ].join("\n"));
         console.log("The user " + msg.author.username.toString() + " used the help command");
     }
@@ -138,7 +138,7 @@ bot.on("message", function (msg) {
         var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
         bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
     }
-    if (msg.content.startsWith("stop")) {
+    if (msg.content.startsWith("stop") && usr.username == "R3alCl0ud") {
         if (dm) {
             console.log("Disconnected by dm!");
             
