@@ -49,6 +49,7 @@ bot.on("message", function (msg) {
     if (msg.content.startsWith("https://discord.gg/") && dm) {
         bot.joinServer(msg.content);
         console.log("joined a new server");
+
     }
     
     if (!msg.content.startsWith("##")) return;
@@ -76,10 +77,10 @@ bot.on("message", function (msg) {
             "**~means it requires user to be on admin list~**",
             "Available commands are:",
             "`##ping:` PONG!",
-            "`##help:` displays the list of commands",
-            "`##slap:` hit a user with a random object",
-            "`~##play:` set game being played **Must be ran in DM**",
-            "`~##stop:` Stops R3alB0t **Can Only Be Ran By @R3alCl0ud**",
+            "`##help:` Displays the list of commands",
+            "`##slap:` Hit a user with a random object",
+            "`~##play:` set game being played **Must be run in DM**",
+            "`~##stop:` Stops R3alB0t **Can only be run by @R3alCl0ud**",
         ].join("\n"));
         console.log("The user " + msg.author.username.toString() + " used the help command");
     }
