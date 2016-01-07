@@ -73,10 +73,13 @@ bot.on("message", function (msg) {
     
     if (msg.content == "help") {
         bot.sendMessage(msg.channel, [
+            "**~ means it requires user to be on admin list**",
             "Available commands are",
-            "```##ping",
-            "##help",
-            "##slap```",
+            "##ping",
+            "##help: displays the list of commands",
+            "##slap: hit a user with a random object",
+            "~##play: set game being played **Must be ran in DM**",
+            "~##stop: Stops R3alB0t **Can Only Be Ran By @R3alCl0ud",
         ].join("\n"));
         console.log("The user " + msg.author.username.toString() + " used the help command");
     }
