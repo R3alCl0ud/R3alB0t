@@ -45,7 +45,7 @@ bot.on("message", function (msg) {
     
     
     var dm = msg.channel.isPrivate;
-    var fourchan = msg.channel;
+    
     if (msg.content.startsWith("https://discord.gg/") && dm) {
         bot.joinServer(msg.content);
         console.log("joined a new server");
@@ -73,6 +73,7 @@ bot.on("message", function (msg) {
     }
     
     if (msg.content == "help") {
+        var fourchan = msg.channel;
         bot.sendMessage(fourchan, [
             "**~means it requires user to be on admin list~**",
             "Available commands are:",
