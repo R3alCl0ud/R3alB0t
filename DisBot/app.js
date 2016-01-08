@@ -2,7 +2,34 @@
 
 var Discord = require("discord.js");
 //var opus = require('node-opus');
+
+
+
+
+var ytdl = require('ytdl-core');
+var request = require('superagent');
+var url = require('url');
+
+var shouldDisallowQueue = require('./lib/permission-checks.js');
+var Saved = require('./lib/saved.js');
+Saved.read();
+
+var YoutubeTrack = require('./lib/youtube-track.js');
+var Util = require('./lib/util.js');
+
 var bot = new Discord.Client();
+
+
+var playQueue = [];
+var boundChannel = false;
+var currentStream = false;
+
+// Video that is currently being played
+var currentVideo = false;
+
+// Last video played
+var lastVideo = false;
+
 var i = 0;
 var x = 0;
 var d = "";
@@ -56,7 +83,7 @@ bot.on("message", function (msg) {
     var usr = msg.author;
     
     msg.content = msg.content.substr(2);
-
+    
     
     
     if (msg.content.startsWith("admin")) {
@@ -92,7 +119,7 @@ bot.on("message", function (msg) {
     }
     
     if (msg.content.startsWith("play")) {
-        if (array.indexOf( ("@" + msg.author.username.toString()) != -1 && dm)) {
+        if (array.indexOf(("@" + msg.author.username.toString()) != -1 && dm)) {
             var game = msg.content.split(" ").slice(1).join(" ");
             bot.setPlayingGame(game);
             console.log("The user " + msg.author.toString() + " used the play command");
@@ -152,4 +179,43 @@ bot.on("message", function (msg) {
             bot.sendMessage(channel, "nothing");
         }
     }
+    
+    if (msg.content.startsWith("join")) {
+        var channeltoJoin = msg.content.split(" ").slice(1).join(" ");
+        var channels = msg.channel.server.channels;
+        for (var channel of channels) {
+    if (channel instanceof Discord.VoiceChannel) {
+        if (!channeltoJoin || channel.name === channeltoJoin) {
+            bot.joinVoiceChannel(channel);
+            console.log("joined voice channel");
+        }
+    }
+}
+    }
+    
+    if (msg.content.startsWith("testmusic")) {
+        //var MP = require('./player.js');
+        if (bot.voiceConnection) {
+            
+            
+            var stream = 'Ok.mp3';
+            
+            var connection = bot.internal.voiceConnection; 
+
+
+            bot.voiceConnection.playFile(stream, { volume: 0.5, stereo: true }, function (err, str) {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+                console.log('Success: ' + str);
+                return str;
+            });
+            }
+
+
+        }
+
+    
+
 });
