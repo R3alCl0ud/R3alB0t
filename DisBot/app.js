@@ -176,7 +176,7 @@ bot.on("message", function (msg) {
     if (channel instanceof Discord.VoiceChannel) {
         if (!channeltoJoin || channel.name === channeltoJoin) {
             bot.joinVoiceChannel(channel);
-            console.log("joined voice channel");
+            console.log("joined voice channel: " + channeltoJoin + " in server: " + msg.channel.server.toString());
         }
     }
 }
@@ -184,23 +184,34 @@ bot.on("message", function (msg) {
     
     if (msg.content.startsWith("testmusic")) {
         //var MP = require('./player.js');
-        if (bot.voiceConnection) {
+
             
             
-            var stream = 'Ok.mp3';
+            var song = './Ok.mp3';
             
             //var connection = bot.internal.voiceConnection; 
+            var songstream = fs.createReadStream(song);
+            
+            //bot.voiceConnection.playRawStream
+            
+            //bot.voiceConnection.stopPlaying();
+            try {
+                bot.voiceConnection.playFile(song);
+            } catch (err) {
+                bot.reply(msg, "Put me in a voice channel first.");
+            }
 
-
-            bot.voiceConnection.playFile(stream, { volume: 0.5, stereo: true }, function (err, str) {
+            /*bot.voiceConnection.playRawStream(stream, { volume: 0.5, stereo: true }, function (err, str) {
                 if (err) {
                     console.error(err);
                     return;
                 }
                 console.log('Success: ' + str);
-                return str;
-            });
-            }
+                //return str;
+            });*/
+            //bot.voiceConnection.playRawStream('./Ok.mp3', { volume: '0.5', stereo: true }, function (stream) { });
+            console.log("maybe");
+            
 
 
         }
