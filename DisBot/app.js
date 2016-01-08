@@ -6,17 +6,6 @@ var Discord = require("discord.js");
 
 
 
-var ytdl = require('ytdl-core');
-var request = require('superagent');
-var url = require('url');
-
-var shouldDisallowQueue = require('./lib/permission-checks.js');
-var Saved = require('./lib/saved.js');
-Saved.read();
-
-var YoutubeTrack = require('./lib/youtube-track.js');
-var Util = require('./lib/util.js');
-
 var bot = new Discord.Client();
 
 
