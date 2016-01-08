@@ -200,7 +200,7 @@ bot.on("message", function (msg) {
             
             var stream = 'Ok.mp3';
             
-            var connection = bot.internal.voiceConnection; 
+            //var connection = bot.internal.voiceConnection; 
 
 
             bot.voiceConnection.playFile(stream, { volume: 0.5, stereo: true }, function (err, str) {
