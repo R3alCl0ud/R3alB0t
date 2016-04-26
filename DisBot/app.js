@@ -96,15 +96,13 @@ bot.on("message", function (msg) {
 			bot.sendMessage(fourchan, [
 					"**~means it requires user to be on admin list~**",
 					"Available commands are:",
-					"`##ping:` PONG!",
 					"`##help:` Displays the list of commands",
 					"`##slap:` Hit a user with a random object",
 					"`##soundcloud <link to song>:` adds a song from soundcloud to the music playlist",
-					"`##startmusic:` starts playing music, or if music is already playing skips",
-					"`##endmusic:` stop playing music",
+					"`##skip:` skips current song",
+					"`##pause:` stop playing music",
 					"`##join <voice channel>:` joins a voice channel",
-					"`~##play:` set game being played **Must be run in DM**",
-            "`~##stop:` Stops R3alB0t **Can only be run by @R3alCl0ud**"].join("\n"));
+					"`##play:` starts/resumes playing music"].join("\n"));
 
             console.log("The user " + msg.author.username.toString() + " used the help command");
         }
@@ -182,12 +180,18 @@ bot.on("message", function (msg) {
         	bot.voiceConnection.playRawStream(request(video));
         }
 
-        if (msg.content == "startmusic")
+        if (msg.content == "play")
         {
         	playNext(bot);
         }
+        
+        if (msg.content == "skip")
+        {
+        	playlist.splice(0, 1);
+        	playNext(bot);
+        }
 
-        if(msg.content.startsWith("endmusic")) {
+        if(msg.content.startsWith("pause")) {
         	bot.voiceConnection.stopPlaying();
 
         }
@@ -213,13 +217,8 @@ bot.on("message", function (msg) {
 
 function playNext(bot){
 
-    if (pli + 1 < playlist.length)
-    {
-        pli++;
         console.log("playlist length: " + playlist.length);
-        console.log("pli: " + pli);
-		    play(bot, playlist[pli]);
-    }
+		    play(bot, playlist[0]);
 }
 
 function playStop(bot) {
@@ -243,5 +242,6 @@ function play(bot, info) {
 	}
 	currentStream.on('end', function () {
 			setTimeout(function() { playStop(bot); }, 16100);
+			playlist.splice(0, 1);
 	});
 }
