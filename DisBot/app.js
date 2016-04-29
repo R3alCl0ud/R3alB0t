@@ -12,6 +12,10 @@ var config = require("./options.json");
 
 var prefix = config.prefix;
 
+var scKey = config.streamKey;
+
+
+
 var boundChannel = false;
 var currentStream = false;
 
@@ -177,7 +181,7 @@ bot.on("message", function (msg) {
             var body;
             var info;
             try {
-                request("http://api.soundcloud.com/resolve.json?url=" + msg.content.split(" ").slice(1).join(" ") + "&client_id=71dfa98f05fa01cb3ded3265b9672aaf", function (error, response, body) {
+                request("http://api.soundcloud.com/resolve.json?url=" + msg.content.split(" ").slice(1).join(" ") + "&client_id=" + scKey, function (error, response, body) {
 
                     body = JSON.parse( body );
 
@@ -195,7 +199,7 @@ bot.on("message", function (msg) {
                             var song = body.tracks[i];
                             playlist.push(song);
                             songtype.push("soundcloud");
-                            addedby.push(msg.auther.username);
+                            addedby.push(msg.author.username);
                             console.log(song.title +" added by: " + msg.author.username);
                         }
                         bot.sendMessage(msg.channel, "Added " + body.tracks.length + " songs to the queue!");
@@ -301,20 +305,10 @@ bot.on("message", function (msg) {
 
         if (paused == true)
         {
-            var songLink = body.permaLink;
-            try {
-                request("http://api.soundcloud.com/resolve.json?url=" + songLink + "#t" + currentTime + "s" + "&client_id=71dfa98f05fa01cb3ded3265b9672aaf", function (error, response, body) {
-
-                body = JSON.parse( body );
-                currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=71dfa98f05fa01cb3ded3265b9672aaf" );
-            });
-            } catch (err)
-            {
-
-            }
+            currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
         } else
         {
-            currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=71dfa98f05fa01cb3ded3265b9672aaf");
+            currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
         }
         bot.voiceConnection.setVolume(volume);
         bot.setPlayingGame(body.title);
