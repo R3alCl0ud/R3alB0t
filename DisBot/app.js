@@ -14,8 +14,6 @@ var prefix = config.prefix;
 
 var scKey = config.streamKey;
 
-
-
 var boundChannel = false;
 var currentStream = false;
 
@@ -23,8 +21,9 @@ var playlist = [];
 var addedby = [];
 var songtype = [];
 var paused = false;
+var timePaused = 0;
+var pausedTime = 0;
 var currentTime = 0;
-var Time = new Date();
 var startTime = 0;
 var nowplaying;
 
@@ -60,14 +59,14 @@ var AuthDetails = require("./auth.json");
 bot.loginWithToken(AuthDetails.token);
 
 //when the bot is ready
-bot.on("ready", function () {
+bot.on("ready", function() {
     console.log("Ready to begin! Serving in " + bot.channels.length + " channels");
     bot.setPlayingGame("");
     //console.log(bot.user.id);
 });
 
 //when the bot disconnects
-bot.on("disconnected", function () {
+bot.on("disconnected", function() {
     //alert the console
     console.log("Disconnected!");
 
@@ -76,7 +75,7 @@ bot.on("disconnected", function () {
 });
 
 //when the bot receives a message
-bot.on("message", function (msg) {
+bot.on("message", function(msg) {
 
 
     var dm = msg.channel.isPrivate;
@@ -87,8 +86,7 @@ bot.on("message", function (msg) {
 
     }
 
-    if (msg.content.startsWith("**Now Playing:**"))
-    {
+    if (msg.content.startsWith("**Now Playing:**")) {
         nowplaying = msg;
     }
 
@@ -97,7 +95,7 @@ bot.on("message", function (msg) {
     if (!msg.content.startsWith(prefix)) return;
     var usr = msg.author;
 
-    msg.content = msg.content.substr(2);
+    msg.content = msg.content.substr(prefix.length);
 
 
 
@@ -127,221 +125,222 @@ bot.on("message", function (msg) {
             "`" + prefix + "destroy:` leaves the voice channel",
             "`" + prefix + "join <voice channel>:` joins a voice channel",
             "`" + prefix + "play:` starts/resumes playing music",
-            "`" + prefix + "volume:` changes the volume of the music (default volume defined in options.json)"].join("\n"));
+            "`" + prefix + "volume:` changes the volume of the music (default volume defined in options.json)"
+        ].join("\n"));
 
-            console.log("The user " + msg.author.username.toString() + " used the help command");
+        console.log("The user " + msg.author.username.toString() + " used the help command");
+    }
+
+
+    if (msg.content == "stats") {
+        msg.reply([
+            "I am connected/have access to:",
+            bot.servers.length + " servers",
+            bot.channels.length + " channels",
+            bot.users.length + " users",
+        ].join("\n"));
+        console.log("The user " + msg.author.username.toString() + " tried to use the stats command");
+    }
+
+    if (msg.content.startsWith("slap")) {
+        var randNumMin = 0;
+        var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
+        var randNumMax = fish.length();
+        var pick = (Math.floor(Math.random() * (randNumMax - randNumMin + 1)) + randNumMin);
+        bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
+    }
+
+    if (msg.content == "summon") {
+        try {
+            bot.joinVoiceChannel(msg.author.voiceChannel.id);
+            boundChannel = msg.channel;
+        } catch (err) {
+            msg.reply("You are not in a voice Channel");
         }
+    }
 
 
-        if (msg.content == "stats") {
-            msg.reply([
-                "I am connected/have access to:",
-                bot.servers.length + " servers",
-                bot.channels.length + " channels",
-                bot.users.length + " users",
-            ].join("\n"));
-            console.log("The user " + msg.author.username.toString() + " tried to use the stats command");
-        }
-
-        if (msg.content.startsWith("slap")) {
-            var randNumMin = 0;
-            var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
-            var randNumMax = fish.length();
-            var pick = (Math.floor(Math.random() * (randNumMax - randNumMin + 1)) + randNumMin);
-            bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
-        }
-
-
-        if (msg.content.startsWith("join")) {
-            var channeltoJoin = msg.content.split(" ").slice(1).join(" ");
-            var channels = msg.channel.server.channels;
-            for (var channel of channels) {
-                if (channel instanceof Discord.VoiceChannel) {
-                    if (!channeltoJoin || channel.name === channeltoJoin) {
-                        bot.joinVoiceChannel(channel);
-                        console.log("joined voice channel: " + channeltoJoin + " in server: " + msg.channel.server.toString());
-                    }
+    if (msg.content.startsWith("join")) {
+        var channeltoJoin = msg.content.split(" ").slice(1).join(" ");
+        var channels = msg.channel.server.channels;
+        for (var channel of channels) {
+            if (channel instanceof Discord.VoiceChannel) {
+                if (!channeltoJoin || channel.name === channeltoJoin) {
+                    bot.joinVoiceChannel(channel);
+                    console.log("joined voice channel: " + channeltoJoin + " in server: " + msg.channel.server.toString());
                 }
             }
-            boundChannel = msg.channel;
-            //bot.voiceConnection.setVolume(0.05);
         }
-
-        if (msg.content == "destroy")
-        {
-            try {
-                bot.voiceConnection.destroy();
-            } catch (err) {
-                msg.reply("noot! noot!");
-            }
-            bot.setPlayingGame("");
-        }
-
-        if (msg.content.startsWith("soundcloud")) {
-            var body;
-            var info;
-            try {
-                request("http://api.soundcloud.com/resolve.json?url=" + msg.content.split(" ").slice(1).join(" ") + "&client_id=" + scKey, function (error, response, body) {
-
-                    body = JSON.parse( body );
-
-                    if (body.kind == "track")
-                    {
-                        addedby.push(msg.author.username);
-                        playlist.push(body);
-                        console.log(body.title +" added by: " + msg.author.username);
-                        bot.sendMessage(msg.channel, "Added 1 song to the queue!");
-                    }
-                    if (body.kind == "playlist")
-                    {
-                        for (var i = 0; i < body.tracks.length; i++)
-                        {
-                            var song = body.tracks[i];
-                            playlist.push(song);
-                            songtype.push("soundcloud");
-                            addedby.push(msg.author.username);
-                            console.log(song.title +" added by: " + msg.author.username);
-                        }
-                        bot.sendMessage(msg.channel, "Added " + body.tracks.length + " songs to the queue!");
-                    }
-                });
-            } catch (err)
-            {
-                msg.reply("invalid link");
-            }
-
-        }
-
-        if (msg.content.startsWith("youtube")) {
-            var video = msg.content.split(" ").slice(1);
-
-            bot.voiceConnection.playRawStream(request(video));
-        }
-
-        if (msg.content == "play")
-        {
-            playNext(bot);
-            paused = false;
-            try
-            {
-                bot.voiceConnection.setVolume(volume);
-            } catch (err)
-            {
-            }
-        }
-
-        if (msg.content == "skip")
-        {
-            playlist.splice(0, 1);
-            addedby.splice(0, 1);
-            playNext(bot);
-        }
-
-        if(msg.content.startsWith("pause")) {
-            bot.voiceConnection.stopPlaying();
-            paused = true;
-            Time = new Date();
-            currentTime = (Time.getSeconds() + Time.getMilliseconds()/1000) - startTime;
-        }
-
-        if (msg.content.startsWith("volume"))
-        {
-            volume = (msg.content.split(" ").slice(1).join(" ") / 100);
-            try
-            {
-                bot.voiceConnection.setVolume(volume);
-                bot.sendMessage(msg.channel, "Volume set to: " + (volume * 100) + "%");
-            }
-            catch (err)
-            {
-                bot.sendMessage(msg.channel, "Put me in a voice channel first!");
-            }
-            console.log("The user " + msg.author.username.toString() + " used the volume command");
-            console.log("Volume set to " + (volume * 100) + "%");
-        }
-
-        if (msg.content == "time")
-        {
-            try
-            {
-                Time = new Date();
-                var cTime = (Time.getSeconds() + Time.getMilliseconds()/1000) - startTime;
-                bot.sendMessage(msg.channel, "current song time: "+ cTime + "/" + (playlist[0].duration) / 1000);
-            } catch (err)
-            {
-                msg.reply("no song playing");
-            }
-
-        }
-
-    });
-
-
-    function playNext(bot){
-
-        console.log("playlist length: " + playlist.length);
-        try {
-            play(bot, playlist[0]);
-        }catch (err)
-        {
-            console.log("no music");
-        }
-
+        boundChannel = msg.channel;
+        //bot.voiceConnection.setVolume(0.05);
     }
 
-    function playStop(bot) {
-        if(bot.voiceConnection){
-
-            bot.voiceConnection.setVolume(volume);
-            bot.voiceConnection.stopPlaying();
-            currentVideo = false;
-            playlist.splice(0, 1);
-            addedby.splice(0, 1);
-            playNext(bot);
-        }
-    }
-    function play(bot, info) {
-        var body = info;
-
-        if (paused == true)
-        {
-            currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
-        } else
-        {
-            currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
-        }
-        bot.voiceConnection.setVolume(volume);
-        bot.setPlayingGame(body.title);
+    if (msg.content == "destroy") {
         try {
-            bot.voiceConnection.playRawStream(currentStream, function (options) {});
-            bot.voiceConnection.setVolume(volume);
-            console.log("Song: " + body.title + ", now playing");
-            bot.sendMessage(boundChannel, "**Now Playing:** **" + body.title + " Requested by: " + addedby[0] + "**" );
-
-            try {
-                bot.deleteMessage(nowplaying);
-            } catch (err)
-            {
-            }
-
-            //console.log(currentStream.position);
-            if (paused == false)
-            {
-                Time = new Date();
-                startTime = (Time.getSeconds() + Time.getMilliseconds()/1000);
-            } else
-            {
-                paused = false;
-            }
-
+            bot.voiceConnection.destroy();
         } catch (err) {
-            //bot.reply(msg, "Put me in a voice channel first.");
-            console.log("What the fuck happened");
+            msg.reply("noot! noot!");
         }
-        currentStream.on('end', function () {
-            setTimeout(function() { playStop(bot); }, 16100);
-            currentTime = 0;
-            bot.setPlayingGame("");
+        bot.setPlayingGame("");
+    }
+
+    if (msg.content.startsWith("soundcloud")) {
+        var body;
+        var info;
+        try {
+            request("http://api.soundcloud.com/resolve.json?url=" + msg.content.split(" ").slice(1).join(" ") + "&client_id=" + scKey, function(error, response, body) {
+
+                body = JSON.parse(body);
+
+                if (body.kind == "track") {
+                    addedby.push(msg.author.username);
+                    playlist.push(body);
+                    console.log(body.title + " added by: " + msg.author.username);
+                    bot.sendMessage(msg.channel, "Added 1 song to the queue!");
+                }
+                if (body.kind == "playlist") {
+                    for (var i = 0; i < body.tracks.length; i++) {
+                        var song = body.tracks[i];
+                        playlist.push(song);
+                        songtype.push("soundcloud");
+                        addedby.push(msg.author.username);
+                        console.log(song.title + " added by: " + msg.author.username);
+                    }
+                    bot.sendMessage(msg.channel, "Added " + body.tracks.length + " songs to the queue!");
+                }
+            });
+        } catch (err) {
+            msg.reply("invalid link");
+        }
+
+    }
+
+    if (msg.content.startsWith("youtube")) {
+        var video = msg.content.split(" ").slice(1);
+
+        bot.voiceConnection.playRawStream(request(video));
+    }
+
+    if (msg.content == "play") {
+        playNext(bot);
+        timePaused = (bot.uptime / 1000);
+        try {
+            bot.voiceConnection.setVolume(volume);
+        } catch (err) {}
+    }
+
+    if (msg.content == "skip") {
+        playlist.splice(0, 1);
+        addedby.splice(0, 1);
+        playNext(bot);
+    }
+
+    if (msg.content.startsWith("pause")) {
+        bot.voiceConnection.stopPlaying();
+        paused = true;
+        pausedTime = bot.uptime / 1000;
+        currentTime = (bot.uptime / 1000) - startTime;
+    }
+
+    if (msg.content.startsWith("volume")) {
+        volume = (msg.content.split(" ").slice(1).join(" ") / 100);
+        try {
+            bot.voiceConnection.setVolume(volume);
+            bot.sendMessage(msg.channel, "Volume set to: " + (volume * 100) + "%");
+        } catch (err) {
+            bot.sendMessage(msg.channel, "Put me in a voice channel first!");
+        }
+        console.log("The user " + msg.author.username.toString() + " used the volume command");
+        console.log("Volume set to " + (volume * 100) + "%");
+    }
+
+    if (msg.content == "time") {
+        try {
+            Time = new Date();
+            //var cTime = (Time.getSeconds() + Time.getMilliseconds()/1000) - startTime;
+            bot.sendMessage(msg.channel, "current song time: " + cTime + "/" + (playlist[0].duration) / 1000);
+        } catch (err) {
+            msg.reply("no song playing");
+        }
+
+    }
+
+});
+
+
+function playNext(bot) {
+
+    console.log("playlist length: " + playlist.length);
+    try {
+        play(bot, playlist[0]);
+    } catch (err) {
+        console.log("no music");
+    }
+
+}
+
+function playStop(bot) {
+    if (bot.voiceConnection) {
+
+        bot.voiceConnection.setVolume(volume);
+        bot.voiceConnection.stopPlaying();
+        currentVideo = false;
+        playlist.splice(0, 1);
+        addedby.splice(0, 1);
+        playNext(bot);
+    }
+}
+
+function play(bot, info) {
+    var body = info;
+
+    if (paused == true) {
+        currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
+    } else {
+        currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey, function (error){
 
         });
     }
+    try {
+        if (paused == true) {
+            bot.voiceConnection.playRawStream(currentStream, {
+                seek: currentTime, volume: volume
+            });
+        }
+        if (paused == false) {
+            bot.voiceConnection.playRawStream(currentStream, {volume: volume});
+        }
+        bot.voiceConnection.setVolume(volume);
+        console.log("Song: " + body.title + ", now playing");
+        bot.sendMessage(boundChannel, "**Now Playing:** **" + body.title + " Requested by: " + addedby[0] + "**");
+
+        try {
+            bot.deleteMessage(nowplaying);
+        } catch (err) {
+            console.log("no message to delete");
+        }
+
+        
+        if (paused == false) {
+            startTime = (bot.uptime / 1000);
+        } else {
+            startTime += timePaused;
+            paused = false;
+        }
+
+    } catch (err) {
+        //bot.reply(msg, "Put me in a voice channel first.");
+        console.log("What the fuck happened");
+    }
+    currentStream.on('end', function() {
+        setTimeout(function() {
+            playStop(bot);
+        }, 16100);
+        currentTime = 0;
+        bot.setPlayingGame("");
+
+    });
+    currentStream.on('error', function() {
+        bot.sendMessage(boundChannel, "umm not sure what happened");
+    });
+}
