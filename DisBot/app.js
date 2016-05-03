@@ -6,7 +6,7 @@ var request = require("request");
 var url = require("url");
 var fs = require('fs');
 
-var bot = new Discord.Client();
+var bot = new Discord.Client({autoReconnect: true});
 
 var config = require("./options.json");
 
@@ -14,10 +14,16 @@ var prefix = config.prefix;
 
 var scKey = config.streamKey;
 
-var boundChannel = false;
-var currentStream = false;
+var boundChannels = [];
+var currentStreams = [];
 
-var playlist = [];
+var dirs = [];
+
+var Vserver = 0;
+var Vservnum = 0;
+
+var playlists = [];
+//playlists[] = [];
 var addedby = [];
 var songtype = [];
 var paused = false;
@@ -153,7 +159,13 @@ bot.on("message", function(msg) {
     if (msg.content == "summon") {
         try {
             bot.joinVoiceChannel(msg.author.voiceChannel.id);
-            boundChannel = msg.channel;
+            boundChannels[Vservnum] = msg.channel;
+            dirs[Vservnum] = ('./' + msg.channel.server.name);
+            if (!fs.exsistsSync(dirs[Vservnum])) {
+                fs.mkdirSync(dirs[Vservnum]);
+            }
+            Vservnum++;
+            console.log(Vservnum);
         } catch (err) {
             msg.reply("You are not in a voice Channel");
         }
@@ -171,7 +183,13 @@ bot.on("message", function(msg) {
                 }
             }
         }
-        boundChannel = msg.channel;
+        boundChannels[Vservnum] = msg.channel;
+        dirs[Vservnum] = ("./" + msg.channel.server.name);
+        if (!fs.exsistsSync(dirs[Vservnum])) {
+            fs.mkdirSync(dirs[Vservnum]);
+        }
+        Vservnum++;
+        console.log(Vservnum);
         //bot.voiceConnection.setVolume(0.05);
     }
 
@@ -187,6 +205,17 @@ bot.on("message", function(msg) {
     if (msg.content.startsWith("soundcloud")) {
         var body;
         var info;
+
+        boundChannels[Vserver] = msg.channel;
+        dirs[Vservnum] = ("./" + msg.channel.server.name);
+        var newDir = dirs[Vserver];
+        if (!fs.exsistsSync(newDir) {
+            fs.mkdirSync(newDir[, 34]);
+        }
+
+        Vservnum++;
+        console.log(Vservnum);
+
         try {
             request("http://api.soundcloud.com/resolve.json?url=" + msg.content.split(" ").slice(1).join(" ") + "&client_id=" + scKey, function(error, response, body) {
 
@@ -201,7 +230,7 @@ bot.on("message", function(msg) {
                 if (body.kind == "playlist") {
                     for (var i = 0; i < body.tracks.length; i++) {
                         var song = body.tracks[i];
-                        playlist.push(song);
+                        playlists[Vserver].push(song);
                         songtype.push("soundcloud");
                         addedby.push(msg.author.username);
                         console.log(song.title + " added by: " + msg.author.username);
@@ -268,51 +297,51 @@ bot.on("message", function(msg) {
 });
 
 
-function playNext(bot) {
+function playNext(bot, servnum) {
 
     console.log("playlist length: " + playlist.length);
     try {
-        play(bot, playlist[0]);
+        play(bot, playlist[servnum][0]);
     } catch (err) {
         console.log("no music");
     }
 
 }
 
-function playStop(bot) {
+function playStop(bot, thisServer) {
     if (bot.voiceConnection) {
 
-        bot.voiceConnection.setVolume(volume);
-        bot.voiceConnection.stopPlaying();
+        bot.voiceConnections[thisServer].setVolume(volume);
+        bot.voiceConnections[thisServer].stopPlaying();
         currentVideo = false;
-        playlist.splice(0, 1);
-        addedby.splice(0, 1);
-        playNext(bot);
+        playlists[thisServer].splice(0, 1);
+        //addedby.splice(0, 1);
+        playNext(bot, thisServer);
     }
 }
 
-function play(bot, info) {
+function play(bot, info, Vserver) {
     var body = info;
 
-    if (paused == true) {
-        currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
+    if (paused[Vserver] == true) {
+        currentStreams[Vserver] = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey);
     } else {
-        currentStream = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey, function (error){
+        currentStreams[Vserver] = request("http://api.soundcloud.com/tracks/" + body.id + "/stream?consumer_key=" + scKey, function (error){
 
         });
     }
     try {
-        if (paused == true) {
+        if (paused[Vserver] == true) {
             bot.voiceConnection.playRawStream(currentStream, {
                 seek: currentTime, volume: volume
             });
         }
-        if (paused == false) {
+        if (paused[Vserver] == false) {
             bot.voiceConnection.playRawStream(currentStream, {volume: volume});
         }
         bot.voiceConnection.setVolume(volume);
         console.log("Song: " + body.title + ", now playing");
-        bot.sendMessage(boundChannel, "**Now Playing:** **" + body.title + " Requested by: " + addedby[0] + "**");
+        bot.sendMessage(boundChannels[Vserver], "**Now Playing:** **" + body.title + " Requested by: " + addedby[0] + "**");
 
         try {
             bot.deleteMessage(nowplaying);
@@ -320,11 +349,11 @@ function play(bot, info) {
             console.log("no message to delete");
         }
 
-        
+
         if (paused == false) {
-            startTime = (bot.uptime / 1000);
+            startTimes[] = (bot.uptime / 1000);
         } else {
-            startTime += timePaused;
+            startTimes[] += timePaused;
             paused = false;
         }
 
@@ -334,13 +363,13 @@ function play(bot, info) {
     }
     currentStream.on('end', function() {
         setTimeout(function() {
-            playStop(bot);
+            playStop(bot, Servnum);
         }, 16100);
-        currentTime = 0;
+        currentTimes[] = 0;
         bot.setPlayingGame("");
 
     });
     currentStream.on('error', function() {
-        bot.sendMessage(boundChannel, "umm not sure what happened");
+        bot.sendMessage(boundChannels[msgChannel], "umm not sure what happened");
     });
 }
