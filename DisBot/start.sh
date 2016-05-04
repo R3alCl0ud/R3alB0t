@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-node ./app.js
+node ./bot.js
 read -p "Press [Enter] to close..."
