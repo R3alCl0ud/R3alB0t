@@ -1,10 +1,11 @@
 {
   "Auth" : {
-    "token" : "MTc0ODk4NzIyNDkxMjAzNTg0.CgujSA.U40EDbXMoS2piJXU_i2fHYe-IjQ"
+    "token" : "example"
   },
   "options" : {
     "prefix" : "#$",
     "volume" : "0.05",
-    "streamKey" : ""
+    "streamKey" : "",
+    "youtubeKey" : ""
   }
 }
