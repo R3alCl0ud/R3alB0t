@@ -1,5 +1,10 @@
 {
-  "prefix" : "#$",
-  "volume" : "0.05",
-  "streamKey" : ""
+  "Auth" : {
+    "token" : "MTc0ODk4NzIyNDkxMjAzNTg0.Cguazg.Q2iCFZpgS73-HVNSZzSbCK7pnOo"
+  },
+  "options" : {
+    "prefix" : "#$",
+    "volume" : "0.05",
+    "streamKey" : "3b16b5507608db3eaace81f41aea90bb"
+  }
 }

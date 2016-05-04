@@ -1,17 +1,16 @@
 {
   "name": "DisBot",
-  "version": "0.0.0",
+  "version": "1.0.5_b",
   "description": "DisBot",
-  "main": "app.js",
+  "main": "bot.js",
   "author": {
     "name": "Perry",
     "email": ""
   },
   "dependencies": {
     "discord.js": "^7.0.1",
-    "node-opus": "^0.1.12",
+    "node-opus": "^0.1.13",
     "request": "^2.72.0",
-    "url": "^0.11.0",
-    "ytdl-core": "^0.7.9"
+    "url": "^0.11.0"
   }
 }
