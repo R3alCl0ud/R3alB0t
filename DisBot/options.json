@@ -1,9 +1,9 @@
 {
   "Auth" : {
-    "token" : ""
+    "token" : "MTc0ODk4NzIyNDkxMjAzNTg0.CgujSA.U40EDbXMoS2piJXU_i2fHYe-IjQ"
   },
   "options" : {
-    "prefix" : ":",
+    "prefix" : "#$",
     "volume" : "0.05",
     "streamKey" : ""
   }
