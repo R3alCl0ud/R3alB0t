@@ -1,4 +1,0 @@
-c:\users\perry\documents\visual studio 2015\Projects\DisBot\DisBot\obj\Debug\DisBot.njsprojResolveAssemblyReference.cache
-c:\users\perry\documents\visual studio 2015\Projects\DisBot\DisBot\bin\Microsoft.NodejsTools.WebRole.dll
-C:\Users\Perry\Documents\GitHub\R3alB0t\DisBot\obj\Debug\DisBot.njsprojResolveAssemblyReference.cache
-C:\Users\Perry\Documents\GitHub\R3alB0t\DisBot\bin\Microsoft.NodejsTools.WebRole.dll
