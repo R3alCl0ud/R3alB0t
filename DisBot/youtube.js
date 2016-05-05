@@ -1,0 +1,1 @@
+var loadPlugin = function(authData) {};
