@@ -1,6 +1,6 @@
 {
   "name": "DisBot",
-  "version": "1.0.5_b",
+  "version": "0.0.0",
   "description": "DisBot",
   "main": "bot.js",
   "author": {
@@ -9,8 +9,11 @@
   },
   "dependencies": {
     "discord.js": "^7.0.1",
+    "jsonfile": "^2.3.0",
     "node-opus": "^0.1.13",
     "request": "^2.72.0",
-    "url": "^0.11.0"
+    "url": "^0.11.0",
+    "youtube-dl": "^1.11.1",
+    "ytdl-core": "^0.7.14"
   }
 }
