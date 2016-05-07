@@ -1,0 +1,12 @@
+{
+  "Auth" : {
+    "token" : "MTc0ODk4NzIyNDkxMjAzNTg0.CgujSA.U40EDbXMoS2piJXU_i2fHYe-IjQ"
+  },
+  "options" : {
+    "prefix" : "#$",
+    "volume" : "0.05",
+    "streamKey" : "3b16b5507608db3eaace81f41aea90bb",
+    "youtubeKey" : "AIzaSyDP3oIwIlvLtUKpy4t9G0K8JE1_4nOZFA0",
+    "youtubeAuth" : "67661883614-2nj2un9amchjuf0s6ffqf08qqdupocvs.apps.googleusercontent.com"
+  }
+}
