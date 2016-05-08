@@ -437,6 +437,7 @@ function play(bot, Vserver) {
         bot.sendMessage(playlist.boundChannel, "**Now Playing:** **" + playlist.tracks[0].title + "** In: " + playlist.server, function(error, msg) {
             if (error) { console.log(error); }
             
+            bot.deleteMessage(msg, {wait: 10000});
             playlist.nowplaying = msg.id;
             
             
@@ -461,7 +462,7 @@ function play(bot, Vserver) {
     });
 
     currentStreams[Vserver].on('error', function() {
-        bot.sendMessage(playlist.boundChannel, "umm not sure what happened");
+        //bot.sendMessage(playlist.boundChannel, "umm not sure what happened");
     });
 }
 
@@ -484,6 +485,7 @@ function handleSClink(songLink, playlistFile, usr) {
                     "id": body.id,
                     "title": body.title,
                     "user": usr.username,
+                    "duration": body.duration,
                     "type": "soundcloud"
                 };
                 songs.tracks[songs.tracks.length] = newSong;
@@ -495,6 +497,7 @@ function handleSClink(songLink, playlistFile, usr) {
                         "id": body.tracks[song].id,
                         "title": body.tracks[song].title,
                         "user": usr.username,
+                        "duration": body.tracks[song].duration,
                         "type": "soundcloud"
                     };
                     songs.tracks[songs.tracks.length] = newSong;
@@ -518,6 +521,7 @@ function handleYTlink(songLink, playlistFile, usr, Vserver) {
         "id": id,
         "title": "",
         "user": usr.username,
+        "duration": 0,
         "type": "youtube"
     };
 
@@ -555,16 +559,14 @@ function handleYTlink(songLink, playlistFile, usr, Vserver) {
                 var songs = JSON.parse(fs.readFileSync(playlistFile));
                 songs.tracks[songs.tracks.length] = newSong;
                 fs.writeFileSync(playlistFile, JSON.stringify(songs, null, "\t"));
+                bot.sendMessage(songs.boundChannel, "Song: " + newSong.title + ", has been added to the playlist", function(error, message) {
+                    bot.deleteMessage(message, {wait:  7000});
+                });
                 songs = null;
             }
         }
     });
 
-
-
-    video.on('complete', function() {
-        console.log("just checking");
-    });
 
 }
 
@@ -612,10 +614,12 @@ function ytPlaylist(url, usr, playlistFile, num) {
         someSong.numToDownload = info.n_entries;
         size = info.size;
         id = info.id;
+        console.log(info.duration);
         var newSong = {
             "id": id,
             "title": info.title,
             "user": someSong.usr,
+            "duration": timeToMs(info.duration),
             "type": "youtube"
         };
         //console.log(newTracks.length);
@@ -631,7 +635,7 @@ function ytPlaylist(url, usr, playlistFile, num) {
             var percent = (pos / size * 100).toFixed(2);
             process.stdout.cursorTo(0);
             process.stdout.clearLine(1);
-            process.stdout.write(percent + '%');
+            process.stdout.write((someSong.numDownloaded  + 1)+ ":" + someSong.numToDownload + " " + percent + '%');
         }
 
     });
@@ -640,14 +644,12 @@ function ytPlaylist(url, usr, playlistFile, num) {
 
     video.on('end', function() {
         someSong.numDownloaded++;
+        var songs = JSON.parse(fs.readFileSync(someSong.file));
+            songs.tracks[songs.tracks.length] = newTracks[(newTracks.length - 1)];
+        writeJSON(someSong.file, songs);
+        songs = null;
         if (someSong.numDownloaded == someSong.numToDownload) {
-            var songs = JSON.parse(fs.readFileSync(someSong.file));
-            for (var song in newTracks) {
-                songs.tracks[songs.tracks.length] = newTracks[song];
-            }
             console.log("\nDone Downloading all the songs");
-            writeJSON(someSong.file, songs);
-            songs = null;
             queuedPLs.splice(0, 1);
             if (queuedPLs.length > 0) {
                 ytPlaylist(queuedPLs.url, queuedPLs.plF, queuedPLs.usr, queuedPLs.num);
@@ -724,9 +726,7 @@ function queueMsg(playlistFile, channel) {
         queue.push("Playlist total length: " + songs.tracks.length);
         queueWord = queue;
         bot.sendMessage(channel, queueWord, function(error, message) {
-            bot.deleteMessage(message, {
-                wait: 7000
-            });
+            bot.deleteMessage(message, {wait: 7000});
         });
         songs = null;
     }
@@ -738,3 +738,18 @@ function queueMsg(playlistFile, channel) {
 function writeJSON(JSONFile, jsonOb) {
     fs.writeFileSync(JSONFile, JSON.stringify(jsonOb, null, "\t"));
 }
+
+
+function timeToMs(time) {
+    var final;
+    var hms = time.split(":");
+    for(var i in hms) {
+        final = final + parseInt(hms[i])*Math.pow(60, hms.length - (i+1));
+    }
+    var ms = final * 1000;
+    return ms;
+}
+
+
+
+
