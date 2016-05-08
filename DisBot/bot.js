@@ -15,38 +15,25 @@ var bot = new Discord.Client({
 // grab all of those options
 var config = require("./options.json");
 
-var option = config.options;
+var options = config.Options;
 
 // command prefix
-var prefix = option.prefix;
+var prefix = options.prefix;
 
 // don't forget your soundcloud api key
-var scKey = option.streamKey;
-
-// don't forgot your youtube api key either
-var ytKey = option.youtubeKey;
+var scKey = options.streamKey;
 
 // Get the email and password
 var AuthDetails = config.Auth;
 
-
 // all of my variable arrays for multi voice music playing
-var boundChannels = [];
 var servers = [];
 var currentStreams = [];
-var dirs = []; // each servers playlist json file
-var folders = []; // the folders for storing mp3s from youtube
+var playListFiles = []; // each servers playlist json file
 var Vserver = 0;
 var Vservnum = 0;
-var pausedChannels = [];
-var timesPaused = [];
-var pausedTimes = [];
-var currentTimes = [];
-var startTimes = [];
-var nowplaying = [];
-
-//var volume = config.volume;
-var volumes = [];
+var downloadingPL = false;
+var queuedPLs = [];
 
 
 var admin = "";
@@ -55,7 +42,8 @@ var admins = fs.readFileSync('admins.txt').toString().split("\n");
 for (var i in admins) {
     if (i == 0) {
         admin = admin + "" + admins[i];
-    } else {
+    }
+    else {
         admin = admin + ", " + admins[i];
     }
 }
@@ -67,8 +55,7 @@ bot.loginWithToken(AuthDetails.token);
 //when the bot is ready
 bot.on("ready", function() {
     console.log("Ready to begin! Serving in " + bot.channels.length + " channels");
-    bot.setPlayingGame("with Youtube Support");
-    //console.log(bot.user.id);
+    bot.setPlayingGame("with WIP Youtube Support");
 });
 
 //when the bot disconnects
@@ -87,14 +74,7 @@ bot.on("message", function(msg) {
     var usr = msg.author;
     var msrv = msg.channel.server;
     var dm = msg.channel.isPrivate;
-
-    if (msg.content.startsWith("**Now Playing:**")) {
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i] == msg.channel.server)
-                nowplaying[i] = msg;
-        }
-    }
-
+    var chnl = msg.channel;
 
 
     if (!msg.content.startsWith(prefix)) return;
@@ -108,11 +88,12 @@ bot.on("message", function(msg) {
             var x = admins.legnth;
             admins[x] = msg.mentions[0].id;
             fs.appendFile("admins.txt", "\n" + admins[x]);
-            msg.reply(" successfully added: " + msg.content.split(" ").slice(1).join(" "));
+            msg.reply(" successfully added: " + msg.mentions[0]);
             console.log(msg.author.id.toString() + " successfully added: " + msg.mentions[0].id);
-        } else {
+        }
+        else {
             console.log(msg.author.toString() + " unsuccessfully tried to add: " + msg.mentions[0].id);
-            msg.reply(" warning you tried to add: " + msg.content.split(" ").slice(1).join(" ") + " but don't have perms! do it again and an admin will be notified");
+            msg.reply(" warning you tried to add: " + msg.mentions[0] + " but don't have perms! do it again and an admin will be notified");
         }
     }
 
@@ -134,7 +115,7 @@ bot.on("message", function(msg) {
             "`" + prefix + "volume:` changes the volume of the music (default volume defined in options.json)"
         ].join("\n"));
 
-        console.log("The user " + msg.author.username.toString() + " used the help command");
+        console.log("The user " + usr.toString() + " used the help command");
     }
 
 
@@ -145,7 +126,7 @@ bot.on("message", function(msg) {
             bot.channels.length + " channels",
             bot.users.length + " users",
         ].join("\n"));
-        console.log("The user " + msg.author.username.toString() + " tried to use the stats command");
+        console.log("The user " + usr.username.toString() + " tried to use the stats command");
     }
 
     if (msg.content.startsWith("slap") && !dm) {
@@ -153,7 +134,7 @@ bot.on("message", function(msg) {
         var fish = ["clown fish", "sword fish", "shark", "sponge cake", "blue berry pie", "banana", "poptart", "the blunt of a sword", "websters dicitonary: hardcopy"];
         var randNumMax = fish.length;
         var pick = (Math.floor(Math.random() * (randNumMax - randNumMin + 1)) + randNumMin);
-        bot.sendMessage(msg.channel, msg.content.split(" ").slice(1).join(" ") + " got slapped with a " + fish[pick] + " by " + msg.author.toString());
+        bot.sendMessage(msg.channel, msg.mentions[0] + " got slapped with a " + fish[pick] + " by " + usr.toString());
     }
 
     if (msg.content.startsWith("playing") && dm) {
@@ -165,101 +146,78 @@ bot.on("message", function(msg) {
 
     if (msg.content == "summon" && !dm) {
         try {
-            if (servers.indexOf(msg.channel.server) == -1) {
-                if (usr.voiceChannel.server == msg.channel.server) {
-                    var base = JSON.stringify({
+            if (servers.indexOf(msrv) == -1) {
+                if (usr.voiceChannel.server == msrv) {
+                    var base = {
                         "server": usr.voiceChannel.server.toString(),
+                        "boundChannel": msg.channel.id,
+                        "voiceChannel": usr.voiceChannel.id,
+                        "volume": options.volume,
+                        "paused": false,
+                        "timePaused": 0,
+                        "startTime": 0,
+                        "nowplaying": "",
+                        "currentTime": 0,
                         "tracks": []
-                    }, null, "\t");
+                    };
                     bot.joinVoiceChannel(usr.voiceChannel.id);
+                    servers[Vservnum] = msrv;
 
-                    boundChannels[Vservnum] = msg.channel;
-                    servers[Vservnum] = msg.channel.server;
-                    dirs[Vservnum] = ('./playlists/' + msg.channel.server.name + ".json").toString();
-                    if (!fs.existsSync(dirs[Vservnum])) {
-                        fs.writeFileSync(dirs[Vservnum], base);
+                    if (!fs.existsSync('./playlists/' + msrv.name)) {
+                        fs.mkdirSync('./playlists/' + msrv.name);
                     }
-                    folders[Vservnum] = ('./playlists/' + msg.channel.server.name);
-                    if (!fs.existsSync(folders[Vservnum])) {
-                        fs.mkdirSync(folders[Vservnum]);
+                    playListFiles[Vservnum] = ('./playlists/' + msrv.name + "/" + msrv.name + ".json").toString();
+                    if (!fs.existsSync(playListFiles[Vservnum])) {
+                        writeJSON(playListFiles[Vservnum], base);
                     }
-                    console.log("joined voice channel: " + usr.voiceChannel.name + " in server: " + msg.channel.server.toString());
-                    pausedChannels[Vservnum] = false;
+                    console.log("joined voice channel: " + usr.voiceChannel.name + " in server: " + msrv.toString());
                     currentStreams[Vservnum] = false;
-                    volumes[Vservnum] = option.volume;
                     Vservnum++;
+                    base = null;
                     console.log("I am connected to " + Vservnum + " voice channel(s)");
 
-                } else {
+                }
+                else {
                     msg.reply("You are not in a voice channel on this server");
                 }
-            } else {
+            }
+            else {
                 msg.reply("I am already in a voice channel on this server");
             }
-        } catch (err) {
+        }
+        catch (err) {
+            console.log(err);
             msg.reply("You are not in a voice Channel");
         }
     }
 
 
-    if (msg.content.startsWith("join") && !dm) {
-        var channeltoJoin = msg.content.split(" ").slice(1).join(" ");
-        var channels = msg.channel.server.channels;
-        for (var channel of channels) {
-            if (channel instanceof Discord.VoiceChannel) {
-                if (!channeltoJoin || channel.name === channeltoJoin) {
-                    bot.joinVoiceChannel(channel);
-                    console.log("joined voice channel: " + channeltoJoin + " in server: " + msg.channel.server.toString());
-                }
-            }
-        }
-        boundChannels[Vservnum] = msg.channel;
-        dirs[Vservnum] = ("./" + msg.channel.server.name + ".txt");
-        if (!fs.existsSync(dirs[Vservnum])) {
-            fs.writeFile(dirs[Vservnum], "");
-        }
-        Vservnum++;
-        console.log("I am connected to " + Vservnum + " voice channel(s)");
-        //bot.voiceConnection.setVolume(0.05);
-    }
 
     if (msg.content == "destroy" && !dm) {
         try {
-            for (var i = 0; i < servers.length; i++) {
-                if (servers[i] == msg.channel.server) {
-
-
-                    var playlist = JSON.parse(fs.readFileSync(dirs[i]));
-
-                    for (var n = 0; n < playlist.tracks.length; n++) {
-                        if (playlist.tracks[n].type == "youtube") {
-                            //console.log("found a youtube");
-                            var songPath = ['./playlists/', servers[i].name.toString(), '/', playlist.tracks[n].id.toString(), '.mp3'].join("");
-                            if (fs.existsSync(songPath)) {
-                                fs.unlinkSync(songPath);
-                            }
-                        }
-                    }
-                    if (fs.existsSync(dirs[i])) {
-                        fs.unlinkSync(dirs[i]);
-                    }
-                    if (fs.existsSync(folders[i])) {
-                        fs.rmdirSync(folders[i]);
-                    }
-                    dirs.splice(i, 1);
-                    folders.splice(i, 1);
-                    servers.splice(i, 1);
-                    boundChannels.splice(i, 1);
-                    volumes.splice(i, 1);
-                    currentStreams.splice(i, 1);
-                    pausedChannels.splice(i, 1);
-                    nowplaying.splice(i, 1);
-                    bot.voiceConnections[i].destroy();
-                    Vservnum--;
-                    console.log("I am connected to " + Vservnum + " voice channel(s)");
+            if (servers.indexOf(msrv) != -1) {
+                var i = servers.indexOf(msrv);
+                var playlist = JSON.parse(fs.readFileSync(playListFiles[i]));
+                var songs = fs.readdirSync('./playlists/' + msrv.name.toString());
+                for (var song in songs) {
+                    fs.unlinkSync('./playlists/' + playlist.server.toString() + '/' + songs[song].toString());
                 }
+
+                if (fs.existsSync('./playlists/' + playlist.server.toString())) {
+                    fs.rmdirSync('./playlists/' + playlist.server.toString());
+                }
+
+                playListFiles.splice(i, 1);
+                servers.splice(i, 1);
+                currentStreams.splice(i, 1);
+                bot.voiceConnections[i].destroy();
+                playlist = null;
+                Vservnum--;
+                console.log("I am connected to " + Vservnum + " voice channel(s)");
             }
-        } catch (err) {
+        }
+        catch (err) {
+            console.log(err);
             msg.reply("well... this is akward. destroy is broken...");
         }
     }
@@ -273,13 +231,43 @@ bot.on("message", function(msg) {
         for (Vserver = 0; Vserver < servers.length; Vserver++) {
             if (servers[Vserver].name == msrv.name) {
                 if (songLinkUrl.startsWith("https://soundcloud.com/")) {
-                    handleSClink(songLinkUrl, dirs[Vserver], usr);
-                } else if (songLinkUrl.startsWith("https://www.youtube.com/playlist?")) {
-                    ytPlaylist(songLinkUrl, usr, dirs[Vserver]);
-                } else if (songLinkUrl.startsWith("https://www.youtube.com/")) {
-                    handleYTlink(songLinkUrl, dirs[Vserver], usr, Vserver);
+                    handleSClink(songLinkUrl, playListFiles[Vserver], usr);
                 }
-            } else if (Vserver == (servers.length - 1) && servers[Vserver].name != msrv.name) {
+                else if (songLinkUrl.startsWith("https://www.youtube.com/playlist?")) {
+                    if (downloadingPL == false) {
+                        downloadingPL = true;
+                        var newplaylist = {
+                            "url": songLinkUrl,
+                            "usr": usr,
+                            "plF": playListFiles[Vserver],
+                            "num": Vserver
+                        };
+                        queuedPLs[queuedPLs.length] = newplaylist;
+                        newplaylist = null;
+                        ytPlaylist(songLinkUrl, usr, playListFiles[Vserver]);
+                    }
+                    else {
+                        var newplaylist = {
+                            "url": songLinkUrl,
+                            "usr": usr,
+                            "plF": playListFiles[Vserver],
+                            "num": Vserver
+                        };
+                        queuedPLs[queuedPLs.length] = newplaylist;
+                        newplaylist = null;
+                        bot.sendMessage(chnl, "already downloading a playlist", function(error, message) {
+                            bot.deleteMessage(message, {
+                                wait: 5000
+                            });
+                        });
+                    }
+                }
+                else if (songLinkUrl.startsWith("https://www.youtube.com/")) {
+                    handleYTlink(songLinkUrl, playListFiles[Vserver], usr, Vserver);
+                }
+            }
+
+            else if (Vserver == (servers.length - 1) && servers[Vserver].name != msrv.name) {
                 msg.reply(["I am not in a voice channel on this server",
                     "Put me in a voice channel if you want to play music"
                 ].join("\n"));
@@ -288,75 +276,90 @@ bot.on("message", function(msg) {
     }
 
     if (msg.content == "play" && !dm) {
-        for (Vserver = 0; Vserver < servers.length; Vserver++) {
-            if (servers[Vserver].name == msrv.name) {
-                playNext(bot, Vserver);
-                timesPaused[Vserver] = (bot.uptime / 1000);
-                try {
-                    bot.voiceConnections[Vserver].setVolume(volumes[Vserver]);
-                } catch (err) {
+        if (servers.indexOf(msrv) != -1) {
+            Vserver = servers.indexOf(msrv)
 
-                }
-            } else if (Vserver == (servers.length - 1) && servers[Vserver].name != msrv.name) {
-                msg.reply(["I am not in a voice channel on this server",
-                    "Put me in a voice channel if you want to play music"
-                ].join("\n"));
+            var playlist = JSON.parse(fs.readFileSync(playListFiles[Vserver]));
+
+            if (playlist.paused == true) {
+                playlist.startTime += (Math.floor(bot.uptime / 1000) - playlist.timePaused);
             }
+            playNext(bot, Vserver);
+
+
+            try {
+                bot.voiceConnections[Vserver].setVolume(playlist.volume);
+            }
+            catch (err) {
+
+            }
+            writeJSON(playListFiles[Vserver], playlist);
+            playlist = null;
         }
+        else {
+            msg.reply(["I am not in a voice channel on this server",
+                "Put me in a voice channel if you want to play music"
+            ].join("\n"));
+        }
+
     }
 
     if (msg.content == "skip" && !dm) {
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i].name == msrv.name) {
-                playStop(bot, i);
-                try {
-                    bot.deleteMessage(nowplaying[Vserver]);
-                } catch (err) {
-                    console.log("no message to delete");
-                }
+        if (servers.indexOf(msrv) != -1) {
+            Vserver = servers.indexOf(msrv);
+
+            try {
+                playStop(bot, Vserver);
+            }
+            catch (err) {
+                console.log("no message to delete");
             }
         }
     }
 
     if (msg.content.startsWith("pause") && !dm) {
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i].name == msrv.name) {
-                bot.voiceConnections[i].stopPlaying();
-                pausedChannels[i] = true;
-                pausedTimes[i] = bot.uptime / 1000;
-                currentTimes[i] = (bot.uptime / 1000) - startTimes[i];
-            }
+        if (servers.indexOf(msrv) != -1) {
+            Vserver = servers.indexOf(msrv);
+            bot.voiceConnections[Vserver].stopPlaying();
+            var playlist = JSON.parse(fs.readFileSync(playListFiles[Vserver]));
+            playlist.currentTime = Math.floor(bot.uptime / 1000) - playlist.startTime;
+            playlist.timePaused = Math.floor(bot.uptime / 1000);
+            writeJSON(playListFiles[Vserver], playlist);
+            playlist = null;
         }
     }
 
     if (msg.content.startsWith("volume") && !dm) {
         var volume = (msg.content.split(" ").slice(1).join(" ") / 100);
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i] == msg.channel.server) {
-                try {
-                    bot.voiceConnections[i].setVolume(volume);
-                    bot.sendMessage(boundChannels[i], "Volume set to: " + (volume * 100) + "%");
-                } catch (err) {
-                    bot.sendMessage(boundChannels[i], "Put me in a voice channel first!");
-                }
-                console.log("The user " + msg.author.username.toString() + " used the volume command");
-                console.log("Volume set to " + (volume * 100) + "%");
+        if (servers.indexOf(msrv) != -1) {
+            Vserver = servers.indexOf(msrv);
+            var playlist = JSON.parse(fs.readFileSync(playListFiles[Vserver]));
+            try {
+                bot.voiceConnections[Vserver].setVolume(volume);
+                bot.sendMessage(playlist.boundChannel, "Volume set to: " + (volume * 100) + "%");
             }
+            catch (err) {
+                bot.sendMessage(playlist.boundChannel, "Put me in a voice channel first!");
+            }
+            playlist.volume = volume;
+            writeJSON(playListFiles[Vserver], playlist);
+            playlist = null;
+            console.log("The user " + usr.toString() + " used the volume command");
+            console.log("Volume set to " + (volume * 100) + "%");
         }
+
     }
 
     if (msg.content == "shuffle") {
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i] == msg.channel.server) {
-                shuffle(dirs[i]);
-            }
+        if (servers.indexOf(msrv) != -1) {
+            var i = servers.indexOf(msrv);
+            shuffle(playListFiles[i]);
         }
     }
     if (msg.content == "queue") {
-        for (var i = 0; i < servers.length; i++) {
-            if (servers[i] == msg.channel.server) {
-                queueMsg(dirs[i], msg.channel);
-            }
+        if (servers.indexOf(msrv) != -1) {
+            var i = servers.indexOf(msrv);
+            queueMsg(playListFiles[i], msg.channel);
         }
     }
 
@@ -367,90 +370,98 @@ function playNext(bot, servnum) {
 
     try {
         play(bot, servnum);
-    } catch (err) {
+    }
+    catch (err) {
         console.log("no music");
     }
 }
 
 function playStop(bot, thisServer) {
-    if (bot.voiceConnection) {
-        bot.voiceConnections[thisServer].setVolume(volumes[thisServer]);
+    if (bot.voiceConnections[thisServer]) {
+        var songs = JSON.parse(fs.readFileSync(playListFiles[thisServer]));
+        bot.voiceConnections[thisServer].setVolume(songs.volume);
         bot.voiceConnections[thisServer].stopPlaying();
-        var songs = JSON.parse(fs.readFileSync(dirs[thisServer]));
         if (songs.tracks[0].type == "youtube") {
-            fs.unlinkSync(('./playlists/' + servers[thisServer].name + '/' + songs.tracks[0].id + '.mp3'));
+            var songPath = ['./playlists/', songs.server, '/', songs.tracks[0].id, '.mp3'].join("");
+            fs.unlinkSync(songPath);
         }
         songs.tracks.splice(0, 1);
-        fs.writeFileSync(dirs[thisServer], JSON.stringify(songs, null, "\t"));
-        if (songs.tracks.length >= 1)
-            playNext(bot, thisServer);
+        writeJSON(playListFiles[thisServer], songs);
+        setTimeout(function() {
+            if (songs.tracks.length >= 1)
+                playNext(bot, thisServer);
+            songs = null;
+        }, 100);
     }
 }
 
 function play(bot, Vserver) {
 
-    var playlist = JSON.parse(fs.readFileSync(dirs[Vserver]));
+    var playlist = JSON.parse(fs.readFileSync(playListFiles[Vserver]));
     console.log("playing music in server " + (Vserver + 1));
 
     if (playlist.tracks[0].type == "soundcloud") {
         currentStreams[Vserver] = request("http://api.soundcloud.com/tracks/" + playlist.tracks[0].id + "/stream?client_id=" + scKey);
-    } else if (playlist.tracks[0].type == "youtube") {
-        currentStreams[Vserver] = fs.createReadStream(('./playlists/' + servers[Vserver].name.toString() + '/' + playlist.tracks[0].id + '.mp3'));
+    }
+    else if (playlist.tracks[0].type == "youtube") {
+        currentStreams[Vserver] = fs.createReadStream(('./playlists/' + playlist.server + '/' + playlist.tracks[0].id + '.mp3'));
     }
     try {
         if (playlist.tracks[0].type == "soundcloud") {
-            if (pausedChannels[Vserver] == true) {
+            if (playlist.paused == true) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
-                    seek: currentTimes[Vserver],
-                    volume: volumes[Vserver]
+                    seek: playlist.currentTime,
+                    volume: playlist.volume
                 });
             }
-            if (pausedChannels[Vserver] == false) {
+            if (playlist.paused == false) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
-                    volume: volumes[Vserver]
-                });
-            }
-        } else if (playlist.tracks[0].type == "youtube") {
-            if (pausedChannels[Vserver] == true) {
-                bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
-                    seek: currentTimes[Vserver],
-                    volume: volumes[Vserver]
-                });
-            }
-            if (pausedChannels[Vserver] == false) {
-                bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
-                    volume: volumes[Vserver]
+                    volume: playlist.volume
                 });
             }
         }
-        bot.voiceConnections[Vserver].setVolume(volumes[Vserver]);
-        bot.sendMessage(boundChannels[Vserver], "**Now Playing:** **" + playlist.tracks[0].title + "** In: " + playlist.server);
-        try {
-            bot.deleteMessage(nowplaying[Vserver]);
-        } catch (err) {
-            console.log("no message to delete");
+        else if (playlist.tracks[0].type == "youtube") {
+            if (playlist.paused == true) {
+                bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
+                    seek: playlist.currentTime,
+                    volume: playlist.volume
+                });
+            }
+            if (playlist.paused == false) {
+                bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
+                    volume: playlist.volume
+                });
+            }
         }
+        bot.voiceConnections[Vserver].setVolume(playlist.volume);
+        bot.sendMessage(playlist.boundChannel, "**Now Playing:** **" + playlist.tracks[0].title + "** In: " + playlist.server, function(error, msg) {
+            if (error) { console.log(error); }
+            
+            playlist.nowplaying = msg.id;
+            
+            
+        });
 
-
-        if (pausedChannels[Vserver] == false) {
-            startTimes[Vserver] = (bot.uptime / 1000);
-        } else {
-            startTimes[Vserver] += timesPaused[Vserver];
-            pausedChannels[Vserver] = false;
+        if (playlist.paused == false) {
+            playlist.startTime = Math.floor(bot.uptime / 1000);
         }
-
-    } catch (err) {
+        else {
+            playlist.paused = false;
+        }
+        writeJSON(playListFiles[Vserver], playlist);
+    playlist = null;
+    }
+    catch (err) {
         console.log("What the fuck happened");
     }
     currentStreams[Vserver].on('end', function() {
         setTimeout(function() {
             playStop(bot, Vserver);
         }, 16100);
-        currentTimes[Vserver] = 0;
-
     });
+
     currentStreams[Vserver].on('error', function() {
-        bot.sendMessage(boundChannels[Vserver], "umm not sure what happened");
+        bot.sendMessage(playlist.boundChannel, "umm not sure what happened");
     });
 }
 
@@ -458,13 +469,13 @@ function handleSClink(songLink, playlistFile, usr) {
 
 
     var newSong = {};
-    var songs = JSON.parse(fs.readFileSync(playlistFile));
-    var songsNum = songs.tracks.length;
+
 
     try {
-        console.log(songs);
+        //console.log(songs);
         request("http://api.soundcloud.com/resolve.json?url=" + songLink + "&client_id=" + scKey, function(error, response, body) {
 
+            var songs = JSON.parse(fs.readFileSync(playlistFile));
             body = JSON.parse(body);
 
             if (body.kind == "track") {
@@ -479,30 +490,30 @@ function handleSClink(songLink, playlistFile, usr) {
             }
 
             if (body.kind == "playlist") {
-                for (var i = 0; i < body.tracks.length; i++) {
+                for (var song in body.tracks) {
                     newSong = {
-                        "id": body.tracks[i].id,
-                        "title": body.tracks[i].title,
+                        "id": body.tracks[song].id,
+                        "title": body.tracks[song].title,
                         "user": usr.username,
                         "type": "soundcloud"
                     };
-                    songs.tracks[songsNum + i] = newSong;
+                    songs.tracks[songs.tracks.length] = newSong;
                 }
             }
-            fs.writeFileSync(playlistFile, JSON.stringify(songs, null, "\t"));
+            writeJSON(playlistFile, songs);
+            songs = null;
         });
-    } catch (err) {
+    }
+    catch (err) {
         console.log(err);
     }
 }
 
 function handleYTlink(songLink, playlistFile, usr, Vserver) {
 
-    var filename;
     var link = songLink.split("v=");
     var id = link[1];
     var size;
-    var title;
     var newSong = {
         "id": id,
         "title": "",
@@ -522,8 +533,8 @@ function handleYTlink(songLink, playlistFile, usr, Vserver) {
 
     // Will be called when the download starts.
     video.on('info', function(info) {
-        filename = info._filename;
         size = info.size;
+        console.log(info);
         console.log('Download started');
         //console.log(info);
         newSong.title = info.title;
@@ -540,11 +551,11 @@ function handleYTlink(songLink, playlistFile, usr, Vserver) {
             process.stdout.write(percent + '%');
             if (percent == 100) {
                 console.log("\nDone Downloading!");
-                bot.sendMessage(boundChannels[Vserver], "added one song to the playlist");
+                //bot.sendMessage(boundChannels[Vserver], "added one song to the playlist");
                 var songs = JSON.parse(fs.readFileSync(playlistFile));
                 songs.tracks[songs.tracks.length] = newSong;
                 fs.writeFileSync(playlistFile, JSON.stringify(songs, null, "\t"));
-                delete songs;
+                songs = null;
             }
         }
     });
@@ -556,40 +567,39 @@ function handleYTlink(songLink, playlistFile, usr, Vserver) {
     });
 
 }
+
+
+
 var someSong = {
     "usr": "",
-    "file": ""
+    "file": "",
+    "numToDownload": 0,
+    "numDownloaded": 0,
+    "server": ""
 };
 
-function ytPlaylist(url, usr, playlistFile) {
+var newTracks = [];
+
+function ytPlaylist(url, usr, playlistFile, num) {
 
     'use strict';
-    if (usr != null) {
+    if (usr != null && playlistFile != null) {
+        newTracks = [];
+        someSong.numDownloaded = 0;
         someSong.usr = usr.username.toString();
-    }
-    if (playlistFile != null) {
         someSong.file = playlistFile.toString();
-    }
-
-    var songs = JSON.parse(fs.readFileSync(someSong.file));
-
-    //console.log(someSong);
-
-    try {
-        video.usr = video.usr;
-        usr = video.usr;
-    } catch (err) {
-
+        var server = playlistFile.split("/");
+        someSong.server = server[2];
     }
 
 
-    var loc = ""
 
-    loc = playlistFile;
+
+    //if (songs != null)
+    // someSong.server = songs.server;
 
 
     var video = ytdl(url, ['--format=bestaudio']);
-    //var directory = songs.server.toString();
     var id = "";
     video.on('error', function error(err) {
         console.log('error 2:', err);
@@ -598,17 +608,19 @@ function ytPlaylist(url, usr, playlistFile) {
 
     var size = 0;
     video.on('info', function(info) {
+        //console.log(info.n_entries);
+        someSong.numToDownload = info.n_entries;
         size = info.size;
         id = info.id;
-
         var newSong = {
             "id": id,
             "title": info.title,
             "user": someSong.usr,
             "type": "youtube"
-        }
-        songs.tracks[songs.tracks.length] = newSong;
-        var output = [__dirname, "/playlists/", songs.server, "/", id, ".mp3"].join("");
+        };
+        //console.log(newTracks.length);
+        newTracks[newTracks.length] = newSong;
+        var output = [__dirname, "/playlists/", someSong.server, "/", id, ".mp3"].join("");
         video.pipe(fs.createWriteStream(output));
     });
     var pos = 0;
@@ -620,23 +632,32 @@ function ytPlaylist(url, usr, playlistFile) {
             process.stdout.cursorTo(0);
             process.stdout.clearLine(1);
             process.stdout.write(percent + '%');
-            if (percent == 100) {
-                console.log("\nDone Downloading!");
-                fs.writeFileSync(someSong.file, JSON.stringify(songs, null, "\t"));
-            }
         }
 
     });
 
     video.on('next', ytPlaylist);
 
-    video.on('end', function () {
-        //console.log("test");
-    })
-
+    video.on('end', function() {
+        someSong.numDownloaded++;
+        if (someSong.numDownloaded == someSong.numToDownload) {
+            var songs = JSON.parse(fs.readFileSync(someSong.file));
+            for (var song in newTracks) {
+                songs.tracks[songs.tracks.length] = newTracks[song];
+            }
+            console.log("\nDone Downloading all the songs");
+            writeJSON(someSong.file, songs);
+            songs = null;
+            queuedPLs.splice(0, 1);
+            if (queuedPLs.length > 0) {
+                ytPlaylist(queuedPLs.url, queuedPLs.plF, queuedPLs.usr, queuedPLs.num);
+            } else
+            {
+                downloadingPL = false;
+            }
+        }
+    });
 }
-
-
 
 function shuffle(playlistFile) {
     var song = JSON.parse(fs.readFileSync(playlistFile));
@@ -645,24 +666,32 @@ function shuffle(playlistFile) {
     var getSong = {};
     var totalSongs = (song.tracks.length - 1);
     var randNumMin = 1;
-    for (var i = 0; i < totalSongs; i++) {
+    for (var i = 0; i < song.tracks.length - 1; i++) {
         var index = (Math.floor(Math.random() * (totalSongs - randNumMin + 1)) + randNumMin);
         do {
             index = (Math.floor(Math.random() * (totalSongs - randNumMin + 1)) + randNumMin);
-        } while (picked.indexOf(index) != -1)
+        } while (picked.indexOf(index) != -1);
         getSong = {
             "id": song.tracks[index].id,
             "title": song.tracks[index].title,
             "user": song.tracks[index].user,
             "type": song.tracks[index].type
-        }
+        };
         newOrder[i] = getSong;
         picked[i] = index;
     }
     for (var i = 1; i < song.tracks.length - 1; i++) {
         song.tracks[i] = newOrder[i];
     }
-    fs.writeFileSync(playlistFile, JSON.stringify(song, null, "\t"));
+    bot.sendMessage(song.boundChannel, "**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**", function (error, message) {
+        bot.deleteMessage(message, {wait: 7000});
+    });
+    
+    
+    writeJSON(playlistFile, song);
+    setTimeout(function() {
+        song = null;
+    }, 200);
 }
 
 function queueMsg(playlistFile, channel) {
@@ -675,20 +704,18 @@ function queueMsg(playlistFile, channel) {
 
         if (songs.tracks.length > 20) {
             n = 20;
-        } else {
+        }
+        else {
             n = songs.tracks.length;
         }
 
-        if (songs.tracks.length == 1) {
-            queue.push(("**" + (1) + "**:  `" + songs.tracks[0].title.toString() + "`, **" + songs.tracks[0].user.toString() + "**"));
-
-        }
 
         for (var i = 0; i < n; i++) {
             if ((queueWord + "**" + (i + 1) + "**:  `" + songs.tracks[i].title.toString() + "`, **" + songs.tracks[i].user.toString() + "**").length <= 2000 && i < songs.tracks.length) {
                 queue.push(("**" + (i + 1) + "**:  `" + songs.tracks[i].title.toString() + "`, **" + songs.tracks[i].user.toString() + "**"));
                 queueWord = queue;
-            } else {
+            }
+            else {
                 break;
             }
         }
@@ -696,8 +723,18 @@ function queueMsg(playlistFile, channel) {
         queue.push("");
         queue.push("Playlist total length: " + songs.tracks.length);
         queueWord = queue;
-        bot.sendMessage(channel, queueWord);
-    } catch (err) {
+        bot.sendMessage(channel, queueWord, function(error, message) {
+            bot.deleteMessage(message, {
+                wait: 7000
+            });
+        });
+        songs = null;
+    }
+    catch (err) {
 
     }
+}
+
+function writeJSON(JSONFile, jsonOb) {
+    fs.writeFileSync(JSONFile, JSON.stringify(jsonOb, null, "\t"));
 }
