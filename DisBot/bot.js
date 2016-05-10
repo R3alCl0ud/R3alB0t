@@ -74,22 +74,23 @@ bot.on("ready", function() {
             bot.joinVoiceChannel(playlist.voiceChannel);
             playListFiles[Vservnum] = ("./playlists/" + folders[pl] + "/" + folders[pl] + ".json").toString();
             skipping[Vservnum] = false;
+            console.log(servers);
             if (!playlist.paused){
                 setTimeout(function () {
                     playNext(bot, Vservnum);
-                    Vservnum++;
-                    console.log("Rejoined voice on server: " + playlist.server);
                     console.log("Connected to: " + Vservnum + " channels");
+                    console.log("Rejoined voice on server: " + playlist.server);
                     playlist = null;
                 }, 750);
             }
+            setTimeout(function () {
+                Vservnum++;
+            }, 500);
         }
     }
     setTimeout(function () {
         bot.setPlayingGame("http://r3alb0t.xyz");
     }, 3000);
-    
-
 });
 
 //when the bot disconnects
@@ -104,19 +105,15 @@ bot.on("disconnected", function() {
 //when the bot receives a message
 bot.on("message", function(msg) {
 
-
     var usr = msg.author;
     var msrv = msg.channel.server;
     var dm = msg.channel.isPrivate;
     var chnl = msg.channel;
-
     msrv.name = msrv.name.split(" ").join("");
 
     if (!msg.content.startsWith(prefix)) return;
 
     msg.content = msg.content.substr(prefix.length);
-
-
 
     if (msg.content.toLowerCase().startsWith("admin")) {
         if (admins.indexOf(msg.author.id.toString()) != -1) {
