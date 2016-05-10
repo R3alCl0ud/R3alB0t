@@ -2,10 +2,11 @@
   "Auth" : {
     "token" : ""
   },
-  "options" : {
-    "prefix" : "#$",
+  "Options" : {
+    "owner": "",
+    "prefix" : "",
     "volume" : "0.05",
-    "streamKey" : "",
-    "youtubeKey" : ""
+    "deleteSong": true,
+    "streamKey" : ""
   }
 }
