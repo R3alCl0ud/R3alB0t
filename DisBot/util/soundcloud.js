@@ -6,7 +6,6 @@ var util = require('./util');
 exports.handleSClink = function (songLink, playlistFile, usr, scKey) {
 
     var newSong = {};
-    var body;
 
 
     try {
@@ -15,7 +14,7 @@ exports.handleSClink = function (songLink, playlistFile, usr, scKey) {
             var songs = util.openJSON(playlistFile);
             var songsNum = songs.tracks.length;
 
-            body = JSON.parse(body);
+            body = JSON.parse( body );
 
             if (body.kind == "track") {
                 console.log(body.title + " added by: " + usr.username);

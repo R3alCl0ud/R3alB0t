@@ -106,7 +106,7 @@ function handlePL(url, usr, plFile) {
     if (usr != null && plFile != null) {
         newTracks = [];
         someSong.numDownloaded = 0;
-        someSong.usr = usr.id.toString();
+        someSong.usr = usr.toString();
         someSong.file = plFile.toString();
         var server = plFile.split("/");
         someSong.server = server[2];

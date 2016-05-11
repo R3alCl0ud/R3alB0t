@@ -63,6 +63,7 @@ bot.on("ready", function() {
     console.log("Ready to begin! Serving in " + bot.channels.length + " channels");
 
     var folders = fs.readdirSync('./playlists/');
+    console.log(folders);
     if (folders.length > 0)
         bot.setPlayingGame("Beginning Auto Recover");
     for (var pl in folders) {
@@ -72,11 +73,14 @@ bot.on("ready", function() {
             currentStreams[Vservnum] = false;
             servers[Vservnum] = playlist.server;
             bot.joinVoiceChannel(playlist.voiceChannel);
-            playListFiles[Vservnum] = ("./playlists/" + folders[pl] + "/" + folders[pl] + ".json").toString();
+            playListFiles[Vservnum] = ("./playlists/" + folders[pl] + "/" + folders[pl] + ".json");
             skipping[Vservnum] = false;
+            playlist.startTime = (-1 * playlist.currentTime);
+            util.writeJSON(playListFiles[Vservnum], playlist);
             console.log(servers);
             if (!playlist.paused){
                 setTimeout(function () {
+                    console.log(Vservnum);
                     playNext(bot, Vservnum);
                     console.log("Connected to: " + Vservnum + " channels");
                     console.log("Rejoined voice on server: " + playlist.server);
@@ -85,7 +89,7 @@ bot.on("ready", function() {
             }
             setTimeout(function () {
                 Vservnum++;
-            }, 500);
+            }, 800);
         }
     }
     setTimeout(function () {
@@ -292,7 +296,7 @@ bot.on("message", function(msg) {
                 }
             }
             else if (songLinkUrl.startsWith("https://www.youtube.com/")) {
-                yt.handleYTlink(songLinkUrl, playListFiles[Vserver], usr, servers[Vserver].name);
+                yt.handleYTlink(songLinkUrl, playListFiles[Vserver], usr, servers[Vserver]);
                 setTimeout(function() {
                     bot.sendMessage(chnl, "The song has been added to the playlist", function(error, message) {
                         bot.deleteMessage(message, {
@@ -346,9 +350,6 @@ bot.on("message", function(msg) {
                 try {
                     skipping[Vserver] = true;
                     playStop(bot, Vserver);
-                    /*setTimeout(function() {
-                        skipping[Vserver] = false;
-                    }, 12000);*/
                 }
                 catch (err) {
                     console.log(err);
@@ -493,6 +494,7 @@ function playStop(bot, thisServer) {
                     fs.unlinkSync(songPath);
             }
             songs.tracks.splice(0, 1);
+            songs.currentTime = 0;
             util.writeJSON(playListFiles[thisServer], songs);
             setTimeout(function() {
                 if (songs.tracks.length >= 1)
@@ -508,7 +510,9 @@ function playStop(bot, thisServer) {
 
 function play(bot, Vserver) {
         
+        
     var playlist = util.openJSON(playListFiles[Vserver]);
+    //console.log(playlist.currentTime);
     console.log("playing music in server: " + (Vserver + 1) + " name: " + playlist.server);
 
     if (playlist.tracks[0].type == "soundcloud") {
@@ -519,26 +523,26 @@ function play(bot, Vserver) {
     }
     try {
         if (playlist.tracks[0].type == "soundcloud") {
-            if (playlist.paused == true) {
+            if (playlist.paused == true || playlist.currentTime != 0) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
                     seek: playlist.currentTime,
                     volume: playlist.volume
                 });
             }
-            if (playlist.paused == false) {
+            if (playlist.paused == false && playlist.currentTime == 0) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
                     volume: playlist.volume
                 });
             }
         }
         else if (playlist.tracks[0].type == "youtube") {
-            if (playlist.paused == true) {
+            if (playlist.paused == true || playlist.currentTime != 0) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
                     seek: playlist.currentTime,
                     volume: playlist.volume
                 });
             }
-            if (playlist.paused == false) {
+            if (playlist.paused == false && playlist.currentTime == 0) {
                 bot.voiceConnections[Vserver].playRawStream(currentStreams[Vserver], {
                     volume: playlist.volume
                 });
@@ -556,7 +560,7 @@ function play(bot, Vserver) {
             playlist.nowplaying = msg.id;
         });
 
-        if (playlist.paused == false) {
+        if (playlist.paused == false && playlist.currentTime == 0) {
             playlist.startTime = Math.floor(bot.uptime / 1000);
         }
         playlist.paused = false;
@@ -565,6 +569,7 @@ function play(bot, Vserver) {
         skipping[Vserver] = true;
         setTimeout(function() {
             skipping[Vserver] = false;
+            currentTime(playListFiles[Vserver], Vserver);
         }, 12000);
     }
     catch (err) {
@@ -666,5 +671,23 @@ function queueMsg(playlistFile, channel) {
     }
     catch (err) {
 
+    }
+}
+
+
+function currentTime (plF, S) {
+    var pl = util.openJSON(plF);
+    pl.currentTime = Math.floor(bot.uptime / 1000) - pl.startTime;
+    //console.log(pl.currentTime);
+    util.writeJSON(plF, pl);
+    if (!pl.paused && !skipping[S])
+    {
+        setTimeout(function () {
+            pl = null;
+            currentTime(plF, S);
+        }, 2000);
+    } else {
+        pl = null;
+        return;
     }
 }
