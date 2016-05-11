@@ -676,18 +676,23 @@ function queueMsg(playlistFile, channel) {
 
 
 function currentTime (plF, S) {
-    var pl = util.openJSON(plF);
-    pl.currentTime = Math.floor(bot.uptime / 1000) - pl.startTime;
-    //console.log(pl.currentTime);
-    util.writeJSON(plF, pl);
-    if (!pl.paused && !skipping[S])
+    if (fs.existsSync(plF))
     {
-        setTimeout(function () {
+        var pl = util.openJSON(plF);
+        pl.currentTime = Math.floor(bot.uptime / 1000) - pl.startTime;
+        //console.log(pl.currentTime);
+        util.writeJSON(plF, pl);
+        if (!pl.paused && !skipping[S])
+        {
+            setTimeout(function () {
+                pl = null;
+                currentTime(plF, S);
+            }, 2000);
+        } else {
             pl = null;
-            currentTime(plF, S);
-        }, 2000);
+            return;
+        }
     } else {
-        pl = null;
         return;
     }
 }
