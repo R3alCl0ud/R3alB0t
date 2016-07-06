@@ -1,0 +1,12 @@
+{
+  "Auth" : {
+    "token" : "123456789"
+  },
+  "Options" : {
+    "owner": "",
+    "prefix" : "##",
+    "volume" : "0.05",
+    "deleteSong": true,
+    "streamKey" : "123456789"
+  }
+}

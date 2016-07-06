@@ -1,0 +1,14 @@
+{
+  "name": "lib",
+  "version": "1.0.0",
+  "description": "Libraries for R3alB0t",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "lib"
+  ],
+  "author": "Perry Berman <r3alcl0ud@gmail.com> (r3alb0t.xyz)",
+  "license": "MIT"
+}
