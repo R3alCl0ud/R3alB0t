@@ -3,12 +3,14 @@ var lib = require('./lib');
 var fs = require('fs');
 var Plugin = require('./lib/registry/models/Plugin');
 var DiscordJS = require('discord.js');
-var bot = new DiscordJS.Client({autoReconnect:true});
+var bot = new DiscordJS.Client({
+    autoReconnect: true
+});
 var config = lib.openJSON('./options.json');
 var Auth = config.Auth;
 var bots = {};
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-bot.loginWithToken(Auth.token);
+
 var handleStartup = function() {
     console.info('Username: ' + bot.user.username);
     console.info('ID: ' + bot.user.id);
@@ -47,3 +49,5 @@ bot.on("ready", handleStartup);
 bot.on("disconnected", handleDisconnection);
 bot.on("serverCreated", handleServerJoin);
 bot.on("serverDeleted", handleServerLeave);
+
+bot.loginWithToken(Auth.token);

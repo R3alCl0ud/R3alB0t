@@ -4,7 +4,7 @@
   "description": "R3alB0t: welcome to the multi-voice",
   "main": "R3alB0t.js",
   "scripts": {
-    "test": "test",
+    "test": "node test/test.js",
     "start": "node server.js"
   },
   "repository": {
