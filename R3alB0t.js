@@ -3,10 +3,11 @@ var lib = require('./lib');
 var fs = require('fs');
 var Plugin = require('./lib/registry/models/Plugin');
 var DiscordJS = require('discord.js');
-var bot = new DiscordJS.Client();
+var bot = new DiscordJS.Client({autoReconnect:true});
 var config = lib.openJSON('./options.json');
 var Auth = config.Auth;
 var bots = {};
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 bot.loginWithToken(Auth.token);
 var handleStartup = function() {
     console.info('Username: ' + bot.user.username);
@@ -24,12 +25,10 @@ var handleStartup = function() {
 bot.on("error", (error) => {
     var time = new Date();
     console.log("Oops An error occured!!!\nPrinting out the error report");
-    console.log(error);
+    console.log(error.stack);
     console.log("\nSaving the crash log to crashlog-" + date.getFullYear() + date.getMonth() + date.getDate() + ".txt");
     lib.writeJSON("crashlog-" + date.getFullYear() + date.getMonth() + date.getDate() + ".txt", error);
-
 });
-
 
 var handleServerJoin = function(server) {
 
@@ -40,9 +39,8 @@ var handleServerLeave = function(server) {
 }
 
 var handleDisconnection = function() {
-    //bots = {};
-    //bot = new DiscordJS.Client();
-    //bot.loginWithToken(Auth.token);
+    console.log("Warning: disconnected");
+    bot.loginWithToken(Auth.token);
 }
 
 bot.on("ready", handleStartup);
