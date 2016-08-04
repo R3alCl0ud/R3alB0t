@@ -1,0 +1,26 @@
+{
+  "name": "r3alb0t",
+  "version": "2.1.1",
+  "description": "R3alB0t: welcome to the multi-voice",
+  "main": "R3alB0t.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/R3alCl0ud/R3alB0t.git"
+  },
+  "keywords": [
+    "music"
+  ],
+  "author": "R3alCl0ud",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/R3alCl0ud/R3alB0t/issues"
+  },
+  "homepage": "https://github.com/R3alCl0ud/R3alB0t#readme",
+  "dependencies": {
+    "discord.js": "^8.1.0"
+  }
+}
