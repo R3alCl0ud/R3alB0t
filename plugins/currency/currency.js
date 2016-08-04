@@ -25,7 +25,8 @@ class currency extends Plugin {
 
     loadPlugin() {
         if (!this.loaded) {
-            commands.registerCMD(this.registry, this);
+            commands = new commands(this)
+            commands.register(this.registry)
             this.loaded = true;
         }
     }
@@ -35,7 +36,7 @@ var plugin = {
     name: "Currency",
     id: "currency",
     author: "R3alCl0ud",
-    version: "0.0.0"
+    version: "0.0.1"
 }
 
 

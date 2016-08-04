@@ -25,7 +25,8 @@ class wagYourCommands extends Plugin {
 
     loadPlugin() {
         if (!this.loaded) {
-            commands.registerCMD(this.registry, this);
+            commands = new commands(this)
+            commands.register(this.registry)
             this.loaded = true;
         }
     }
@@ -41,5 +42,4 @@ var plugin = {
 
 module.exports = function(bot, registry) {
     return new wagYourCommands(bot, plugin, registry);
-    //return new mainCommands(bot, plugin);
 };

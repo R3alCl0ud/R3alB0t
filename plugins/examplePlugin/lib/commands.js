@@ -1,18 +1,33 @@
-var exampleCMD = function (bot, msg, usr, mentions) {
+var exmpleRole = require("./commands/exampleRole");
+
+var example = function(bot, msg, usr, channel, server) {
     msg.reply("Example Reply");
+    bot.emit("test", channel);
 }
 
-var exampleRoleCMD = function (bot, msg, usr, mentions) {
-    msg.reply("not done yet");
-}
+//var exampleRole = function(bot, msg, usr, mentions) {
+//    msg.reply("not done yet");
+//}
 
 exports.registerCMD = function(CommandRegistry, plugin) {
 
-    CommandRegistry.registerPrefix(plugin, "##");
-    CommandRegistry.registerCommand(plugin, 'examplecommand', ["test", "examplecommand"], "Exmaple Command for API docs", exampleCMD, "@everyone");
+    //CommandRegistry.registerPrefix(plugin, "#$");
+    //CommandRegistry.registerCommand(plugin, 'examplecommand', ["test", "examplecommand"], "Exmaple Command for API docs", exampleCMD, "@everyone");
+}
 
-    //var exampleCommand = new CommandRegistry.Command("exampleCommand", "Exmaple Command for API docs", exampleCmd);
-    //var exampleTwo = new CommandRegistry.Command("exampleTwo", "Another Example for testing", function() {});
-    //var testCommand = new CommandRegistry.Command("testCommand", "A test plugin!", function() {});
-    //var exampleRole = new CommandRegistry.Command("exampleRole", "Example for checking if a user has a role", exampleRoleCMD);
+
+module.export = class commandRegister {
+
+    constructor(plugin) {
+        if (plugin != null) {
+            this.plugin = plugin;
+
+        }
+    }
+
+    register(CommandRegistry) {
+        CommandRegistry.registerPrefix(this, "#$");
+        CommandRegistry.registerCommand(new exmpleRole(this.plugin))
+    }
+
 }

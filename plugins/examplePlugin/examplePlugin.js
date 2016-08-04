@@ -2,12 +2,13 @@
 
 var DiscordJS = require('discord.js');
 var Plugin = require('../../lib/registry/models/Plugin');
-var commands = require('./lib/commands');
+var commands = require('./lib/commandsRegister');
 
 class examplePlugin extends Plugin {
 
     constructor(bot, plugin, registry) {
         super(plugin.name);
+        this.plugin = plugin
         this.id = plugin.id;
         this.name = plugin.name;
         this.author = plugin.author;
@@ -25,7 +26,8 @@ class examplePlugin extends Plugin {
 
     loadPlugin() {
         if (!this.loaded) {
-            commands.registerCMD(this.registry, this);
+            commands = new commands(this.plugin);
+            commands.register(this.registry);
             this.loaded = true;
         }
     }
