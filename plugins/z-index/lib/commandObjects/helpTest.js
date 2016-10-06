@@ -1,11 +1,9 @@
 module.exports = class help {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "help"
-        this.names = ["help"]
+        super("help", plugin)
     }
     
-    func (bot, message, author, channel, server) {
-        
+    Message (message, author, channel, guild, guilds, channels, users, registry) {
+        const guild = registry.guilds.get(guild.id)
     }
 }

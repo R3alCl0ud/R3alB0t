@@ -6,4 +6,5 @@ DisBot/admins.txt
 DisBot/options.json
 node_modules/*
 plugins/*
+playlists/*
 ffmpeg
