@@ -1,0 +1,3 @@
+<% for(var i=0; i <credits.credits.length; i++) { %>
+    <%- include creditAccount {credits: credits.credits[i], name: credits.names[i], descriminator: credits.descriminators[i], avatar: credits.avatars[i]} %>
+<% } %>

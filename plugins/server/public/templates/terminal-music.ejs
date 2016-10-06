@@ -1,0 +1,60 @@
+<div class="playlist">
+	<table data-sortable>
+		<thead id="th">
+			<tr>
+				<th class="position">#</th>
+				<th>Title</th>
+				<th>Length</th>
+				<th>Website</th>
+				<th>Requested By</th>
+			</tr>
+		</thead>
+		<tbody id="td">
+			<% var n; %>
+			<% if (playlist.length < 10) { %>
+			<% n=playlist.length;  %>
+			<% } else { %>
+			<% n=10; } %>
+			<% for (var i=0; i<playlist.length; i++) { %>
+			<tr>
+				<td class="position"><%=i+1 %></td>
+				<td><%= playlist[i].title %></td>
+				<td><%= playlist[i].duration %></td>
+				<td><%= playlist[i].type %></td>
+				<td><%= bot.users.get("id", playlist[i].user).username %></td>
+			</tr>
+			<% } %>
+			<script>
+				Sortable.init();
+			</script>
+		</tbody>
+	</table>
+</div>
+<script>
+  var socket = io();
+  socket.addon = "music";
+  socket.on('songEnd', function(){
+    var songs = document.getElementById("td");
+    var x = songs.getElementsByTagName("tr");
+    console.log(x.length);
+	var y;
+	for (var i = 0; i < x.length; i++)
+	{
+		y = x[i].getElementsByTagName("td");
+		if (y[4].innerHTML == 1) {
+			x[i].outerHTML = "";
+			break;
+		}
+	}
+
+    songs = document.getElementById("td");
+    x = songs.getElementsByTagName("tr");
+
+    for (var i = 0; i < x.length; i++)
+    {
+		y = x[i].getElementsByTagName("td");
+        y[4].innerHTML--;
+    }
+	Sortable.init();
+  });
+</script>

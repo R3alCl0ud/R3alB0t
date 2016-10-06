@@ -7,13 +7,14 @@ module.exports = class help {
     constructor(plugin) {
         this.plugin = plugin || null;
         this.id = "help";
-        this.names = ["help", "cmds", "halp"]
+        this.names = ["help", "commands", "halp"]
         this.func = function(bot, msg, usr, channel, server, cmdReg) {
             var helpMSG = [];
             var longest = 0;
-            helpMSG.push("```swift")
+
             var Args = msg.content.split(' ');
             if (Args.length == 1) {
+                helpMSG.push("```ruby")
                 helpMSG.push("╔════════════════════════════════════════════════════════════════════════════╗")
                 if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
                 helpMSG.push("║ Type: ##help <plugin> to view the commands for the plugin                  ║");
@@ -22,8 +23,10 @@ module.exports = class help {
                 if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
                 helpMSG.push("╠════════════════════════════════════════════════════════════════════════════╣")
                 if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
-                for (var plugin in cmdReg) {
-                    helpMSG.push("║ " + plugin + ": " + cmdReg[plugin].description + " ║");
+                for (var plugin in cmdReg.plugins) {
+                    if (typeof cmdReg.plugins[plugin] !== "object") continue;
+                    var serverPrefix = cmdReg.plugins[plugin].prefixes.get("server", server.id) || cmdReg.plugins[plugin].prefixes.get("server", "Global") || {prefix: "##"}
+                    helpMSG.push("║ " + cmdReg.plugins[plugin].name + ": " + cmdReg.plugins[plugin].description + ", Prefix: " + serverPrefix.prefix + " ║");
                     if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
                 }
                 var lastline = "╚═╝";
@@ -57,24 +60,26 @@ module.exports = class help {
                 }
 
                 helpMSG.push("```");
-                bot.sendMessage(channel, helpMSG);
+                channel.sendMessage(helpMSG.join('\n'));
             } else {
-                if (cmdReg.hasOwnProperty(Args[1])) {
+                if (cmdReg.plugins.has("id", Args[1])) {
+
+                    var plugin = cmdReg.plugins.get("id", Args[1]);
+
+
+                    helpMSG.push("```ruby")
                     helpMSG.push("╔═╗")
                     helpMSG.push("║ command: description                                       ║")
                     if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
                     helpMSG.push("╠════════════════════════════════════════════════════════════╣")
                     if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
-                    for (var cmd in cmdReg[Args[1]].cmds) {
-                        var prefix = cmdReg[Args[1]].prefixes.get("server", server.id);
+                    for (var cmd in plugin.commands) {
 
-                        if (prefix == null) {
-                            prefix = cmdReg[Args[1]].prefixes.get("server", "Global");
-                        }
+                        if (typeof plugin.commands[cmd] !== "object") continue;
 
-                        prefix = prefix.prefix
+                        if (plugin.commands[cmd].server != server.id && plugin.commands[cmd].server !== "Global") continue;
 
-                        helpMSG.push("║ " + prefix + cmd + ": " + cmdReg[Args[1]].cmds[cmd].desc + ", Aliases: " + cmdReg[Args[1]].cmds[cmd].names.join(", ") + " ║");
+                        helpMSG.push("║ " + plugin.commands[cmd].id + ": " + plugin.commands[cmd].desc + ", Aliases: " + plugin.commands[cmd].names.join(", ") + " ║");
                         if (helpMSG[helpMSG.length - 1].length > longest) longest = helpMSG[helpMSG.length - 1].length;
                     }
                     var lastline = "╚═╝";
@@ -120,10 +125,10 @@ module.exports = class help {
                         }
                         helpMSG[line] = sentence;
                     }
+                    helpMSG.push('```');
                 }
 
-                helpMSG.push('```');
-                bot.sendMessage(msg.channel, helpMSG);
+                channel.sendMessage(helpMSG.join('\n'));
             }
 
         }

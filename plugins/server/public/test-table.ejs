@@ -1,0 +1,77 @@
+<!DOCTYPEhtml>
+<html>
+<head>
+<title>Sample Table</title>
+<%- include templates/head %>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="/sortable/js/sortable.min.js"></script>
+<link rel="stylesheet" href="/css/playlist.css" type="text/css"/>
+</head>
+<body>
+<div class="playlist">
+	<table data-sortable>
+		<thead id="th">
+			<tr>
+				<th>Title</th>
+				<th>Length</th>
+				<th>Website</th>
+				<th>Requested By</th>
+				<th>Position</th>
+			</tr>
+		</thead>
+		<tbody id="td">
+            <% var n; %>
+			<% if (playlist.length < 10) { %>
+			<% n=playlist.length;  %>
+			<% } else { %>
+			<% n=10; } %>
+			<% for (var i=0; i<playlist.length; i++) { %>
+			<tr>
+                <td><%= playlist[i].song_name %></td>
+				<td><%= playlist[i].song_dur %></td>
+				<td><%= playlist[i].song_type %></td>
+				<td><%= playlist[i].usr_name %></td>
+				<td><%=i+1 %></td>
+			</tr>
+			<% } %>
+			<script>
+				Sortable.init();
+			</script>
+		</tbody>
+	</table>
+</div>
+<script>
+  var socket = io();
+  $('form').submit(function(){
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+  socket.on('songEnd', function(){
+    var songs = document.getElementById("td");
+    var x = songs.getElementsByTagName("tr");
+    console.log(x.length);
+	var y;
+	for (var i = 0; i < x.length; i++)
+	{
+		y = x[i].getElementsByTagName("td");
+		if (y[4].innerHTML == 1) {
+			x[i].outerHTML = "";
+			break;
+		}
+	}
+
+    songs = document.getElementById("td");
+    x = songs.getElementsByTagName("tr");
+
+    for (var i = 0; i < x.length; i++)
+    {
+		y = x[i].getElementsByTagName("td");
+        y[4].innerHTML--;
+    }
+	Sortable.init();
+  });
+</script>
+</body>
+</html>

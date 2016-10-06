@@ -1,26 +1,45 @@
 {
   "name": "r3alb0t",
-  "version": "2.1.1",
-  "description": "R3alB0t: welcome to the multi-voice",
-  "main": "R3alB0t.js",
+  "version": "3.0.0",
+  "description": "Core Features for the R3alB0t discord bot. Similar to Eris's command client",
+  "main": "index.js",
+  "dependencies": {
+    "async": "^2.0.1",
+    "body-parser": "^1.15.2",
+    "discord.js": "^9.3.0",
+    "ejs": "^2.4.2",
+    "express-session": "^1.13.0",
+    "express": "^4.13.4",
+    "longjohn": "^0.2.11",
+    "mysql": "^2.10.2",
+    "node-opus": "^0.2.1",
+    "passport": "^0.3.2",
+    "passport-discord": "^0.1.1",
+    "redis": "^2.6.2",
+    "request": "^2.72.0",
+    "socket.io": "^1.4.6",
+    "sqlite3": "^3.1.4",
+    "ytdl-core": "^0.7.15",
+    "youtube-dl": "^1.11.1"
+  },
+  "devDependencies": {},
   "scripts": {
-    "test": "node test/test.js",
+    "test": "test",
     "start": "node server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/R3alCl0ud/R3alB0t.git"
+    "url": "git+https://github.com/r3alcl0ud/R3alb0t.git"
   },
   "keywords": [
-    "music"
+    "d.js",
+    "discord.js",
+    "R3alB0t"
   ],
-  "author": "R3alCl0ud",
-  "license": "ISC",
+  "author": "Perry Berman & Zach Waldron",
+  "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/R3alCl0ud/R3alB0t/issues"
+    "url": "https://github.com/r3alcl0ud/R3alb0t/issues"
   },
-  "homepage": "https://github.com/R3alCl0ud/R3alB0t#readme",
-  "dependencies": {
-    "discord.js": "^8.1.0"
-  }
+  "homepage": "https://github.com/r3alcl0ud/R3alb0t#readme"
 }

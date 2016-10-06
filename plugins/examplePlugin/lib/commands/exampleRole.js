@@ -11,7 +11,7 @@ module.exports = class exampleRole {
         this.desc = "Example Description";
         this.names = ["exampleRole", "exampleRoles", "roleTest"];
         this.func = function(bot, message, author, channel, server) {
-            bot.sendMessage(channel, "testing");
+            channel.sendMessage("testing");
         }
         this.role = "@everyone";
     }

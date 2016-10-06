@@ -1,0 +1,32 @@
+<!DOCTYPEhtml>
+<html lang="en">
+<head>
+	<%- include templates/head %>
+    <title>R3alB0t - Servers</title>
+</head>
+<body onload="loaded()">
+		<%- include templates/navbar {user: user} %>
+
+
+		<select name="servers" id="select" class="hvr-underline-from-center" style="position: absolute;">
+			<option value="">Make your choice ;)</option>
+			<% for (var i=0; i<guilds.length; i++) {%>
+				<option value="/terminal/<%= guilds[i].id %>" style="color: black;"><%= guilds[i].name %></option>
+			<% } %>
+		</select>
+
+
+	<script>
+$("#select").change(function () {
+	var val = jQuery(this).val();
+	if(val!=''){
+		location.href = val
+	}
+})
+	</script>
+
+    <nav>
+        <lii><p3 id="li">want to contribute or host your own click <a href="http://github.com/R3alCl0ud/R3alB0t">here</a> to go to the source</p3></lii>
+    </nav>
+</body>
+</html>

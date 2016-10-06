@@ -1,7 +1,7 @@
 "use strict";
 
 var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/Plugin');
+var Plugin = require('../../lib/registry/models/plugin');
 var commands = require('./lib/commands');
 
 class wagYourCommands extends Plugin {
@@ -13,19 +13,21 @@ class wagYourCommands extends Plugin {
         this.author = plugin.author;
         this.registry = registry;
         this.version = plugin.version;
+        this.plugin = plugin
         if (bot instanceof DiscordJS.Client) {
             this.bot = bot;
 
         } else {
             console.log("Provided bot is not istance of Discord.js Bot");
         }
+        this.loaded = false;
     }
 
 
 
     loadPlugin() {
         if (!this.loaded) {
-            commands = new commands(this)
+            commands = new commands(this.plugin)
             commands.register(this.registry)
             this.loaded = true;
         }

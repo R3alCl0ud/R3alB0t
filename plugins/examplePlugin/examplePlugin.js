@@ -1,7 +1,7 @@
 "use strict";
 
 var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/Plugin');
+var Plugin = require('../../lib/registry/models/plugin');
 var commands = require('./lib/commandsRegister');
 
 class examplePlugin extends Plugin {

@@ -1,7 +1,7 @@
 "use strict";
 
 var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/Plugin');
+var Plugin = require('../../lib/registry/models/plugin');
 var commands = require('./lib/commands');
 
 class zIndex extends Plugin {
@@ -12,7 +12,6 @@ class zIndex extends Plugin {
         this.id = plugin.id;
         this.name = plugin.name;
         this.author = plugin.author;
-        this.registry = registry;
         this.version = plugin.version;
         if (bot instanceof DiscordJS.Client) {
             this.bot = bot;
@@ -41,6 +40,6 @@ var plugin = {
 }
 
 
-module.exports = function(bot, registry) {
-    return new zIndex(bot, plugin, registry);
-};
+// module.exports = function(bot, registry) {
+    // return new zIndex(bot, plugin, registry);
+// };

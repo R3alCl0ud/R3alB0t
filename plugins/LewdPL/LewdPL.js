@@ -1,7 +1,7 @@
 "use strict";
 
 var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/Plugin');
+var Plugin = require('../../lib/registry/models/plugin');
 var commands = require('./lib/commands');
 
 class wagYourCommands extends Plugin {
@@ -41,6 +41,6 @@ var plugin = {
 
 
 module.exports = function(bot, registry) {
-   return new wagYourCommands(bot, plugin, registry);
-    // return null;
+//   return new wagYourCommands(bot, plugin, registry);
+    return null;
 };

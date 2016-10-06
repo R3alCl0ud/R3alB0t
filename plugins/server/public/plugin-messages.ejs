@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include templates/head %>
+        <title>
+            <%= guild %> - Terminal</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.1/jquery.min.js"></script>
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/js/jquery.tablesorter.min.js"></script>
+</head>
+
+<body onload="loaded()">
+    <%- include templates/navbar {user: user} %>
+    <%- include templates/terminal-top {guild: guild, icon: icon} %>
+    <div class="container">
+        <%- include templates/plugin-list %>
+        <%- include templates/cmd {commands: commands} %>
+    </div>
+</body>
+
+</html>

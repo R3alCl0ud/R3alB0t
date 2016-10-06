@@ -115,7 +115,7 @@ module.exports = class commands {
     }
 
     register(CommandRegistry) {
-        CommandRegistry.registerPrefix(this.plugin, "lewd%%")
+        CommandRegistry.registerPrefix(this.plugin, "$$")
         CommandRegistry.registerCommand(new r34(this.plugin))
         CommandRegistry.registerCommand(new e621(this.plugin))
     }

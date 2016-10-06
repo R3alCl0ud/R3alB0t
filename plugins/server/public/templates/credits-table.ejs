@@ -1,0 +1,21 @@
+<table data-sortable class="credits">
+    <thead id="th">
+        <tr>
+            <th>Credits</th>
+            <th>Account Holder</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="tb">
+        <% for(var i=0; i <credits.credits.length; i++) { %>
+        <tr>
+            <td><%= credits.credits[i] %></td>
+            <td><%= credits.names[i] %>#<%= credits.descriminators[i] %></td>
+            <td>maybe</td>
+        </tr>
+        <% } %>
+        <script>
+            Sortable.init();
+        </script>
+    </tbody>
+</table>
