@@ -297,11 +297,6 @@ module.exports = class commands extends EventEmitter {
 
     register() {
         this.plugin.registerCommand(new viewCredit(this.plugin))
-        // this.plugin.registerCommand(new giveCredit(this.plugin))
-        // this.plugin.registerCommand(new setAuto(this.plugin))
-        // this.plugin.registerCommand(new setRole(this.plugin))
-        // this.plugin.registerCommand(new convertCredits(this.plugin))
-        
         this.plugin.on("message", (client, msg) => {
             handleMessage(client, msg, msg.author, msg.channel, msg.guild)
         });

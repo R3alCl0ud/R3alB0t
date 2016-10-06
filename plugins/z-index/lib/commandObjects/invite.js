@@ -1,11 +1,12 @@
-module.exports = class invite {
+const lib = require('../../../../lib');
+
+module.exports = class invite extends lib.Command{
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "invite";
-        this.names = ["invite"];
+        super("invite", plugin, {caseSensitive: false});
+        this.setAlias(["invite"]);
         this.role = "@everyone";
-        this.desc = "Give you the link to add Me to your server";
-        this.func = function(bot, message, author) {
+        this.description = "Gives you the link to add Me to your server";
+        this.Message = function(message, author) {
             author.sendMessage("I cannot except invite links, but you can add me at https://r3alb0t.xyz");
         }
     }

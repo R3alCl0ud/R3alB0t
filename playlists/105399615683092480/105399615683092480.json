@@ -1,0 +1,174 @@
+{
+	"currentTime": 25.28,
+	"paused": true,
+	"server": "105399615683092480",
+	"boundChannel": "141352404011581441",
+	"defaultChannel": "106963348238635008",
+	"Role": "@everyone",
+	"autoJoin": true,
+	"autoStart": true,
+	"volume": 0.1,
+	"tracks": [
+		{
+			"id": 219209014,
+			"title": "Snow Ghosts",
+			"user": "104063667351322624",
+			"duration": 332726,
+			"type": "soundcloud"
+		},
+		{
+			"id": 219209011,
+			"title": "Thrive",
+			"user": "104063667351322624",
+			"duration": 283690,
+			"type": "soundcloud"
+		},
+		{
+			"id": 215207276,
+			"title": "Mike Ault - Rocket League Theme (CJ Sam Extended Edit)",
+			"user": "104063667351322624",
+			"duration": 192070,
+			"type": "soundcloud"
+		},
+		{
+			"id": 84585737,
+			"title": "Nimbasa CORE",
+			"user": "104063667351322624",
+			"duration": 163750,
+			"type": "soundcloud"
+		},
+		{
+			"id": 133969604,
+			"title": "Corona - Rhythm Of The Night (Hotel Garuda Remix Ft. AObeats)",
+			"user": "104063667351322624",
+			"duration": 245626,
+			"type": "soundcloud"
+		},
+		{
+			"id": 194724240,
+			"title": "Freedom Fry - Shaky Ground (Feast. Remix)",
+			"user": "104063667351322624",
+			"duration": 219867,
+			"type": "soundcloud"
+		},
+		{
+			"id": 187879982,
+			"title": "Oh Wonder - All We Do (Summer Was Fun Remix)",
+			"user": "104063667351322624",
+			"duration": 240112,
+			"type": "soundcloud"
+		},
+		{
+			"id": 182708631,
+			"title": "Sound Remedy - We Are The Dream (TheFatRat Remix)",
+			"user": "104063667351322624",
+			"duration": 242647,
+			"type": "soundcloud"
+		},
+		{
+			"id": 190127308,
+			"title": "Annabel Jones - Magnetic (AObeats Remix)",
+			"user": "104063667351322624",
+			"duration": 251739,
+			"type": "soundcloud"
+		},
+		{
+			"id": 175837641,
+			"title": "Stonefox - Heart (Samuraii Remix)",
+			"user": "104063667351322624",
+			"duration": 343960,
+			"type": "soundcloud"
+		},
+		{
+			"id": 180272086,
+			"title": "BXDN - Promises",
+			"user": "104063667351322624",
+			"duration": 196771,
+			"type": "soundcloud"
+		},
+		{
+			"id": 173525637,
+			"title": "Koven - Final Call",
+			"user": "104063667351322624",
+			"duration": 190162,
+			"type": "soundcloud"
+		},
+		{
+			"id": 170917617,
+			"title": "Christopher Norman - Volatile",
+			"user": "104063667351322624",
+			"duration": 288105,
+			"type": "soundcloud"
+		},
+		{
+			"id": 170764367,
+			"title": "Wafia - Let Me Love You (prod. Thrupence)",
+			"user": "104063667351322624",
+			"duration": 194603,
+			"type": "soundcloud"
+		},
+		{
+			"id": 162292565,
+			"title": "Adventure Club Ft. The Kite String Tangle - Wonder (PeaceTreaty Remix)**Free Download**",
+			"user": "104063667351322624",
+			"duration": 322146,
+			"type": "soundcloud"
+		},
+		{
+			"id": 170505949,
+			"title": "Tritonal - Satellite (feat. Jonathan Mendelsohn) (Metamorphic Downtempo Mix)",
+			"user": "104063667351322624",
+			"duration": 273867,
+			"type": "soundcloud"
+		},
+		{
+			"id": 169905105,
+			"title": "Dabin - Embers (feat. Jill Harris) (Feint Remix)",
+			"user": "104063667351322624",
+			"duration": 234260,
+			"type": "soundcloud"
+		},
+		{
+			"id": 170364130,
+			"title": "Worakls - Salzburg",
+			"user": "104063667351322624",
+			"duration": 436285,
+			"type": "soundcloud"
+		},
+		{
+			"id": 170204366,
+			"title": "ODESZA - Say My Name (feat. Zyra) (Mickey Valen Remix)",
+			"user": "104063667351322624",
+			"duration": 227887,
+			"type": "soundcloud"
+		},
+		{
+			"id": 163184026,
+			"title": "Thrupence - Prelude",
+			"user": "104063667351322624",
+			"duration": 158708,
+			"type": "soundcloud"
+		},
+		{
+			"id": 116544327,
+			"title": "Wonder Feat. The Kite String Tangle",
+			"user": "104063667351322624",
+			"duration": 291343,
+			"type": "soundcloud"
+		},
+		{
+			"id": 275618717,
+			"title": "Annabel Jones - Happy (k?d Remix)",
+			"user": "104063667351322624",
+			"duration": 222557,
+			"type": "soundcloud"
+		},
+		{
+			"id": 273521940,
+			"title": "Draper - All I See (feat. Laura Brehm) (Kicks N Licks Remix)",
+			"user": "104063667351322624",
+			"duration": 244031,
+			"type": "soundcloud"
+		}
+	]
+}

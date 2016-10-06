@@ -1,11 +1,12 @@
-module.exports = class upTime {
+const lib = require('../../../../lib');
+
+module.exports = class upTime extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "upTime";
-        this.names = ["uptime"]
+        super("upTime", plugin);
+        this.setAlias(["uptime"]);
         this.role = "@everyone";
-        this.desc = "Shows the bots uptime";
-        this.func = function(bot, msg) {
+        this.description = "Shows the bots uptime";
+        this.Message = function(message, author, channel) {
             let sec_num = parseInt(process.uptime(), 10);
             let days = Math.floor(sec_num / 86400);
             sec_num %= 86400;
@@ -17,7 +18,7 @@ module.exports = class upTime {
             if (minutes < 10) minutes = "0" + minutes;
             if (seconds < 10) seconds = "0" + seconds;
             let time = `${days}:${hours}:${minutes}:${seconds}`;
-            msg.channel.sendMessage("Online for " + time).then(message => {
+            channel.sendMessage("Online for " + time).then(message => {
                message.delete(7000)
             }).catch(console.log);
         }

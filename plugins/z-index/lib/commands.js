@@ -12,11 +12,10 @@ module.exports = class commands {
         }
     }
 
-    register(CommandRegistry) {
-        CommandRegistry.registerPrefix(this.plugin, "$$");
-        CommandRegistry.registerCommand(new help(this.plugin))
-        CommandRegistry.registerCommand(new uptime(this.plugin))
-        CommandRegistry.registerCommand(new invite(this.plugin))
+    register() {
+        // this.plugin.registerCommand(new help(this.plugin))
+        this.plugin.registerCommand(new uptime(this.plugin))
+        this.plugin.registerCommand(new invite(this.plugin))
     }
 
 }

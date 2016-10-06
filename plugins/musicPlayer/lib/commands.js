@@ -307,8 +307,8 @@ class play extends lib.Command {
 
 class resume extends lib.Command {
     constructor(plugin) {
-        super("play", plugin);
-        this.setAlias(["resume", "play"]);
+        super("resume", plugin);
+        this.setAlias(["resume"]);
         this.role = "@everyone";
         this.Message = function(message, author, channel, server) {
             if (mpegPlayer.has(server.id)) {
@@ -330,7 +330,7 @@ class resume extends lib.Command {
 class queueMsg extends lib.Command {
 
     constructor(plugin) {
-        super("playlist", plugin, null, {caseSensitive: false});
+        super("playlist", plugin, {caseSensitive: false});
         this.setAlias(["browser", "queue", "playlist", "pl"]);
         this.role = "@everyone";
         this.Message = (message, author, channel, server) => {
@@ -577,7 +577,7 @@ module.exports = class commands extends EventEmitter{
         this.plugin.registerCommand(new destroy(this.plugin));
         this.plugin.registerCommand(new getSong(this.plugin));
         this.plugin.registerCommand(new play(this.plugin));
-        // this.plugin.registerCommand(new resume(this.plugin));
+        this.plugin.registerCommand(new resume(this.plugin));
         this.plugin.registerCommand(new queueMsg(this.plugin));
         this.plugin.registerCommand(new pause(this.plugin));
         this.plugin.registerCommand(new shuffle(this.plugin));

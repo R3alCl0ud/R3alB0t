@@ -6,33 +6,25 @@ var commands = require('./lib/commands');
 
 class zIndex extends Plugin {
 
-    constructor(bot, plugin, registry) {
-        super(plugin.name);
-        this.plugin = plugin
-        this.id = plugin.id;
-        this.name = plugin.name;
-        this.author = plugin.author;
-        this.version = plugin.version;
-        if (bot instanceof DiscordJS.Client) {
-            this.bot = bot;
-
-        } else {
-            console.log("Provided bot is not istance of Discord.js Bot");
-        }
-
+    constructor(guilds, channels, users) {
+        super(plugin.id, plugin.name, plugin.author, plugin.version, "Informationz");
+        this.guilds = guilds;
+        this.channels = channels;
+        this.users = users;
         this.loaded = false;
+        this.on('load', this.loadPlugin.bind(this));
     }
 
     loadPlugin() {
         if (!this.loaded) {
-            commands = new commands(this.plugin);
-            commands.register(this.registry);
+            commands = new commands(this);
+            commands.register();
             this.loaded = true;
         }
     }
 }
 
-var plugin = {
+const plugin = {
     name: "Help",
     id: "help",
     author: "R3alCl0ud",
@@ -43,3 +35,4 @@ var plugin = {
 // module.exports = function(bot, registry) {
     // return new zIndex(bot, plugin, registry);
 // };
+module.exports = zIndex;
