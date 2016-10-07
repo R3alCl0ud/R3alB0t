@@ -1,26 +1,28 @@
-"use strict";
+const Plugin = require('../../').Plugin;
+const commands = require('./lib/commands');
 
-var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/plugin');
 
-class config extends Plugin {
-    constructor(bot) {
-        super("Config");
-        this.id = "config";
-        this.name = "Config";
-        this.Author = "R3alCl0ud"
-        if (bot instanceof DiscordJS.Client) {
-            this.bot = bot;
-        }
+class Config extends Plugin {
+    constructor(guilds, channels, users) {
+        super("config", "Config", "R3alCl0ud", "v0.0.1");
+        this.guilds = guilds;
+        this.channels = channels;
+        this.users = users;
+        this.on('load', this.loadPlugin.bind(this));
     }
 
     loadPlugin() {
         if (!this.loaded) {
             this.loaded = true;
+            this.register();
         }
+    }
+    
+    register() {
+        const config = new commands.config(this)
+        this.registerCommand(config);
+        config.registerSubCommand(new commands.prefix(config));
     }
 }
 
-module.exports = function(bot, registry) {
-    return new config(bot);
-};
+module.exports = Config;

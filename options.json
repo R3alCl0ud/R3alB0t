@@ -10,5 +10,8 @@
         "volume": "0.05",
         "deleteSong": true,
         "streamKey": "3b16b5507608db3eaace81f41aea90bb"
+    },
+    "DataBase" : {
+        "db" : 1
     }
 }

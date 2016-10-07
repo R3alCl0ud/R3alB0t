@@ -2,7 +2,7 @@ const lib = require('../../../../lib');
 
 module.exports = class upTime extends lib.Command {
     constructor(plugin) {
-        super("upTime", plugin);
+        super("upTime", null, plugin);
         this.setAlias(["uptime"]);
         this.role = "@everyone";
         this.description = "Shows the bots uptime";

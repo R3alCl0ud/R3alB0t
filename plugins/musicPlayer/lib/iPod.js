@@ -128,7 +128,8 @@ class iPod {
 
     playNext() {
         
-        if (this.paused) {
+        if (this.paused && this.dispatcher != null) {
+            console.log(this.dispatcher != null)
             this.resume()
             return;
         }

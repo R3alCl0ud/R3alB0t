@@ -1,0 +1,28 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/node', '/bin/npm', 'docs' ]
+2 info using npm@3.10.6
+3 info using node@v6.4.0
+4 silly docs [ '.' ]
+5 silly getDoc .
+6 silly fetchPackageMetaData .
+7 silly fetchDirectoryPackageData .
+8 verbose stack Error: spawn xdg-open ENOENT
+8 verbose stack     at exports._errnoException (util.js:1026:11)
+8 verbose stack     at Process.ChildProcess._handle.onexit (internal/child_process.js:182:32)
+8 verbose stack     at onErrorNT (internal/child_process.js:348:16)
+8 verbose stack     at _combinedTickCallback (internal/process/next_tick.js:74:11)
+8 verbose stack     at process._tickCallback (internal/process/next_tick.js:98:9)
+9 verbose cwd /usr/share/Workspace/Beta/R3alB0t
+10 error Linux 3.10.0-327.10.1.el7.x86_64
+11 error argv "/usr/bin/node" "/bin/npm" "docs"
+12 error node v6.4.0
+13 error npm  v3.10.6
+14 error path xdg-open
+15 error code ENOENT
+16 error errno ENOENT
+17 error syscall spawn xdg-open
+18 error enoent spawn xdg-open ENOENT
+19 error enoent spawn xdg-open ENOENT
+19 error enoent This is most likely not a problem with npm itself
+19 error enoent and is related to npm not being able to find a file.
+20 verbose exit [ 1, true ]

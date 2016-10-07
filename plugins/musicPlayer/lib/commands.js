@@ -27,17 +27,15 @@ class webList extends lib.Command {
         this.names = ["webPlaylist", "wpl"];
         this.desc = "Give user a link to view the playlist from their web browser";
     }
-        func (message, author, channel, server) {
-            channel.sendMessage("https://beta.R3alB0t.xyz/playlist/" + server.id);
-        }
+    func (message, author, channel, server) {
+        channel.sendMessage("https://beta.R3alB0t.xyz/playlist/" + server.id);
+    }
     
 }
 
-
-
 class volume extends lib.Command {
     constructor(plugin) {
-        super("volume", plugin, {names: ["volume", "loudness", "vol", "setvol", "setvolume"], description: "Sets the volume", caseSensitive: false});
+        super("volume", null, plugin, {names: ["volume", "loudness", "vol", "setvol", "setvolume"], description: "Sets the volume", caseSensitive: false});
         this.Message = function(message, author, channel, server) {
             var Args = message.content.split(" ");
             if (mpegPlayer.has(server.id)) {
@@ -63,10 +61,9 @@ class volume extends lib.Command {
     }
 }
 
-
 class summon extends lib.Command {
     constructor(plugin) {
-        super("summon", plugin, {names: ["summon", "join", "comehere"], caseSensitive: false});
+        super("summon", null, plugin, {names: ["summon", "join", "comehere"], caseSensitive: false});
         this.Message = function(message, author, channel, server) {
 
             if (mpegPlayer.has(server.id)) {
@@ -127,7 +124,7 @@ class summon extends lib.Command {
 
 class getSong extends lib.Command {
     constructor(plugin) {
-        super("request", plugin, {names: ["request", "soundcloud", "add", "youtube", "yt", "sc"]});
+        super("request", null, plugin, {names: ["request", "soundcloud", "add", "youtube", "yt", "sc"]});
         this.role = "@everyone";
     }
     Message(message, author, channel, server) {
@@ -191,11 +188,7 @@ class getSong extends lib.Command {
                     lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
                     songs = null;
                     toUpdate.edit(`Added ${added} song(s) to the queue`);
-                    if (mpegPlayer.has(server.id)) {
-                        if (!mpegPlayer.get(server.id).paused) {
-                            mpegPlayer.get(server.id).playNext();
-                        }
-                    }
+                    shuffleOnAdd(added, args, channel, server);
                 });
             }
             catch (err) {
@@ -224,11 +217,7 @@ class getSong extends lib.Command {
                 added++;
                 songs = null;
                 toUpdate.edit(`Added  ${added} song(s) to the queue`);
-                if (mpegPlayer.has(server.id)) {
-                    if (!mpegPlayer.get(server.id).paused) {
-                        mpegPlayer.get(server.id).playNext();
-                    }
-                }
+                shuffleOnAdd(added, args, channel, server);
             });
         }
         else if (lib.YTPlaylistRegex.test(args[1])) {
@@ -257,18 +246,51 @@ class getSong extends lib.Command {
                 lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
                 songs = null;
                 toUpdate.edit(`Added ${added} song(s) to the queue`);
-                if (mpegPlayer.has(server.id)) {
-                    if (!mpegPlayer.get(server.id).paused) {
-                        mpegPlayer.get(server.id).playNext();
-                    }
-                }
+                shuffleOnAdd(added, args, channel, server);
             });
         }
     }
 }
+
+function shuffleOnAdd(added, args, channel, server) {
+    console.log(added)
+    console.log(lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length)
+    if (added == lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
+            if (mpegPlayer.has(server.id)) {
+                var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
+
+                var playlist = songs.tracks;
+
+                for (var i = playlist.length - 1; i > 1; i--) {
+                    var n = Math.floor(Math.random() * (i + 1));
+                    
+                        var temp = playlist[i];
+                        playlist[i] = playlist[n];
+                        playlist[n] = temp;
+                }
+
+                songs.tracks = playlist;
+
+                channel.sendMessage("**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**").then(message => {
+                    message.delete(7000);
+                }).catch(console.log);
+                lib.writeJSON(mpegPlayer.get(server.id).plFile, songs);
+                songs = null;
+            }
+        }
+        else if (added != lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
+            channel.sendMessage("Playlist must be empty to shuffle first song");
+        }
+        if (mpegPlayer.has(server.id)) {
+            if (!mpegPlayer.get(server.id).paused) {
+                mpegPlayer.get(server.id).playNext();
+            }
+        }
+}
+
 class destroy extends lib.Command {
     constructor(plugin) {
-        super("destroy", plugin);
+        super("destroy", null, plugin);
         this.setAlias(["destroy", "leave"]);
         this.role = "@everyone";
     }
@@ -287,7 +309,7 @@ class destroy extends lib.Command {
 }
 class play extends lib.Command {
     constructor(plugin) {
-        super("play", plugin);
+        super("play", null, plugin);
         this.role = "@everyone";
         this.Message = function(message, author, channel, server) {
             if (mpegPlayer.has(server.id)) {
@@ -307,7 +329,7 @@ class play extends lib.Command {
 
 class resume extends lib.Command {
     constructor(plugin) {
-        super("resume", plugin);
+        super("resume", null, plugin);
         this.setAlias(["resume"]);
         this.role = "@everyone";
         this.Message = function(message, author, channel, server) {
@@ -330,7 +352,7 @@ class resume extends lib.Command {
 class queueMsg extends lib.Command {
 
     constructor(plugin) {
-        super("playlist", plugin, {caseSensitive: false});
+        super("playlist", null, plugin, {caseSensitive: false});
         this.setAlias(["browser", "queue", "playlist", "pl"]);
         this.role = "@everyone";
         this.Message = (message, author, channel, server) => {
@@ -346,18 +368,23 @@ class queueMsg extends lib.Command {
                 else {
                     n = songs.tracks.length;
                 }
-
-                for (var i = 0; i < n; i++) {
-                    if ((queueWord + "**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">").length <= 2000 && i < tracks.length) {
-                        queue.push(("**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">"));
-                        queueWord = queue;
+                if (n != 0) {
+                    for (var i = 0; i < n; i++) {
+                        if ((queueWord + "**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">").length <= 2000 && i < tracks.length) {
+                            queue.push(("**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">"));
+                            queueWord = queue;
+                        }
+                        else {
+                            break;
+                        }
                     }
-                    else {
-                        break;
-                    }
+                    queue.push("\n\nPlaylist total length: " + songs.tracks.length);
+                    queueWord = queue;
+                } else {
+                    queueWord = ["There are currently no items in your queue!"]
                 }
-                queue.push("\n\nPlaylist total length: " + songs.tracks.length);
-                queueWord = queue;
+                
+                
                 channel.startTyping();
                 setTimeout(function() {
                     channel.stopTyping();
@@ -377,7 +404,7 @@ class queueMsg extends lib.Command {
 
 class skip extends lib.Command {
     constructor(plugin) {
-        super("skip", plugin, {names: ["skip", "next", "newsong", "playnext"]});
+        super("skip", null, plugin, {names: ["skip", "next", "newsong", "playnext"]});
         this.role = "@everyone";
     }
     Message (message, author, channel, server) {
@@ -394,7 +421,7 @@ class skip extends lib.Command {
 class pause extends lib.Command {
 
     constructor(plugin) {
-        super("pause", plugin, {names: ["pause", "stop", "stopmusic"]});
+        super("pause", null, plugin, {names: ["pause", "stop", "stopmusic"]});
     }
     Message (msg, author, channel, srv) {
         if (mpegPlayer.has(srv.id)) {
@@ -406,7 +433,7 @@ class pause extends lib.Command {
 }
 class shuffle extends lib.Command {
     constructor(plugin) {
-        super("shuffle", plugin);
+        super("shuffle", null, plugin);
         this.setAlias(["shuffle", "randomize"]);
         this.role = "@everyone";
         this.Message = function(message, author, channel, server) {
@@ -440,11 +467,10 @@ class shuffle extends lib.Command {
 }
 class clearplaylist extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "clearplaylist";
-        this.names = ["cpl", "clearplaylist", "clearpl", "playlistclear"];
+        super("clearplaylist", null, plugin);
+        this.setAlias(["cpl", "clearplaylist", "clearpl", "playlistclear"]);
         this.role = "@everyone";
-        this.func = function(message, author, channel, server) {
+        this.Message = function(message, author, channel, server) {
             if (mpegPlayer.has(server.id)) {
                 try {
                     var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
@@ -582,7 +608,7 @@ module.exports = class commands extends EventEmitter{
         this.plugin.registerCommand(new pause(this.plugin));
         this.plugin.registerCommand(new shuffle(this.plugin));
         this.plugin.registerCommand(new skip(this.plugin));
-        // this.plugin.registerCommand(new clearplaylist(this.plugin));
+        this.plugin.registerCommand(new clearplaylist(this.plugin));
         // CommandRegistry.registerCommand(new config(this.plugin));
         // this.plugin.registerCommand(new webList(this.plugin));
         startUp(this.plugin.channels, 0);

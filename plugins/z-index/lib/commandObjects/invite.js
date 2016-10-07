@@ -2,7 +2,7 @@ const lib = require('../../../../lib');
 
 module.exports = class invite extends lib.Command{
     constructor(plugin) {
-        super("invite", plugin, {caseSensitive: false});
+        super("invite", false, plugin, {caseSensitive: false});
         this.setAlias(["invite"]);
         this.role = "@everyone";
         this.description = "Gives you the link to add Me to your server";

@@ -10,6 +10,8 @@
     "ejs": "^2.4.2",
     "express": "^4.13.4",
     "express-session": "^1.13.0",
+    "fs-extra": "^0.30.0",
+    "jsdoc-parse": "^2.0.5",
     "longjohn": "^0.2.11",
     "mysql": "^2.10.2",
     "node-opus": "^0.2.1",
@@ -25,7 +27,8 @@
   "devDependencies": {},
   "scripts": {
     "test": "test",
-    "start": "node server.js"
+    "start": "node betaSharding.js",
+    "docs": "node docs/generator/generator.js"
   },
   "repository": {
     "type": "git",

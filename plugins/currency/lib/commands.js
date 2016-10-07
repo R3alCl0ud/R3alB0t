@@ -2,35 +2,15 @@
 var JSONDir = './credits';
 const EventEmitter = require('events').EventEmitter;
 var fs = require('fs');
-var lib = require('../../../lib');
+var lib = require('../../../');
 var botEvent = {};
 var guilds = {};
 
 var async = require("async");
 
-var redis = require('redis');
-var db = redis.createClient({db: 1});
+const db = lib.db;
 
-var Cache = require('./cache'); //Note I DID NOT WRITE THIS! CODE FROM https://github.com/hydrabolt/discord.js/blob/master/src/Util/Cache.js.
 
-class guild {
-    constructor(guild) {
-        this.id = guild.id;
-        this.name = guild.name;
-        this.giveRole = guild.giveRole;
-        this.autoGive = guild.autoGive || false;
-        this.members = new Cache();
-
-        if (guild.members instanceof Cache) {
-            guild.members.forEach((member) => this.members.add(member));
-        }
-        else {
-            guild.members.forEach((member) => {
-                this.members.add(member);
-            });
-        }
-    }
-}
 
 function handleMessage(bot, message, author, channel, server) {
 
@@ -89,7 +69,7 @@ function handleMessage(bot, message, author, channel, server) {
 
 class giveCredit extends lib.Command {
     constructor(plugin) {
-        super("giveCredits", plugin, false, {description: "Gives a user credits"});
+        super("giveCredits",  false, plugin, {description: "Gives a user credits"});
         this.setAlias(["giveCredits", "givec"]);
         this.role = "@everyone";
     }
@@ -151,7 +131,7 @@ class giveCredit extends lib.Command {
 
 class setAuto extends lib.Command {
     constructor(plugin) {
-        super("setAuto", plugin, {caseSensitive: false})
+        super("setAuto", null, plugin, {caseSensitive: false})
         this.setAlias(["setAuto", "sauto", "seta"]);
         this.role = "@everyone"
     }
@@ -180,7 +160,7 @@ class setAuto extends lib.Command {
 }
 class setRole extends lib.Command {
     constructor(plugin) {
-        super("setRole", plugin, {names: ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"], caseSensitive: false});
+        super("setRole", null, plugin, {names: ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"], caseSensitive: false});
         this.role = "@everyone"
         this.Message = (message, author, channel, server) => {
             var Args = message.content.split(" ");
@@ -212,8 +192,8 @@ class setRole extends lib.Command {
 
 class viewCredit extends lib.Command {
     constructor(plugin) {
-        super("viewCredit", plugin, {names: ["credits", "viewcredits"], caseSensitive: false});
-        this.desc = "Shows you how many credits you have";
+        super("viewCredits", null, plugin, {names: ["credits", "viewcredits"], caseSensitive: false});
+        this.description = "Shows you how many credits you have";
         this.role = "@everyone"
     }
     Message (message, author, channel, server) {
@@ -272,23 +252,6 @@ class myCredits {
 }
 
 
-exports.registerCMD = function(CommandRegistry, plugin) {
-    botEvent = plugin.bot;
-    CommandRegistry.registerPrefix(plugin, "#$");
-    CommandRegistry.registerCommand(plugin, "initCredits", ["init", "initcredits"], "sets up currency", initCredits, "@everyone");
-    CommandRegistry.registerCommand(plugin, "giveCredits", ["givec", "givecredits"], "Gives a user credits", giveCredit, "@everyone");
-    CommandRegistry.registerCommand(plugin, "viewCredits", ["credits", "viewcredits"], "Shows how many credits you have", viewCredit, "@everyone");
-    CommandRegistry.registerCommand(plugin, "setRole", ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"], "Allows you to set the role required to manage credits on the server", setRole, "@everyone");
-    CommandRegistry.registerCommand(plugin, "setAuto", ["setauto", "sauto"], "Turn automatic credit dispencing on or off", setAuto, "@everyone");
-    CommandRegistry.registerCommand()
-}
-
-
-
-
-
-
-
 module.exports = class commands extends EventEmitter {
     constructor(plugin) {
         super();
@@ -296,9 +259,12 @@ module.exports = class commands extends EventEmitter {
     }
 
     register() {
-        this.plugin.registerCommand(new viewCredit(this.plugin))
+        this.plugin.registerCommand(new viewCredit(this.plugin));
+        this.plugin.registerCommand(new giveCredit(this.plugin));
+        this.plugin.registerCommand(new setAuto(this.plugin));
+        this.plugin.registerCommand(new setRole(this.plugin));
         this.plugin.on("message", (client, msg) => {
-            handleMessage(client, msg, msg.author, msg.channel, msg.guild)
+            handleMessage(client, msg, msg.author, msg.channel, msg.guild);
         });
     }
 }

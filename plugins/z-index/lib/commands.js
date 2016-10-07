@@ -1,6 +1,6 @@
-var help = require("./commandObjects/help");
-var uptime = require('./commandObjects/uptime')
-var invite = require('./commandObjects/invite');
+const help = require("./commandObjects/helpTest");
+const uptime = require('./commandObjects/uptime')
+const invite = require('./commandObjects/invite');
 
 
 module.exports = class commands {
@@ -13,7 +13,7 @@ module.exports = class commands {
     }
 
     register() {
-        // this.plugin.registerCommand(new help(this.plugin))
+        this.plugin.registerCommand(new help(this.plugin))
         this.plugin.registerCommand(new uptime(this.plugin))
         this.plugin.registerCommand(new invite(this.plugin))
     }

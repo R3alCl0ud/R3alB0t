@@ -1,14 +1,15 @@
-var request = require("request");
-var https = require("https");
+const request = require("request");
+const https = require("https");
+const lib = require('../../../lib');
 
-class r34 {
+
+class r34 extends lib.Command{
     constructor(plugin) {
-        this.plugin = plugin
-        this.id = "r34"
-        this.names = ["rule34", "r34"]
-        this.role = "lewd"
-        this.desc = "names says it all"
-        this.func = function(bot, msg) {
+        super("r34", null, plugin);
+        this.setAlias(["rule34", "r34"]);
+        this.role = "lewd";
+        this.description = "names says it all";
+        this.Message = function(msg) {
             try {
                 var url = "http://rule34.xxx/index.php?page=post&s=list&tags=" + msg.content.split(" ").slice(1).join("+");
                 var id = [];
@@ -30,12 +31,12 @@ class r34 {
                                     bigId = splitFile[x];
                                 }
                             }
-                            bot.sendMessage(msg.channel, "http:" + bigId);
+                            msg.channel.sendMessage("http:" + bigId);
                         });
                         sending = null;
                         pick = null;
                     } else {
-                        bot.sendMessage(msg.channel, "no results found!");
+                        msg.channel.sendMessage("no results found!");
                     }
                 });
             } catch (err) {
@@ -45,13 +46,11 @@ class r34 {
 
     }
 }
-class e621 {
+class e621 extends lib.Command{
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "e621"
-        this.names = ["e621"]
-        this.role = "lewd"
-        this.func = function(bot, msg) {
+        super("e621", null, plugin);
+        this.role = "lewd";
+        this.Message = function(msg) {
             try {
                 var uri = "https://e621.net/post/index/1/" + msg.content.split(" ").slice(1).join("%20");
                 var id = [];
@@ -86,12 +85,12 @@ class e621 {
                                     bigId = splitFile[x];
                                 }
                             }
-                            bot.sendMessage(msg.channel, bigId);
+                            msg.channel.sendMessage(bigId)
                         });
                         sending = null;
                         pick = null;
                     } else {
-                        bot.sendMessage(msg.channel, "no results found!");
+                        msg.channel.sendMessage("no results found!");
                     }
                 });
             } catch (err) {
@@ -101,22 +100,18 @@ class e621 {
     }
 }
 
-exports.registerCMD = function(CommandRegistry, plugin) {
-
-    CommandRegistry.registerPrefix(plugin, "#$");
-    CommandRegistry.registerCommand(plugin, 'rule34', ["rule34", "r34"], "name says it all", r34, "@everyone");
-    //CommandRegistry.registerCommand(plugin, 'e621', ["e621"], "name says it all", e621, "@everyone");
-};
-
 module.exports = class commands {
+
     constructor(plugin) {
-        this.plugin = plugin;
-        this.bot = plugin.bot;
+        if (plugin != null) {
+            this.plugin = plugin;
+
+        }
     }
 
-    register(CommandRegistry) {
-        CommandRegistry.registerPrefix(this.plugin, "$$")
-        CommandRegistry.registerCommand(new r34(this.plugin))
-        CommandRegistry.registerCommand(new e621(this.plugin))
+    register() {
+        this.plugin.registerCommand(new r34(this.plugin))
+        this.plugin.registerCommand(new e621(this.plugin));
+
     }
-}
+};
