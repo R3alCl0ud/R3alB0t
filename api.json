@@ -44,6 +44,66 @@
     "order": 4
   },
   {
+    "id": "Plugin()",
+    "longname": "Plugin",
+    "name": "Plugin",
+    "kind": "constructor",
+    "memberof": "Plugin",
+    "params": [
+      {
+        "type": {
+          "names": [
+            "string",
+            "object"
+          ]
+        },
+        "description": "The ID of the Plugin",
+        "name": "ID"
+      },
+      {
+        "type": {
+          "names": [
+            "string"
+          ]
+        },
+        "optional": true,
+        "description": "The name of the Plugin",
+        "name": "Name"
+      },
+      {
+        "type": {
+          "names": [
+            "string"
+          ]
+        },
+        "optional": true,
+        "description": "The author of the plugin",
+        "name": "Author"
+      },
+      {
+        "type": {
+          "names": [
+            "string"
+          ]
+        },
+        "optional": true,
+        "description": "The version of the plugin",
+        "name": "Version"
+      },
+      {
+        "type": {
+          "names": [
+            "string"
+          ]
+        },
+        "optional": true,
+        "description": "The description of the plugin",
+        "name": "Description"
+      }
+    ],
+    "order": 14
+  },
+  {
     "id": "CommandRegistry",
     "longname": "CommandRegistry",
     "name": "CommandRegistry",
@@ -79,11 +139,24 @@
     "kind": "class",
     "description": "The Command Object",
     "meta": {
-      "lineno": 19,
+      "lineno": 17,
       "filename": "command.js",
       "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
     },
     "order": 3
+  },
+  {
+    "id": "Plugin",
+    "longname": "Plugin",
+    "name": "Plugin",
+    "scope": "global",
+    "kind": "class",
+    "meta": {
+      "lineno": 13,
+      "filename": "plugin.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 13
   },
   {
     "id": "CommandOptions",
@@ -138,9 +211,20 @@
           ]
         },
         "optional": true,
-        "defaultvalue": "\"Default Description\"",
+        "defaultvalue": "Default Description",
         "description": "The description of the command",
         "name": "description"
+      },
+      {
+        "type": {
+          "names": [
+            "string"
+          ]
+        },
+        "optional": true,
+        "defaultvalue": "command ID",
+        "description": "The usage for the command",
+        "name": "usage"
       }
     ],
     "meta": {
@@ -149,5 +233,164 @@
       "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
     },
     "order": 2
+  },
+  {
+    "id": "Command#Parent",
+    "longname": "Command#Parent",
+    "name": "Parent",
+    "scope": "instance",
+    "kind": "member",
+    "description": "The Parent of the command",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "Plugin",
+        "Command",
+        "Guild"
+      ]
+    },
+    "meta": {
+      "lineno": 31,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 5
+  },
+  {
+    "id": "Command#_id",
+    "longname": "Command#_id",
+    "name": "_id",
+    "scope": "instance",
+    "kind": "member",
+    "description": "The ID of the command",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "string"
+      ]
+    },
+    "meta": {
+      "lineno": 37,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 6
+  },
+  {
+    "id": "Command#caseSensitive",
+    "longname": "Command#caseSensitive",
+    "name": "caseSensitive",
+    "scope": "instance",
+    "kind": "member",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "boolean"
+      ]
+    },
+    "meta": {
+      "lineno": 43,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 7
+  },
+  {
+    "id": "Command#dmOnly",
+    "longname": "Command#dmOnly",
+    "name": "dmOnly",
+    "scope": "instance",
+    "kind": "member",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "boolean"
+      ]
+    },
+    "meta": {
+      "lineno": 48,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 8
+  },
+  {
+    "id": "Command#guildOnly",
+    "longname": "Command#guildOnly",
+    "name": "guildOnly",
+    "scope": "instance",
+    "kind": "member",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "boolean"
+      ]
+    },
+    "meta": {
+      "lineno": 54,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 9
+  },
+  {
+    "id": "Command#description",
+    "longname": "Command#description",
+    "name": "description",
+    "scope": "instance",
+    "kind": "member",
+    "description": "The description of the command",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "string"
+      ]
+    },
+    "meta": {
+      "lineno": 60,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 10
+  },
+  {
+    "id": "Command#usage",
+    "longname": "Command#usage",
+    "name": "usage",
+    "scope": "instance",
+    "kind": "member",
+    "description": "The usage of the command",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "string"
+      ]
+    },
+    "meta": {
+      "lineno": 65,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 11
+  },
+  {
+    "id": "Command#names",
+    "longname": "Command#names",
+    "name": "names",
+    "scope": "instance",
+    "kind": "member",
+    "description": "The aliases of the command",
+    "memberof": "Command",
+    "type": {
+      "names": [
+        "Array"
+      ]
+    },
+    "meta": {
+      "lineno": 70,
+      "filename": "command.js",
+      "path": "/usr/share/Workspace/Beta/R3alB0t/lib/registry/models"
+    },
+    "order": 12
   }
 ]

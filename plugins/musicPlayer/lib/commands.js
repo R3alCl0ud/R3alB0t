@@ -87,9 +87,9 @@ class summon extends lib.Command {
                     }).catch(console.log);
 
                     var defaultJSON = {
+                        "id": server.id,
                         "currentTime": 0,
                         "paused": false,
-                        "server": server.id,
                         "boundChannel": channel.id,
                         "defaultChannel": message.member.voiceChannel.id,
                         "Role": "@everyone",
@@ -158,6 +158,7 @@ class getSong extends lib.Command {
                                     "id": body.id,
                                     "title": body.title,
                                     "user": author.id,
+                                    "requester": author.username,
                                     "duration": body.duration,
                                     "type": "soundcloud"
                                 };
@@ -170,6 +171,7 @@ class getSong extends lib.Command {
                                         "id": body.tracks[i].id,
                                         "title": body.tracks[i].title,
                                         "user": author.id,
+                                        "requester": author.username,
                                         "duration": body.tracks[i].duration,
                                         "type": "soundcloud"
                                     };
@@ -210,6 +212,7 @@ class getSong extends lib.Command {
                     "url": info.url,
                     "title": info.title,
                     "user": author.id,
+                    "requester": author.username,
                     "duration": lib.timeToMs(info.duration),
                     "type": "youtube"
                 });
@@ -238,6 +241,7 @@ class getSong extends lib.Command {
                         "url": info[track].url,
                         "title": info[track].title,
                         "user": author.id,
+                        "requester": author.username,
                         "duration": lib.timeToMs(info[track].duration),
                         "type": "youtube"
                     };
@@ -253,14 +257,15 @@ class getSong extends lib.Command {
 }
 
 function shuffleOnAdd(added, args, channel, server) {
-    console.log(added)
-    console.log(lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length)
-    if (added == lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
+   //console.log(added)
+   //console.log(lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length)
+    if (args.length >= 3) {
+        if (added == lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
             if (mpegPlayer.has(server.id)) {
                 var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
-
+    
                 var playlist = songs.tracks;
-
+    
                 for (var i = playlist.length - 1; i > 1; i--) {
                     var n = Math.floor(Math.random() * (i + 1));
                     
@@ -268,9 +273,9 @@ function shuffleOnAdd(added, args, channel, server) {
                         playlist[i] = playlist[n];
                         playlist[n] = temp;
                 }
-
+    
                 songs.tracks = playlist;
-
+    
                 channel.sendMessage("**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**").then(message => {
                     message.delete(7000);
                 }).catch(console.log);
@@ -278,14 +283,15 @@ function shuffleOnAdd(added, args, channel, server) {
                 songs = null;
             }
         }
-        else if (added != lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
+        else {
             channel.sendMessage("Playlist must be empty to shuffle first song");
         }
-        if (mpegPlayer.has(server.id)) {
-            if (!mpegPlayer.get(server.id).paused) {
-                mpegPlayer.get(server.id).playNext();
-            }
+    }
+    if (mpegPlayer.has(server.id)) {
+        if (!mpegPlayer.get(server.id).paused) {
+            mpegPlayer.get(server.id).playNext();
         }
+    }
 }
 
 class destroy extends lib.Command {
@@ -559,16 +565,19 @@ function startUp(channels, index) {
             Guild.defaultChannel = null;
         if (!Guild.hasOwnProperty("boundChannel"))
             Guild.boundChannel = null;
+        if (Guild.hasOwnProperty("server")) 
+            Guild.id = Guild.server;
+        
 
         lib.writeJSON("./playlists/" + dir[index] + "/" + current[0], Guild);
 
         if (Guild.autoJoin == true && Guild.defaultChannel != null && channels.has(Guild.defaultChannel)) {
             channels.get(Guild.defaultChannel).join().then((connection) => {
 
-                mpegPlayer.set(Guild.server, new iPod(connection, channels.get(Guild.boundChannel), Guild));
+                mpegPlayer.set(Guild.id, new iPod(connection, channels.get(Guild.boundChannel), Guild));
 
-                if (mpegPlayer.get(Guild.server).autoStart == true && Guild.tracks.length > 0 && connection.channel.members.length > 1 && !mpegPlayer.get(Guild.server).paused)
-                    mpegPlayer.get(Guild.server).playNext();
+                if (mpegPlayer.get(Guild.id).autoStart == true && Guild.tracks.length > 0 && connection.channel.members.length > 1 && !mpegPlayer.get(Guild.id).paused)
+                    mpegPlayer.get(Guild.id).playNext();
                 startUp(channels, index + 1);
             }).catch(console.log);
         }

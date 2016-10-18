@@ -75,6 +75,10 @@ client.login(Auth.token).catch(console.log);
 
 db.on('ready', () =>{
     db.psubscribe('Guilds.*:prefix');
+    db.psubscribe('Guilds.*:addcommand');
+    db.psubscribe('Guilds.*:deletecommand');
+    db.psubscribe('Guilds.*:enable');
+    db.psubscribe('Guilds.*:disable');
 })
 db.on('pmessage', (pattern, channel, message) => {
     let guildID = channel.split('.').splice(1).join('');
@@ -84,7 +88,9 @@ db.on('pmessage', (pattern, channel, message) => {
     if (client.registry.guilds.has(guildID)) {
         const guild = client.registry.guilds.get(guildID);
         if (key === 'prefix') return guild.changePrefix(message[key]);
+        if (key === 'addcommand') return guild.registerCommand(new lib.Command(message.command, message.message, guild));
+        if (key === 'deletecommand') return guild.removeCommand(message.command);
+        if (key === 'enable') return guild.enablePlugin(message[key]);
+        console.log(guildID, key, message)
     }
-    
-    console.log(guildID, key, message[key])
 })

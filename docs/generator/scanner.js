@@ -1,15 +1,13 @@
-const parse = require('jsdoc-to-markdown');
+const parse = require('jsdoc-parse');
 
 module.exports = class scanner {
     constructor(generator) {
         this.generator = generator;
     }
 
-    scan(dir) {
+    scan(directory) {
         return new Promise((resolve, reject) => {
-            const stream = parse({
-                src: [`${dir}*.js`, `${dir}**/*.js`],
-            });
+            const stream = parse({src: [`${directory}*.js`, `${directory}*/*.js`, `${directory}**/*.js`]});
 
             let json = '';
             stream.on('data', chunk => json += chunk.toString('utf-8'));
