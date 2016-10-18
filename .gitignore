@@ -2,7 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-
+options.json
 node_modules/*
 playlists/*
 ffmpeg
