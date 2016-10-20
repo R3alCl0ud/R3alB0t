@@ -1,0 +1,38 @@
+{
+    "codes": [{
+        "code": 400,
+        "message": "Bad request"
+    }, {
+        "code": 401,
+        "message": "Unauthorized"
+    }, {
+        "code": 403,
+        "message": "Forbidden"
+    }, {
+        "code": 404,
+        "message": "Not found"
+    }, {
+        "code": 405,
+        "message": "Method not allowed"
+    }, {
+        "code": 429,
+        "message": "Too many requests"
+    }, {
+        "code": 10001,
+        "message": "Unknown account"
+    },
+    {
+        "code": 10004,
+        "message": "Unknown guild"
+    },
+    {
+        "code": 50001,
+        "message": "Missing access"
+    }, {
+        "code": 50014,
+        "message": "Invalid authentication token"
+    }, {
+        "code": 50015,
+        "message": "Note is too long"
+    }]
+}
