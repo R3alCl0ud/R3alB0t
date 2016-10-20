@@ -1,19 +1,10 @@
 var fs = require('fs');
 var config = require("../../../options.json");
-var mysql = require('mysql');
 var lib = require('../../../lib');
 //var CommandRegistry = require('../../../lib/registry/CommandRegistry');
 var options = config.Options;
 var serverList = "./servers.json";
 
-
-var connection = mysql.createConnection(
-{
-    host: 'localhost',
-    user: 'root',
-    password: 'B3$tP4$$',
-    database: 'discordBot'
-});
 
 // command prefix
 var prefix = options.prefix;
