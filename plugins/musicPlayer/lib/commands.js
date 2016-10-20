@@ -22,13 +22,14 @@ function checkUser(user, server) {
 
 class webList extends lib.Command {
     constructor(plugin) {
+        super("weblist", null, plugin);
         this.plugin = plugin;
         this.id = "weblist";
         this.names = ["webPlaylist", "wpl"];
-        this.desc = "Give user a link to view the playlist from their web browser";
+        this.description = "Give user a link to view the playlist from their web browser";
     }
-    func (message, author, channel, server) {
-        channel.sendMessage("https://beta.R3alB0t.xyz/playlist/" + server.id);
+    Message (message, author, channel, guild) {
+        channel.sendMessage(`https://beta.r3alb0t.xyz/guild/${guild.id}/playlist`);
     }
     
 }
@@ -376,8 +377,8 @@ class queueMsg extends lib.Command {
                 }
                 if (n != 0) {
                     for (var i = 0; i < n; i++) {
-                        if ((queueWord + "**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">").length <= 2000 && i < tracks.length) {
-                            queue.push(("**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">"));
+                        if ((`${queueWord}**${(i + 1)}**:  \`${tracks[i].title.toString()}\`, <@${tracks[i].user.toString()}>`).length <= 2000 && i < tracks.length) {
+                            queue.push((`**${(i + 1)}**:  \`${tracks[i].title.toString()}\`, <@${tracks[i].user.toString()}>`));
                             queueWord = queue;
                         }
                         else {
@@ -385,6 +386,7 @@ class queueMsg extends lib.Command {
                         }
                     }
                     queue.push("\n\nPlaylist total length: " + songs.tracks.length);
+                    queue.push(`You can view the playlist online at: https://r3alb0t.xyz/guild/${server.id}/playlist`)
                     queueWord = queue;
                 } else {
                     queueWord = ["There are currently no items in your queue!"]
@@ -437,6 +439,7 @@ class pause extends lib.Command {
         }
     }
 }
+
 class shuffle extends lib.Command {
     constructor(plugin) {
         super("shuffle", null, plugin);
@@ -548,15 +551,15 @@ class config extends lib.Command {
 }
 
 
-function startUp(channels, index) {
+function startUp(client, index) {
 
     if (fs.existsSync("./playlists")) {
-        var dir = fs.readdirSync("./playlists");
+        const dir = fs.readdirSync("./playlists");
 
         if (index == dir.length) return;
 
-        var current = fs.readdirSync("./playlists/" + dir[index]);
-        var Guild = lib.openJSON("./playlists/" + dir[index] + "/" + current[0]);
+        const current = fs.readdirSync("./playlists/" + dir[index]);
+        const Guild = lib.openJSON("./playlists/" + dir[index] + "/" + current[0]);
         if (!Guild.hasOwnProperty("Role"))
             Guild.Role = "DJ";
         if (!Guild.hasOwnProperty("autoJoin"))
@@ -568,17 +571,22 @@ function startUp(channels, index) {
         if (Guild.hasOwnProperty("server")) 
             Guild.id = Guild.server;
         
+        Guild.tracks.forEach((track, i) => {
+            track.requester = client.users.get(track.user).username;
+            Guild.tracks[i] = track;
+        });
+        
+        
 
         lib.writeJSON("./playlists/" + dir[index] + "/" + current[0], Guild);
 
-        if (Guild.autoJoin == true && Guild.defaultChannel != null && channels.has(Guild.defaultChannel)) {
-            channels.get(Guild.defaultChannel).join().then((connection) => {
+        if (Guild.autoJoin == true && Guild.defaultChannel != null && client.channels.has(Guild.defaultChannel)) {
+            client.channels.get(Guild.defaultChannel).join().then(connection => {
 
-                mpegPlayer.set(Guild.id, new iPod(connection, channels.get(Guild.boundChannel), Guild));
+                mpegPlayer.set(Guild.id, new iPod(connection, client.channels.get(Guild.boundChannel), Guild));
 
-                if (mpegPlayer.get(Guild.id).autoStart == true && Guild.tracks.length > 0 && connection.channel.members.length > 1 && !mpegPlayer.get(Guild.id).paused)
-                    mpegPlayer.get(Guild.id).playNext();
-                startUp(channels, index + 1);
+                if (mpegPlayer.get(Guild.id).autoStart == true && Guild.tracks.length > 0 && connection.channel.members.length > 1 && !mpegPlayer.get(Guild.id).paused) mpegPlayer.get(Guild.id).playNext();
+                startUp(client, index + 1);
             }).catch(console.log);
         }
     }
@@ -590,7 +598,7 @@ function handleNewRole(server, role) {
 
     if (mpegPlayer.hasOwnProperty(server.id)) {
         mpegPlayer[server.id].Role = role;
-        var Guild = lib.openJSON(mpegPlayer[server.id].plFile);
+        const Guild = lib.openJSON(mpegPlayer[server.id].plFile);
         Guild.Role = role;
         lib.writeJSON(mpegPlayer[server.id].plFile, Guild);
     }
@@ -606,7 +614,6 @@ module.exports = class commands extends EventEmitter{
     }
 
     register() {
-        // CommandRegistry.registerPrefix(this.plugin, "$$");
         this.plugin.registerCommand(new volume(this.plugin));
         this.plugin.registerCommand(new summon(this.plugin));
         this.plugin.registerCommand(new destroy(this.plugin));
@@ -618,9 +625,8 @@ module.exports = class commands extends EventEmitter{
         this.plugin.registerCommand(new shuffle(this.plugin));
         this.plugin.registerCommand(new skip(this.plugin));
         this.plugin.registerCommand(new clearplaylist(this.plugin));
-        // CommandRegistry.registerCommand(new config(this.plugin));
         // this.plugin.registerCommand(new webList(this.plugin));
-        startUp(this.plugin.channels, 0);
+        startUp(this.plugin, 0);
 
         // this.plugin.bot.on("updateRole", handleNewRole);
     }

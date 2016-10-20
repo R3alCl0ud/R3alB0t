@@ -7,7 +7,7 @@ const request = require('request');
 const client = new lib.CommandClient(loginOptions);
 const redis = require('redis');
 const db = lib.db;
-
+const messager = redis.createClient({db: 1});
 
 class helpSub extends lib.Command {
     constructor(parent, command) {
@@ -29,17 +29,18 @@ function handleStartup() {
     console.info(`Shard ${client.options.shard_id + 1} Ready`);
     console.info(`${client.guilds.size} guilds on this shard`);
     client.load();
-    client.user.setGame("version 3.0.1");
+    client.user.setGame("version 3.1.0");
+    if (client.channels.has("228779525432016897")) process.send({_logChannel: "Me"})
 }
 
 
 function handleGuildCreate(guild) {
- 
-
+    process.send({_guildCreate: guild});
+    client.registry.registerGuild(guild);
 }
 
 function handleGuildDelete(guild) {
-
+    process.send({_guildDelete: guild});
 }
 
 function handleDisconnection() {
@@ -58,12 +59,20 @@ function handleHelp() {
 process.on('message', m => {
     console.log(m)
 
-    if (m._joinGuild){
-        if (typeof m._joinGuild === 'object') {
-            client.channels.get("228779525432016897").sendMessage(`Joined **${m._joinGuild.name}**. Now I'm in ${m._totalGuilds} guilds`);
+    if (m._guildCreate){
+        if (typeof m._guildCreate === 'object') {
+            client.channels.get("228779525432016897").sendMessage(`Joined **${m._guildCreate.name}**. Now I'm in ${m._totalGuilds} guilds`);
             return;
         }
     }
+    
+    if (m._guildDelete){
+        if (typeof m._guildDelete === 'object') {
+            client.channels.get("228779525432016897").sendMessage(`Joined **${m._guildDelete.name}**. Now I'm in ${m._totalGuilds} guilds`);
+            return;
+        }
+    }
+    
 })
 
 client.on("ready", handleStartup);
@@ -73,24 +82,39 @@ client.on("guildCreate", handleGuildCreate);
 client.on("guildDelete", handleGuildDelete);
 client.login(Auth.token).catch(console.log);
 
-db.on('ready', () =>{
-    db.psubscribe('Guilds.*:prefix');
-    db.psubscribe('Guilds.*:addcommand');
-    db.psubscribe('Guilds.*:deletecommand');
-    db.psubscribe('Guilds.*:enable');
-    db.psubscribe('Guilds.*:disable');
+messager.on('ready', () =>{
+    messager.psubscribe('Guilds.*:changePrefix');
+    messager.psubscribe('Guilds.*:addcommand');
+    messager.psubscribe('Guilds.*:deletecommand');
+    messager.psubscribe('Guilds.*:enable');
+    messager.psubscribe('Guilds.*:disable');
 })
-db.on('pmessage', (pattern, channel, message) => {
+messager.on('pmessage', (pattern, channel, message) => {
     let guildID = channel.split('.').splice(1).join('');
     let key = guildID.split(':')[1];
     guildID = guildID.split(':')[0];
     message = JSON.parse(message);
     if (client.registry.guilds.has(guildID)) {
-        const guild = client.registry.guilds.get(guildID);
-        if (key === 'prefix') return guild.changePrefix(message[key]);
-        if (key === 'addcommand') return guild.registerCommand(new lib.Command(message.command, message.message, guild));
-        if (key === 'deletecommand') return guild.removeCommand(message.command);
-        if (key === 'enable') return guild.enablePlugin(message[key]);
         console.log(guildID, key, message)
+        const guild = client.registry.guilds.get(guildID);
+        if (key === 'changePrefix') { 
+            db.set(`Guilds.${this.id}:Prefix`, message.prefix);
+            return guild.changePrefix(message.prefix);
+        }
+        if (key === 'addcommand') {
+            return guild.registerCommand(new lib.Command(message.command, message.message, guild));
+        }
+        if (key === 'deletecommand') { 
+            return guild.removeCommand(message.command);
+        }
+        if (key === 'enable') {
+            console.log("umm");
+            db.sadd(`Guilds.${guildID}:enabledPlugins`, message.plugin);
+            return guild.enablePlugin(message.plugin);
+        }
+        if (key === 'disable') {
+            db.srem(`Guilds.${guildID}:enabledPlugins`, message.plugin);
+            return guild.disablePlugin(message.plugin);
+        }
     }
-})
+});

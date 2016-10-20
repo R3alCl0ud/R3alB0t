@@ -2,6 +2,8 @@ const lib = require('./lib');
 const db_options = lib.openJSON('./options.json').DataBase;
 const db = require('redis').createClient(db_options);
 
+db.on('error', console.log);
+
 module.exports = {
 
     // Regular Expressions

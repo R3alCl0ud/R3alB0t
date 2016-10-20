@@ -15,9 +15,7 @@ class iPod {
         this.plFile = `./playlists/${String(this.id)}/${String(this.id)}.json`;
         this.currentTime = data ? data.currentTime || 0 : 0;
         this.volume = data ? data.volume : 0.1;
-        this.keys = {
-            soundcloud: "3b16b5507608db3eaace81f41aea90bb"
-        };
+        this.keys = {soundcloud: "3b16b5507608db3eaace81f41aea90bb"};
         this.Role = data ? data.Role : "@everyone";
         this.autoStart = data ? data.autoStart : true;
 
@@ -29,8 +27,7 @@ class iPod {
     }
 
     destroy() {
-        if (this.dispatcher && !this.paused)
-            this.currentTime += this.dispatcher.time / 1000;
+        if (this.dispatcher && !this.paused) this.currentTime += this.dispatcher.time / 1000;
         
         if (this.playingMessage) this.playingMessage.delete()
         const playlist = lib.openJSON(this.plFile)
@@ -117,9 +114,10 @@ class iPod {
             this.dispatcher = null;
             this.currentTime = 0;
             const playlist = lib.openJSON(this.plFile)
-            if (playlist.tracks.length > 0)
+            if (playlist.tracks.length > 0) {
                 playlist.tracks.splice(0, 1);
                 playlist.currentTime = 0;
+            }
             lib.writeJSON(this.plFile, playlist);
             this.playNext()
         }, 1000)
@@ -128,11 +126,7 @@ class iPod {
 
     playNext() {
         
-        if (this.paused && this.dispatcher != null) {
-            console.log(this.dispatcher != null)
-            this.resume()
-            return;
-        }
+        if (this.paused && this.dispatcher != null) return this.resume();
         const playlist = lib.openJSON(this.plFile)
         if (playlist.tracks.length < 1) return;
 
@@ -154,7 +148,6 @@ class iPod {
         }
 
         this.boundChannel.sendMessage(`**Now Playing: ${song.title}**`).then(message => {
-            console.log(message.content)
             this.playingMessage = message;
         }).catch(console.log)
     }

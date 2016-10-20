@@ -12,21 +12,30 @@ Manager.on('message', (shard, m) => {
     
     
     if (m._logChannel) {
-        console.log(shard.id)
+        console.log("log shard: ", shard.id);
         logShard = shard;
+        return;
     }
     // if (guild instanceof String) return;
-    if (m._joinGuild) {
-        const guild = m._joinGuild
+    if (m._guildCreate) {
+        const guild = m._guildCreate
         console.log(typeof guild, guild instanceof DiscordJS.Guild)
         if (typeof guild === 'object'){
-            console.log(`Joined: ${m._joinGuild.name}`)
+            console.log(`Joined: ${guild.name}`)
             Manager.fetchClientValues('guilds.size').then(guilds => {
-                let totalGuilds = 0
-                for (const guildNum in guilds) {
-                    totalGuilds += guilds[guildNum];
-                }
-                logShard.send({_joinGuild: m._joinGuild, _totalGuilds: totalGuilds});
+                let totalGuilds = guilds.reduce((prev, val) => prev + val, 0);
+                logShard.send({_guildCreate: m._guildCreate, _totalGuilds: totalGuilds});
+            }).catch(console.log)
+        }
+    }
+    if (m._guildDelete) {
+        const guild = m._guildDelete
+        console.log(typeof guild, guild instanceof DiscordJS.Guild)
+        if (typeof guild === 'object'){
+            console.log(`Left: ${guild.name}`)
+            Manager.fetchClientValues('guilds.size').then(guilds => {
+                let totalGuilds = guilds.reduce((prev, val) => prev + val, 0);
+                logShard.send({_guildDelete: m._guildDelete, _totalGuilds: totalGuilds});
             }).catch(console.log)
         }
     }
