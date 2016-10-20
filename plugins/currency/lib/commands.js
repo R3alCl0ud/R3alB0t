@@ -7,7 +7,7 @@ const guilds = {};
 
 const async = require("async");
 const redis = require('redis')
-const db = redis.createClient({db: 1});
+const db = lib.db;
 const collectors = new Map();
 
 
