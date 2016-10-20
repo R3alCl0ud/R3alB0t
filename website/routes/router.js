@@ -9,16 +9,16 @@ const React = require('react');
 const fs = require('fs');
 const router = express.Router()
 const authChecks = require('../lib/authChecks');
-const Auth = require('../options.json').Auth
+const config = require('../options.json');
+const Auth = config.Auth;
 const Navigator = require('../lib/navHelper');
 const redis = require('redis');
-const db = redis.createClient({db: 1});
+const db = redis.createClient({db: config.DataBase.db});
 const async = require('async');
 const request = require('request');
 const EventEmitter = require('events').EventEmitter;
 const crypto = require('crypto');
 const base64url = require('base64url');
-// require('node-jsx').install();
 
 const DISCORD_AUTHORIZATION_HEADER = {Authorization: `Bot ${Auth.token}`};
 const DISCORD_API_BASE_URL = "https://discordapp.com/api/";
@@ -38,7 +38,7 @@ const DISCORD_API_GET_GUILD_ROLES_USER_TOKEN = (ACCESS_TOKEN, GUILD_ID) => {retu
 const PL_ROOT_LOC = '/usr/share/nginx/html/R3al-Plugins/playlists';
 
 
-const R3ALB0T_API_BASE_URL = "https://beta.r3alb0t.xyz/api";
+const R3ALB0T_API_BASE_URL = "https://r3alb0t.xyz/api";
 const R3ALB0T_API_GET_ACCESS_TOKEN = (USER_ID, TOKEN) => {return{url: `${R3ALB0T_API_BASE_URL}/users/${USER_ID}/token/access`, headers: {Authorization: TOKEN}}}
 
 const PluginTabs = new Map();
@@ -163,7 +163,7 @@ var scopes = ['identify', 'guilds'];
 passport.use(new Strategy({
     clientID: Auth.clientID,
     clientSecret: Auth.clientSecret,
-    callbackURL: 'https://beta.r3alb0t.xyz/auth/callback',
+    callbackURL: 'https://r3alb0t.xyz/auth/callback',
     scope: scopes
 }, function(accessToken, refreshToken, userProfile, cb) {
     process.nextTick(function() {
@@ -208,7 +208,7 @@ api.get('/logout', function(req, res) {
 });
 api.get('/confirmLoggin', authChecks.checkAuth, function(req, res) {
     res.statusCode = 302;
-    res.setHeader('Location', 'https://beta.r3alb0t.xyz/dashboard/me');
+    res.setHeader('Location', 'https://r3alb0t.xyz/dashboard/me');
     // res.redirect('/');
     res.end();
 
@@ -216,7 +216,7 @@ api.get('/confirmLoggin', authChecks.checkAuth, function(req, res) {
 
 api.get('/home', (req, res) => {
     res.statusCode = 302;
-    res.setHeader('Location', 'https://beta.r3alb0t.xyz/');
+    res.setHeader('Location', 'https://r3alb0t.xyz/');
     res.end();
 });
 
@@ -236,10 +236,10 @@ router.get('/', function(req, res) {
     const user = req.user
     if (user) {
         const guilds = authChecks.adminInGuilds(user);
-        const props = {title: "R3alB0at", user: user, guilds: guilds, page: page} 
+        const props = {title: "R3alB0t", user: user, guilds: guilds, page: page} 
         res.render('index', props);
     } else {
-        const props = {title: "R3alB0at", user: user, page: page} 
+        const props = {title: "R3alB0t", user: user, page: page} 
         res.render('index', props);
     }
 })
