@@ -1,9 +1,9 @@
 const request = require("request");
 const https = require("https");
-const lib = require('../../../lib');
+const lib = require('DiscordForge');
 
 
-class r34 extends lib.Command{
+class r34 extends lib.Command {
     constructor(plugin) {
         super("r34", null, plugin);
         this.setAlias(["rule34", "r34"]);

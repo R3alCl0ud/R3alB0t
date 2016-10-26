@@ -1,23 +1,19 @@
-const DiscordJS = require('discord.js');
-const Plugin = require('../../lib').Plugin;
-var commands = require('./lib/commands');
+const Plugin = require('DiscordForge').Plugin;
+const commands = require('./lib/commands');
 
 class musicPlayer extends Plugin {
 
-    constructor(guilds, channels, users) {
+    constructor() {
         super(plugin);
-        this.guilds = guilds;
-        this.users = users;
-        this.channels = channels;
         this.on('load', this.loadPlugin.bind(this));
     }
 
 
 
-    loadPlugin() {
+    loadPlugin(client) {
         if (!this.loaded) {
-            commands = new commands(this);
-            commands.register();
+            this.commandLoader = new commands(this);
+            this.commandLoader.register(client);
             this.loaded = true;
         }
     }
@@ -32,4 +28,3 @@ const plugin = {
 
 
 module.exports = musicPlayer;
-

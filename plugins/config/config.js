@@ -3,11 +3,9 @@ const commands = require('./lib/commands');
 
 
 class Config extends Plugin {
-    constructor(guilds, channels, users) {
+    constructor(client) {
         super("config", "Config", "R3alCl0ud", "v0.0.1");
-        this.guilds = guilds;
-        this.channels = channels;
-        this.users = users;
+        this.client = client;
         this.on('load', this.loadPlugin.bind(this));
     }
 
@@ -17,7 +15,7 @@ class Config extends Plugin {
             this.register();
         }
     }
-    
+
     register() {
         const config = new commands.config(this)
         this.registerCommand(config);

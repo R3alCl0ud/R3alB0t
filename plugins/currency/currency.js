@@ -4,16 +4,13 @@ var commands = require('./lib/commands');
 
 class currency extends Plugin {
 
-    constructor(guilds, channels, users) {
+    constructor() {
         super(plugin.id, plugin.name, plugin.author, plugin.version, "Currency Plugin");
-        this.guilds = guilds;
-        this.channels = channels;
-        this.users = users;
-        
+
         this.loaded = false;
-        
+
         this.on('load', this.loadPlugin.bind(this));
-        
+
     }
 
     loadPlugin() {
