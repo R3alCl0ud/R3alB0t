@@ -1,313 +1,396 @@
-"use strict";
-var JSONDir = './credits';
-var fs = require('fs');
-var lib = require('../../../lib');
-var botEvent = {};
-var guilds = {};
+const JSONDir = './credits';
+const EventEmitter = require('events').EventEmitter;
+const fs = require('fs');
+const lib = require('../../../');
+const botEvent = {};
+const guilds = {};
+
+const async = require("async");
+const redis = require('redis')
+const db = lib.db;
+const collectors = new Map();
 
 
-var Cache = require('./cache'); //Note I DID NOT WRITE THIS! CODE FROM https://github.com/hydrabolt/discord.js/blob/master/src/Util/Cache.js.
+function handleMessage(bot, message, author, channel, server) {
+    if (channel.type === "dm" || channel.type === 'group') return;
+    if (author.bot) return;
+    if (!bot.registry.guilds.has(server.id)) return;
+    const Guild = bot.registry.guilds.get(server.id);
+    if (Guild.enabledPlugins.indexOf("currency") == -1) return;
 
-class guild {
-    constructor(guild) {
-        this.id = guild.id;
-        this.name = guild.name;
-        this.giveRole = guild.giveRole;
-        this.members = new Cache;
+    async.series({
+        autoGive: (cb) => {
+            db.get(`Credits.${server.id}:autoGive`, (err, res) => {
+                if (!res) {
+                    cb(null, false);
+                    return;
+                }
 
-        if (guild.members instanceof Cache) {
-            guild.members.forEach((member) => this.members.add(memeber));
-        } else {
-            guild.members.forEach((member) => {
-                this.members.add(member);
+                cb(null, true);
+                return;
+            })
+        },
+        userReady: (cb) => {
+            db.get(`Credits.${server.id}:member:${author.id}:check`, (err, check) => {
+                if (check) {
+                    cb(null, false);
+                    return
+                }
+                cb(null, true)
+                return;
+            })
+        }
+    }, (err, res) => {
+        if (res.autoGive && res.userReady) {
+            db.sadd(`Credits.${server.id}:members`, author.id)
+            db.sadd(`Credits.${author.id}:guilds`, server.id);
+            db.incrby(`Credits.${server.id}:member:${author.id}:credits`, 10);
+            db.setex(`Credits.${server.id}:member:${author.id}:check`, 60, 1)
+            db.set(`Credits.${server.id}:member:${author.id}:name`, author.username)
+            db.set(`Credits.${server.id}:member:${author.id}:discriminator`, author.discriminator)
+            db.set(`Credits.${server.id}:member:${author.id}:avatar`, author.avatar || "https://discordapp.com/assets/1cbd08c76f8af6dddce02c5138971129.png")
+            db.sort(`Credits.${author.id}:guilds`, "BY", "NOSORT", "GET", `Credits.*:member:${author.id}:credits`, (err, credits) => {
+                if (!err) {
+                    var sum = 0;
+                    for (var additive in credits) {
+                        sum += parseInt(credits[additive], 10);
+                    }
+                    db.set(`Credits.${author.id}:credits`, sum)
+                }
+                if (err) console.log(err)
+            })
+        }
+    });
+}
+
+
+class giveCredit extends lib.Command {
+    constructor(plugin) {
+        super("giveCredits",  false, plugin, {description: "Gives a user credits"});
+        this.setAlias(["giveCredits", "givec"]);
+        this.role = "@everyone";
+        this.usage = "giveCredits <Person> <number of credits>";
+    }
+    Message(message, author, channel, server) {
+        var Args = message.content.split(' ');
+        if (Args.length == 1 || Args.length == 2) {
+            channel.sendMessage("I need a user to give credits to.\nUsage: `##givecredits @Person credits`");
+        }
+        else if (Args.length >= 3) {
+            if (message.mentions.users.size > 0) {
+                async.series({
+                    isRole: (cb) => {
+                        db.get(`Credits.${server.id}:role`, (err, role) => {
+                            if (err) {
+                                cb(err) 
+                                return
+                            }
+                            if (author.id === "104063667351322624"){
+                                cb(null, true)
+                                return
+                            }
+                            if (role != null) {
+                                if (lib.isRoleServer(message.member, role)) {
+                                    cb(null, true);
+                                    return;
+                                }
+                            }
+                            if (lib.hasPerms(message.member, "MANAGE_GUILD")) {
+                                cb(null, true);
+                                return;
+                            }
+                            cb(null, false);
+                        })
+                    }
+                }, (err, res) => {
+                    if (err) {
+                        console.log(err)
+                        return
+                    }
+                    if (res.isRole) {
+                            db.sadd(`Credits.${server.id}:members`, message.mentions.users.first().id)
+                            db.incrby(`Credits.${server.id}:member:${message.mentions.users.first().id}:credits`, parseInt(Args[2], 10));
+                            db.setex(`Credits.${server.id}:member:${message.mentions.users.first().id}:check`, 60, 1)
+                            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:name`, message.mentions.users.first().username)
+                            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:discriminator`, message.mentions.users.first().discriminator)
+                            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:avatar`, message.mentions.users.first().avatar)
+                            channel.sendMessage(`I gave <@${message.mentions.users.first().id}> **${Args[2]}** credit(s)`);
+                    } else {
+                        channel.sendMessage("you don't have permission to give people credits")
+                    }
+                });
+            }
+            else {
+                message.reply("You didn't mention anyone");
+            }
+        }
+    }
+}
+
+class setAuto extends lib.Command {
+    constructor(plugin) {
+        super("setAuto", null, plugin, {caseSensitive: false})
+        this.setAlias(["setAuto", "sauto", "seta"]);
+        this.role = "@everyone"
+    }
+    Message (message, author, channel, server) {
+        async.series({
+            isRole: (cb) => {
+                db.get(`Credits.${server.id}:role`, (err, role) => {
+
+                    if ( /*lib.isRoleServer(author, server, role) ||*/ lib.hasPerms(message.member, "MANAGE_GUILD") || author.id === "104063667351322624") {
+                        cb(null, true);
+                        return;
+                    }
+                    cb(null, false);
+                })
+            }
+        }, (err, res) => {
+            if (res.isRole) {
+                db.get(`Credits.${server.id}:autoGive`, (Err, res) => {
+                    db.set(`Credits.${server.id}:autoGive`, !res);
+                    channel.sendMessage(`I set automatic credit dispencing to **${!res}**`);
+                })
+            }
+        });
+    }
+    
+}
+class setRole extends lib.Command {
+    constructor(plugin) {
+        super("setRole", null, plugin, {names: ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"], caseSensitive: false});
+        this.role = "@everyone"
+        this.Message = (message, author, channel, server) => {
+            var Args = message.content.split(" ");
+            if (Args.length < 2) {
+                channel.sendMessage("I'm sorry but, i need more arguments to run this command")
+                return;
+            }
+            async.series({
+                isRole: (cb) => {
+                    db.get(`Credits.${server.id}:role`, (err, role) => {
+                        if ( /*lib.isRoleServer(author, server, role) ||*/ lib.hasPerms(message.member, "MANAGE_GUILD") || author.id === "104063667351322624") {
+                            cb(null, true);
+                            return;
+                        }
+                        cb(null, false);
+                    })
+                }
+            }, (err, res) => {
+                if (res.isRole) {
+                    db.set(`Credits.${server.id}:role`, Args[1].toLowerCase());
+                    channel.sendMessage(`I set the credit management role to **${Args[1]}**`);
+                }
             });
         }
     }
 }
 
-function has(array, key, value) {
-    return !!get(array, key, value);
-}
 
-function get(array, key, value) {
-    if (array instanceof Array) {
-        for (var item in array) {
-            if (array[item].hasOwnProperty(key)) {
-                if (array[item][key] == value) {
-                    return array[item];
-                }
-            }
-        }
-    }
-    return null;
-}
 
-var handleMessage = function(message, author, channel, server) {
-    if (guilds.hasOwnProperty(server.id)) {
-        var Guild = guilds[server.id]
-        if (Guild.autoGive) {
-            if (!Guild.members.has("id", author.id)) {
-                var baseUser = {
-                    id: author.id,
-                    name: author.username,
-                    credits: 0,
-                    lastTime: message.timestamp
-                }
-                Guild.members.add(baseUser);
-                lib.writeJSON(JSONDir + "/" + Guild.id + ".json");
-            } else {
-                var user = Guild.members.get("id", author.id);
-
-                if (user.lastTime == 0) {
-                    user.lastTime = message.timestamp;
-                } else if ((message.timestamp - user.lastTime) >= 60000) {
-                    user.lastTime = message.timestamp;
-                    user.credits += 10;
-                }
-                Guild.members.update(Guild.members.get("id", author.id), user);
-                lib.writeJSON(JSONDir + "/" + Guild.id + ".json", Guild);
-            }
-        }
-    }
-}
-
-class initCredits {
+class viewCredit extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin
-        this.names = ["init", "initCredits"]
-        this.id = "initcredits"
-        this.func = function(bot, message, author, channel, server) {
-            var Args = message.content.split(" ");
-            var serverBase;
-            if (!fs.existsSync(JSONDir)) {
-                fs.mkdirSync(JSONDir);
-            }
-
-            if (!fs.existsSync(JSONDir + '/' + server.id + '.json')) {
-                if (Args.length == 2) {
-                    serverBase = {
-                        id: server.id,
-                        name: server.name,
-                        giveRole: Args[1],
-                        members: []
-                    };
-                } else {
-                    serverBase = {
-                        id: server.id,
-                        name: server.name,
-                        giveRole: "Banker",
-                        members: []
-                    };
-                }
-                for (var i = 0; i < server.members.length; i++) {
-                    if (server.members[i].equals(message.author)) {
-                        var user = {
-                            id: server.members[i].id,
-                            name: server.members[i].username,
-                            credits: 0,
-                            lastTime: message.timestamp
-                        }
-                    } else {
-                        var user = {
-                            id: server.members[i].id,
-                            name: server.members[i].username,
-                            credits: 0,
-                            lastTime: 0
-                        }
-                    }
-                    serverBase.members.push(user);
-                }
-                var newGuild = new guild(serverBase);
-                guilds[newGuild.id] = newGuild;
-                lib.writeJSON(JSONDir + '/' + server.id + '.json', serverBase);
-                if (newGuild.giveRole == "Banker")
-                    bot.sendMessage(channel, "Finished setting up currency, But you didn't define a role for managing credits, So i set it to `Banker`");
-                else
-                    bot.sendMessage(channel, "Finished setting up currency, I set the manage credits role to `" + newGuild.giveRole + "`");
-            } else {
-                bot.sendMessage(channel, "currency has arealy been setup on this server");
-            }
-        }
-    }
-}
-
-class giveCredit {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "giveCredits"
-        this.names = ["giveCredits", "givec"]
+        super("viewCredits", null, plugin, {names: ["credits", "viewcredits"], caseSensitive: false});
+        this.description = "Shows you how many credits you have";
         this.role = "@everyone"
-        this.desc = "Gives a user credits"
-        this.func = function(bot, message, author, channel, server) {
-            var Args = message.content.split(' ');
-            if (Args.length == 1 || Args.length == 2) {
-                bot.sendMessage(channel, "I need a user to give credits to.\nUsage: `##givecredits @Person credits`");
-            } else if (Args.length >= 3) {
-                if (message.mentions.length > 0) {
-                    if (fs.existsSync(JSONDir + '/' + server.id + '.json')) {
-                        var credits = guilds[server.id]
-                        if (lib.isRole(message, author, credits.giveRole)) {
-                            var person;
-                            if (!credits.members.has("id", message.mentions[0].id)) {
-                                if (message.mentions[0].equals(author)) {
-                                    var user = {
-                                        id: message.mentions[0].id,
-                                        name: message.mentions[0].username,
-                                        credits: Args[2],
-                                        lastTime: message.timestamp
-                                    }
-                                    credits.members.add(user);
-                                } else {
-                                    var user = {
-                                        id: message.mentions[0].id,
-                                        name: message.mentions[0].username,
-                                        credits: Args[2],
-                                        lastTime: 0
-                                    }
-                                    credits.members.add(user);
-                                }
-                                person = user;
-                            } else {
-                                person = credits.members.get("id", message.mentions[0].id);
-                            }
-                            person.credits += parseInt(Args[2], 10);
-                            credits.members.update(credits.members.get("id", message.mentions[0].id), person);
-                            lib.writeJSON(JSONDir + '/' + server.id + '.json', credits);
-                            bot.sendMessage(channel, "I gave " + person.name + " " + Args[2] + " credit(s)");
-                        } else {
-                            bot.sendMessage(channel, "Sorry but it seems you don't have permission to give manage credits");
-                        }
-                    } else {
-                        bot.sendMessage(channel, "Sorry but currency hasn't been setup on this server");
-                    }
-                } else {
-                    message.reply("You didn't mention anyone");
-                }
+    }
+    Message (message, author, channel, server) {
+        db.get(`Credits.${server.id}:member:${author.id}:credits`, (err, res) => {
+            if (err) console.log(err)
+            if (res == null || res == 0) {
+                channel.sendMessage("Sorry but you don't have any credits")
             }
-        }
-    }
-}
-class setAuto {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "setAuto"
-        this.names = ["setAuto", "sauto", "seta"];
-        this.role = "@everyone"
-        this.func = function(bot, message, author, channel, server) {
-            if (guilds.hasOwnProperty(server.id)) {
-                var guild = guilds[server.id];
-                if (lib.isRole(message, author, guild.giveRole)) {
-                    guild.autoGive = !guild.autoGive;
-                    bot.sendMessage(channel, "Automatic credit dispencing has been set to `" + guild.autoGive + "`");
-                    lib.writeJSON(JSONDir + "/" + guild.id + ".json", guild);
-                } else {
-                    bot.sendMessage(channel, "You don't have permission to change this setting");
-                }
+            else {
+                channel.sendMessage(`You have **${res}** credit(s)`);
             }
-        }
-    }
-}
-class setRole {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "setRole"
-        this.names = ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"]
-        this.role = "@everyone"
-        this.func = function(bot, message, author, channel, server) {
-            var Args = message.content.split(" ");
-            if (Args.length >= 2) {
-                if (guilds.hasOwnProperty(server.id)) {
-                    var guild = guilds[server.id];
-                    if (lib.isRole(message, author, guild.giveRole)) {
-                        guild.giveRole = Args[1];
-                        lib.writeJSON(JSONDir + "/" + guild.id + ".json", guild);
-                    } else {
-                        bot.sendMessage(channel, "You don't have permission to change this setting");
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-
-class viewCredit {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "viewCredit"
-        this.names = ["credits", "viewcredits"]
-        this.desc = "Shows you how many credits you have"
-        this.role = "@everyone"
-        this.func = function(bot, message, author, channel, server) {
-            if (fs.existsSync(JSONDir + '/' + server.id + '.json')) {
-                var credits = guilds[server.id]
-                if (!credits.members.has("id", author.id)) {
-                    var user = {
-                        id: author.id,
-                        name: author.usernam0e,
-                        credits: 0,
-                        lastTime: message.timestamp
-                    }
-                    credits.members.add(user);
-                }
-                lib.writeJSON(JSONDir + '/' + server.id + '.json', credits);
-                var person = credits.members.get("id", author.id);
-                bot.sendMessage(channel, "You have " + person.credits + " credit(s)");
-            } else {
-                bot.sendMessage(channel, "Sorry but currency hasn't been setup on this server");
-            }
-        }
-    }
-}
-
-exports.registerCMD = function(CommandRegistry, plugin) {
-    botEvent = plugin.bot;
-    CommandRegistry.registerPrefix(plugin, "#$");
-    CommandRegistry.registerCommand(plugin, "initCredits", ["init", "initcredits"], "sets up currency", initCredits, "@everyone");
-    CommandRegistry.registerCommand(plugin, "giveCredits", ["givec", "givecredits"], "Gives a user credits", giveCredit, "@everyone");
-    CommandRegistry.registerCommand(plugin, "viewCredits", ["credits", "viewcredits"], "Shows how many credits you have", viewCredit, "@everyone");
-    CommandRegistry.registerCommand(plugin, "setRole", ["setcreditrole", "scr", "setrolecredits", "src", "creditrole"], "Allows you to set the role required to manage credits on the server", setRole, "@everyone");
-    CommandRegistry.registerCommand(plugin, "setAuto", ["setauto", "sauto"], "Turn automatic credit dispencing on or off", setAuto, "@everyone");
-
-}
-
-
-module.exports = class commands {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.bot = plugin.bot;
-    }
-
-    register(CommandRegistry) {
-        CommandRegistry.registerPrefix(this.plugin, "$$")
-        CommandRegistry.registerCommand(new initCredits(this.plugin))
-        CommandRegistry.registerCommand(new viewCredit(this.plugin))
-        CommandRegistry.registerCommand(new giveCredit(this.plugin))
-        CommandRegistry.registerCommand(new setAuto(this.plugin))
-        CommandRegistry.registerCommand(new setRole(this.plugin))
-
-        this.bot.on("message", (msg) => {
-            handleMessage(msg, msg.author, msg.channel, msg.channel.server)
         });
+    }
 
-        if (fs.existsSync(JSONDir)) {
-            var dir = fs.readdirSync(JSONDir);
-            for (var file in dir) {
-                var Guild = lib.openJSON(JSONDir + "/" + dir[file]);
-                if (!Guild.hasOwnProperty("giveRole")) {
-                    Guild.giveRole = "Banker";
-                }
-                if (!Guild.hasOwnProperty("autoGive")) {
-                    Guild.autoGive = false;
-                }
-                lib.writeJSON(JSONDir + "/" + dir[file], Guild);
-                var newGuild = new guild(Guild);
-                guilds[newGuild.id] = newGuild;
-            }
+}
+
+
+class convertCredits {
+    constructor(plugin) {
+        
+        this.plugin = plugin;
+        this.id = "convertCredits";
+        this.desc = "Converts old credits to the new Credits system(Note: if not done you lose your old credits)"
+        this.names = ["convertCredits", "convertc", "cCredits"];
+    }
+    
+    func (bot, message, author, channel, server) {
+        if (fs.existsSync(`./credits/${server.id}.json`)) {
+            const oldGuild = lib.openJSON(`./credits/${server.id}.json`);
+            let totalOld = 0
+            oldGuild.members.forEach(member => {
+                totalOld += member.credits;
+                db.sadd(`Credits.${server.id}:members`, member.id);
+                db.incrby(`Credits.${server.id}:member:${member.id}:credits`, (-1 * member.credits) || 0);         
+            })
+            fs.unlinkSync(`./credits/${server.id}.json`);
+            channel.sendMessage(`Added a total of **${totalOld}** credits back to the users`);
         }
+    }
+}
+
+
+class myCredits {
+    constructor(plugin) {
+        this.plugin = plugin;
+        this.id = "myCredits";
+        this.desc = "testing stuff";
+        this.names = ["myCredits"];
+    }
+    
+    func (bot, message, author, channel, server) {
+        for (var i = 0; i < message.client.guilds.length; i++) {
+        
+        }
+    }
+}
 
 
 
+class listRewards extends lib.Command {
+    constructor(plugin) {
+        super("listRewards", null, plugin, {caseSensitive: false});
+        this.description = "The available rewards for this guild. Use your saved up credits to buy them.";
+        // this.caseSensitive = false;
+    }
+    
+    Message (message, author, channel, guild, registry, guilds) {
+        const rewards = [];
+        guilds.get(guild.id).roles.forEach(role => {
+            rewards.push(this.getRewards(guilds.get(guild.id), role));
+        });
+        Promise.all(rewards).then(Rewards => {
+            const rewardList = [];
+            
+            Rewards.forEach(reward => {
+                // console.log(typeof reward.pre);
+                const pre = reward.pre === "None" ? "None" : reward.pre.name;
+                if (reward.price != 0) rewardList.push(`Reward: **${reward.name}**, Price: **¥${reward.price}**, Requires: **${pre}**`);
+            });
+
+            channel.sendMessage(rewardList.join('\n'));
+            
+        }).catch(e => {
+            console.log("Why you reject", e);
+        });
+    }
+    
+    getRewards(guild, role) {
+        return new Promise((resolve, reject) => {
+            // console.log(guild.id, role.id)
+            db.multi()
+            .get(`Guilds.${guild.id}:roles.${role.id}:price`)
+            .get(`Guilds.${guild.id}:roles.${role.id}:pre`)
+            .exec((err, results) => {
+                if (err) return reject(err);
+                role.price = results[0] || 0;
+                role.pre = guild.roles.has(results[1]) ? guild.roles.get(results[1]) : "None";
+                
+                resolve(role);
+            })
+        })
+    }
+}
+
+class buyReward extends lib.Command {
+    constructor(plugin) {
+        super("buyReward", null, plugin, {caseSensitive: false});
+        this.description = "Buy dem rewards!1";
+    }
+    Message (message, author, channel, guild, registry, guilds) {
+        const filter = m => m.content.split(" ")[0] == `${registry.guilds.get(guild.id).prefix}reward` && m.author.id == author.id;
+        const rewards = [];
+        guilds.get(guild.id).roles.forEach(role => {
+            rewards.push(this.getRewards(guilds.get(guild.id), role));
+        });
+        Promise.all(rewards).then(Rewards => {
+            const rewardList = [`Type \`${registry.guilds.get(guild.id).prefix}reward <number>\`\n`];
+            const availableRewards = new Map();
+            let n = 1;
+            Rewards.forEach(reward => {
+                const pre = reward.pre === "None" ? "None" : reward.pre.name;
+                if (reward.price != 0 && !message.member.roles.has(reward.id)) {
+                    rewardList.push(`**${n}**: Reward: **${reward.name}**, Price: **¥${reward.price}**, Requires: **${pre}**`);
+                    availableRewards.set(n.toString(), reward);
+                    n++;
+                }
+            });
+
+            if (rewardList.length == 1) return channel.sendMessage("You don't have any available rewards");
+            if (collectors.has(author.id)) return;
+            
+            channel.sendMessage(rewardList.join('\n'));
+            
+            collectors.set(author.id, "Wow");
+            
+            channel.awaitMessages(filter, {max: 1, time: 60000, errors: ['time']}).then(collected => {
+                const Reward = availableRewards.get(collected.first().content.split(" ")[1]);
+                console.log(Reward != null, collected.first().content.split(" ")[1]);
+                if (Reward) {
+                    db.get(`Credits.${guild.id}:member:${author.id}:credits`, (err, credits) => {
+                        if (err) return channel.sendMessage("Something went wrong, I am unable to complete your purchase");
+                        if (credits >= Reward.price) {
+                            console.log("has enough")
+                            if (message.member.roles.has(Reward.pre.id) || Reward.pre === "None") {
+                                db.decrby(`Credits.${guild.id}:member:${author.id}:credits`, Reward.price)
+                                message.member.addRole(Reward.id).then(() => {
+                                    channel.sendMessage(`Thank you for purchasing the **${Reward.name}** reward.\n${Reward.price} has been subtracted from your account.`);
+                                    collectors.delete(author.id);
+                                }).catch(err => {
+                                    console.log(err);
+                                    channel.sendMessage(`I do not have permission to give the reward.\nContact an admin to have them give you the role.\n${Reward.price} has been subtracted from your account.`);
+                                    collectors.delete(author.id);
+                                });
+                            }
+                        }
+                    })
+                }
+            }).catch(err => {
+                console.log(err);
+               collectors.delete(author.id); 
+            });
+        }).catch(e => {
+            console.log("Why you reject", e);
+        });
+    }
+    
+    getRewards(guild, role) {
+        return new Promise((resolve, reject) => {
+            // console.log(guild.id, role.id)
+            db.multi()
+            .get(`Guilds.${guild.id}:roles.${role.id}:price`)
+            .get(`Guilds.${guild.id}:roles.${role.id}:pre`)
+            .exec((err, results) => {
+                if (err) return reject(err);
+                role.price = results[0] || 0;
+                role.pre = guild.roles.has(results[1]) ? guild.roles.get(results[1]) : "None";
+                
+                resolve(role);
+            })
+        })
+    }
+}
+
+
+module.exports = class commands extends EventEmitter {
+    constructor(plugin) {
+        super();
+        this.plugin = plugin;
+    }
+
+    register() {
+        this.plugin.registerCommand(new viewCredit(this.plugin));
+        this.plugin.registerCommand(new giveCredit(this.plugin));
+        this.plugin.registerCommand(new setAuto(this.plugin));
+        this.plugin.registerCommand(new setRole(this.plugin));
+        this.plugin.registerCommand(new listRewards(this.plugin));
+        this.plugin.registerCommand(new buyReward(this.plugin));
+        this.plugin.on("message", (client, msg) => {
+            handleMessage(client, msg, msg.author, msg.channel, msg.guild);
+        });
     }
 }

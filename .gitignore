@@ -2,5 +2,7 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-DisBot/admins.txt
-DisBot/options.json
+options.json
+node_modules/*
+playlists/*
+ffmpeg

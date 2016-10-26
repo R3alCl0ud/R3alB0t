@@ -1,485 +1,453 @@
-"use strict";
-var lib = require("../../../lib");
-var fs = require('fs');
-var request = require('request');
-var ytdl = require('youtube-dl');
-var mpegPlayer = {};
-var cmdReg;
-
-class iPod {
-    constructor(bot, voiceConnection, channel, data) {
-        this.bot = bot;
-        this.voiceConnection = voiceConnection;
-        this.voiceChannel = voiceConnection.voiceChannel.id;
-        this.server = voiceConnection.server.id;
-        this.boundChannel = data.boundChannel || channel.id;
-        this.np = null;
-        this.paused = data.paused || false;
-        this.playing = false;
-        this.ending = false;
-        this.plFile = './playlists/' + this.server + '/' + this.server + '.json';
-        this.currentTime = data.currentTime || 0;
-        this.volume = data.volume || 0.1;
-        this.currentStream = false;
-        this.keys = {
-            soundcloud: "3b16b5507608db3eaace81f41aea90bb"
-        };
-        this.Role = data.Role || "DJ";
-        this.autoStart = data.autoStart || true;
-    }
-
-    destroy() {
-        this.voiceConnection.destroy();
-    }
-}
-
-
-function playNext(srv) {
-    var playlist = lib.openJSON(mpegPlayer[srv.id].plFile);
-    playlist.tracks.splice(0, 1);
-    mpegPlayer[srv.id].currentTime = 0;
-    lib.writeJSON(mpegPlayer[srv.id].plFile, playlist);
-    mpegPlayer[srv.id].bot.deleteMessage(mpegPlayer[srv.id].np);
-    mpegPlayer[srv.id].playing = false;
-    playMusic(srv);
-}
-
-
-function playMusic(srv) {
-    var playlist = lib.openJSON(mpegPlayer[srv.id].plFile);
-
-    if (mpegPlayer[srv.id].playing) return;
-
-    if (playlist.tracks.length <= 0) {
-        mpegPlayer[srv.id].playing = false;
-        return;
-    } else if (playlist.tracks.length > 0) {
-        mpegPlayer[srv.id].playing = true;
-        var song = playlist.tracks[0];
-        if (song.type == "soundcloud") {
-            mpegPlayer[srv.id].currentStream = request("http://api.soundcloud.com/tracks/" + song.id + "/stream?client_id=" + mpegPlayer[srv.id].keys.soundcloud);
-            try {
-                mpegPlayer[srv.id].voiceConnection.playRawStream(mpegPlayer[srv.id].currentStream, {
-                    seek: mpegPlayer[srv.id].currentTime,
-                    volume: mpegPlayer[srv.id].volume
-                });
-                mpegPlayer[srv.id].bot.sendMessage(mpegPlayer[srv.id].boundChannel, "**Now Playing: " + song.title + "**", (error, message) => {
-                    console.log(message.id);
-                    mpegPlayer[srv.id].np = message;
-                });
-            } catch (err) {
-                console.log(err);
-            }
-        } else if (song.type == "youtube") {
-            mpegPlayer[srv.id].currentStream = request(song.url);
-            try {
-                mpegPlayer[srv.id].voiceConnection.playRawStream(mpegPlayer[srv.id].currentStream, {
-                    seek: mpegPlayer[srv.id].currentTime,
-                    volume: mpegPlayer[srv.id].volume
-                });
-                mpegPlayer[srv.id].bot.sendMessage(mpegPlayer[srv.id].boundChannel, "**Now Playing: " + song.title + "**", (error, message) => {
-                    mpegPlayer[srv.id].np = message.id;
-                });
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        mpegPlayer[srv.id].currentStream.on('end', () => {
-            setTimeout(function() {
-                try {
-                    playNext(srv);
-                } catch (err) {
-                    console.log(err);
-                }
-            }, 16000);
-        });
-    }
-}
+const lib = require("../../../lib");
+const fs = require('fs');
+const request = require('request');
+const ytdl = require('youtube-dl');
+const DiscordJS = require('discord.js');
+const mpegPlayer = new DiscordJS.Collection();
+const EventEmitter = require('events').EventEmitter;
+const iPod = require('./iPod');
 
 function checkUser(user, server) {
-    if (!mpegPlayer.hasOwnProperty(server.id)) {
+    if (!mpegPlayer.has(server.id)) {
         var Guild = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-        if (!lib.isRoleServer(user, server, Guild.Role))
+        if (!lib.isRoleServer(user, Guild.Role))
             return false;
-    } else if (!lib.isRoleServer(user, server, mpegPlayer[server.id].Role)) {
+    }
+    else if (!lib.isRoleServer(user, mpegPlayer.get(server.id).Role)) {
         return false;
     }
 
     return true;
 }
 
-
-
-class volume {
+class webList extends lib.Command {
     constructor(plugin) {
+        super("weblist", null, plugin);
         this.plugin = plugin;
-        this.id = "volume";
-        this.names = ["volume", "loudness", "vol", "setvol", "setvolume"];
-        this.desc = "Sets the volume";
-        this.func = function(bot, msg, usr, channel, server) {
-            var Args = msg.content.split(" ");
-            if (mpegPlayer.hasOwnProperty(server.id)) {
+        this.id = "weblist";
+        this.names = ["webPlaylist", "wpl"];
+        this.description = "Give user a link to view the playlist from their web browser";
+    }
+    Message (message, author, channel, guild) {
+        channel.sendMessage(`https://beta.r3alb0t.xyz/guild/${guild.id}/playlist`);
+    }
+    
+}
+
+class volume extends lib.Command {
+    constructor(plugin) {
+        super("volume", null, plugin, {names: ["volume", "loudness", "vol", "setvol", "setvolume"], description: "Sets the volume", caseSensitive: false});
+        this.Message = function(message, author, channel, server) {
+            var Args = message.content.split(" ");
+            if (mpegPlayer.has(server.id)) {
+                var Player = mpegPlayer.get(server.id);
                 if (Args.length == 1) {
-                    bot.sendMessage(channel, "The volume is `" + (mpegPlayer[server.id].volume * 100) + "%`");
+                    channel.sendMessage("The volume is `" + (Player.volume * 100) + "%`");
                 }
                 if (Args.length >= 2) {
                     var volume = parseInt(Args[1], 10) / 100;
-                    var Guild = lib.openJSON(mpegPlayer[server.id].plFile);
+                    var Guild = lib.openJSON(Player.plFile);
                     if (Math.abs(volume) <= 2) {
-                        mpegPlayer[server.id].volume = volume;
                         Guild.volume = volume;
-                        lib.writeJSON(mpegPlayer[server.id].plFile, Guild);
-                        bot.sendMessage(mpegPlayer[server.id].boundChannel, "Volume set to: `" + (volume * 100) + "%`");
-                        mpegPlayer[server.id].voiceConnection.setVolume(volume);
-                    } else {
-                        msg.reply("please use a more reasonable volume!");
+                        lib.writeJSON(Player.plFile, Guild);
+                        channel.sendMessage("Volume set to: `" + (volume * 100) + "%`");
+                        Player.setVolume(volume);
+                    }
+                    else {
+                        message.reply("please use a more reasonable volume!");
                     }
                 }
             }
-        }
+        };
     }
 }
 
-
-class summon {
+class summon extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "summon"
-        this.names = ["summon", "join", "comehere"];
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
+        super("summon", null, plugin, {names: ["summon", "join", "comehere"], caseSensitive: false});
+        this.Message = function(message, author, channel, server) {
 
-            if (mpegPlayer.hasOwnProperty(server.id)) {
-                bot.sendMessage(channel, "Already in a voice channel on this server");
+            if (mpegPlayer.has(server.id)) {
+                channel.sendMessage("Already in a voice channel on this server");
                 return;
             }
 
             if (fs.existsSync("./playlists/" + server.id + "/")) {
-                if (!checkUser(usr, server)) return;
+                if (!checkUser(author, server)) return;
             }
 
-            if (usr.voiceChannel != null) {
-                if (!fs.existsSync("./playlists/" + server.id + "/")) {
-                    fs.mkdirSync("./playlists/" + server.id + "/");
-                    try {
-                        bot.joinVoiceChannel(usr.voiceChannel, (error, connection) => {
-                            if (error != null) console.log(err);
-                            mpegPlayer[server.id] = new iPod(bot, connection, channel);
-                        });
-                        var defaultJSON = {
-                            "current": 0,
-                            "start": 0,
-                            "paused": false,
-                            "server": server.id,
-                            "channel": channel.id,
-                            "boundChannel": channel.id,
-                            "defaultChannel": usr.voiceChannel.id,
-                            "voice": usr.voiceChannel.id,
-                            "Role": "@everyone",
-                            "autoJoin": true,
-                            "autoStart": true,
-                            "volume": .1,
-                            "prevMsg": null,
-                            "tracks": []
-                        };
-                        if (!fs.existsSync("./playlists/" + server.id + "/" + server.id + ".json")) {
-                            lib.writeJSON("./playlists/" + server.id + "/" + server.id + ".json", defaultJSON);
-                        }
-                        bot.sendMessage(channel, "now connected to: " + usr.voiceChannel.name);
+            if (message.member.voiceChannel === null) return;
+            
+            if (message.member.voiceChannel.guild.id !== server.id) return;
 
-                    } catch (err) {
-                        console.log(err);
+            if (!fs.existsSync("./playlists/" + server.id + "/")) {
+                fs.mkdirSync("./playlists/" + server.id + "/");
+                try {
+                    message.member.voiceChannel.join().then(connection => {
+                        mpegPlayer.set(connection.channel.guild.id, new iPod(connection, channel));
+                    }).catch(console.log);
+
+                    var defaultJSON = {
+                        "id": server.id,
+                        "currentTime": 0,
+                        "paused": false,
+                        "boundChannel": channel.id,
+                        "defaultChannel": message.member.voiceChannel.id,
+                        "Role": "@everyone",
+                        "autoJoin": true,
+                        "autoStart": true,
+                        "volume": .1,
+                        "tracks": []
+                    };
+                    if (!fs.existsSync("./playlists/" + server.id + "/" + server.id + ".json")) {
+                        lib.writeJSON("./playlists/" + server.id + "/" + server.id + ".json", defaultJSON);
                     }
-                } else {
-                    var Guild = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                    bot.joinVoiceChannel(usr.voiceChannel, (error, connection) => {
-                        if (error != null) console.log(err);
-                        mpegPlayer[server.id] = new iPod(bot, connection, channel, Guild);
-                    });
-                    bot.sendMessage(channel, "now connected to: " + usr.voiceChannel.name);
+                    channel.sendMessage("now connected to: " + message.member.voiceChannel.name);
+
+                }
+                catch (err) {
+                    console.log(err);
                 }
             }
-        }
+            else {
+                const Guild = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
+                message.member.voiceChannel.join().then((connection) => {
+                    mpegPlayer.set(connection.channel.guild.id, new iPod(connection, channel, Guild));
+                    const Player = mpegPlayer.get(server.id);
+                    if (Guild.tracks.length >= 1 && !Player.paused && Guild.autoStart) Player.playNext();
+                }).catch(console.log);
+                channel.sendMessage("now connected to: " + message.member.voiceChannel.name);
+            }
+        };
     }
+
 }
 
-class getSong {
+class getSong extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "request";
-        this.names = ["request", "soundcloud", "add", "youtube", "yt", "sc"]
-        this.role = "@everyone"
-        this.func = function(bot, message, author, channel, server) {
-            var args = message.content.split(" ");
-            var toUpdate;
-            var added = 0;
-            if (lib.SCRegex.test(args[1])) {
-                bot.sendMessage(channel, "Adding to playlist", (error, msg) => {
-                    toUpdate = msg;
-                });
-                var newSong = {};
-                try {
-                    request("http://api.soundcloud.com/resolve.json?url=" + args[1] + "&client_id=3b16b5507608db3eaace81f41aea90bb", (error, response, body) => {
-                        var songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                        if (response.statusCode != 200 || error != null) {
-                            bot.sendMessage(channel, "I cannot stream this song, Either is doesn't exist, or I do not have permission to stream it")
-                            return;
-                        }
+        super("request", null, plugin, {names: ["request", "soundcloud", "add", "youtube", "yt", "sc"]});
+        this.role = "@everyone";
+    }
+    Message(message, author, channel, server) {
+
+        if (!fs.existsSync(`./playlists/${server.id}/${server.id}.json`)) message.reply("I'm sorry, but there is no playlist for this server yet. Try summoning me first");
 
 
-                        if (body != null) {
-                            try {
-                                body = JSON.parse(body);
-                                if (body.kind == "track") {
+        var args = message.content.split(" ");
+        var toUpdate;
+        var added = 0;
+        if (lib.SCRegex.test(args[1])) {
+            channel.sendMessage("Adding to playlist").then(msg => {
+                toUpdate = msg;
+            });
+            var newSong = {};
+            try {
+                request(`http://api.soundcloud.com/resolve.json?url=${args[1]}&client_id=3b16b5507608db3eaace81f41aea90bb`, (error, response, body) => {
+                    var songs = lib.openJSON(`./playlists/${server.id}/${server.id}.json`);
+                    if (response.statusCode != 200 || error != null) {
+                        channel.sendMessage("I cannot stream this song. Either it doesn't exist, or I do not have permission to stream it");
+                        toUpdate.delete();
+                        return;
+                    }
+
+
+                    if (body != null) {
+                        try {
+                            body = JSON.parse(body);
+                            if (body.kind == "track") {
+                                newSong = {
+                                    "id": body.id,
+                                    "title": body.title,
+                                    "user": author.id,
+                                    "requester": author.username,
+                                    "duration": body.duration,
+                                    "type": "soundcloud"
+                                };
+                                added++;
+                                songs.tracks.push(newSong);
+                            }
+                            if (body.kind == "playlist") {
+                                for (var i = 0; i < body.tracks.length; i++) {
                                     newSong = {
-                                        "id": body.id,
-                                        "title": body.title,
+                                        "id": body.tracks[i].id,
+                                        "title": body.tracks[i].title,
                                         "user": author.id,
-                                        "duration": body.duration,
+                                        "requester": author.username,
+                                        "duration": body.tracks[i].duration,
                                         "type": "soundcloud"
                                     };
                                     added++;
-                                    songs.tracks[songs.tracks.length] = newSong;
+                                    songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
+                                    songs.tracks.push(newSong);
+                                    lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
                                 }
-                                if (body.kind == "playlist") {
-                                    for (var i = 0; i < body.tracks.length; i++) {
-                                        newSong = {
-                                            "id": body.tracks[i].id,
-                                            "title": body.tracks[i].title,
-                                            "user": author.id,
-                                            "duration": body.tracks[i].duration,
-                                            "type": "soundcloud"
-                                        };
-                                        added++;
-                                        songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                                        songs.tracks[songs.tracks.length] = newSong;
-                                        lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
-                                    }
-                                }
-                            } catch (err) {
-                                message.reply("Umm that song didn't like me");
-                                console.log(err);
                             }
                         }
-                        lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
-                        songs = null;
-                        bot.updateMessage(toUpdate, "Added " + added + " song(s) to the queue");
-                    });
-                } catch (err) {
-                    console.log(err);
-                }
-            } else if (lib.YTRegex.test(args[1])) {
-                console.log("got a youtube link");
-                var songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                bot.sendMessage(channel, "Adding to playlist", function(error, msg) {
-                    toUpdate = msg;
-                });
-                ytdl.getInfo(args[1], ["--format=bestaudio"], function(error, info) {
-                    if (error != null) {
-                        console.log(error);
-                        return;
+                        catch (err) {
+                            message.reply("Umm, that song didn't like me");
+                            console.log(err);
+                        }
                     }
-                    newSong = {
-                        "url": info.url,
-                        "title": info.title,
+                    lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
+                    songs = null;
+                    toUpdate.edit(`Added ${added} song(s) to the queue`);
+                    shuffleOnAdd(added, args, channel, server);
+                });
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+        else if (lib.YTRegex.test(args[1])) {
+            var songs = lib.openJSON(`./playlists/${server.id}/${server.id}.json`);
+            channel.sendMessage("Adding to playlist").then(msg => {
+                toUpdate = msg;
+            });
+            ytdl.getInfo(args[1], ["--format=bestaudio"], function(error, info) {
+                if (error != null) {
+                    console.log(error);
+                    return;
+                }
+                songs = lib.openJSON(`./playlists/${server.id}/${server.id}.json`);
+                songs.tracks.push({
+                    "url": info.url,
+                    "title": info.title,
+                    "user": author.id,
+                    "requester": author.username,
+                    "duration": lib.timeToMs(info.duration),
+                    "type": "youtube"
+                });
+                lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
+                added++;
+                songs = null;
+                toUpdate.edit(`Added  ${added} song(s) to the queue`);
+                shuffleOnAdd(added, args, channel, server);
+            });
+        }
+        else if (lib.YTPlaylistRegex.test(args[1])) {
+            console.log("got a youtube link");
+            var songs = lib.openJSON(`./playlists/${server.id}/${server.id}.json`);
+            channel.sendMessage("Adding to playlist").then(msg => {
+                toUpdate = msg;
+            });
+            ytdl.getInfo(args[1], ["--format=bestaudio"], function(error, info) {
+                if (error != null) {
+                    console.log(error);
+                    return;
+                }
+                for (var track in info) {
+                    added++;
+                    songs = lib.openJSON(`./playlists/${server.id}/${server.id}.json`);
+                    songs.tracks[songs.tracks.length] = {
+                        "url": info[track].url,
+                        "title": info[track].title,
                         "user": author.id,
-                        "duration": 2000,
+                        "requester": author.username,
+                        "duration": lib.timeToMs(info[track].duration),
                         "type": "youtube"
                     };
-                    songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                    songs.tracks[songs.tracks.length] = newSong;
-                    lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
-                    added++;
-                    songs = null;
-                    bot.updateMessage(toUpdate, "Added " + added + " song(s) to the queue");
-                });
-            } else if (lib.YTPlaylistRegex.test(args[1])) {
-                console.log("got a youtube link");
-                var songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                bot.sendMessage(channel, "Adding to playlist", function(error, msg) {
-                    toUpdate = msg;
-                });
-                ytdl.getInfo(args[1], ["--format=bestaudio"], function(error, info) {
-                    if (error != null) {
-                        console.log(error);
-                        return;
-                    }
-                    for (var track in info) {
-                        newSong = {
-                            "url": info[track].url,
-                            "title": info[track].title,
-                            "user": author.id,
-                            "duration": 2000,
-                            "type": "youtube"
-                        };
-                        added++;
-                        songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
-                        songs.tracks[songs.tracks.length] = newSong;
-                        lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
-                    }
-                    lib.writeJSON('./playlists/' + server.id + '/' + server.id + '.json', songs);
-                    songs = null;
-                    bot.updateMessage(toUpdate, "Added " + added + " song(s) to the queue");
-                });
-            }
-        }
-    }
-}
-class destroy {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "destroy";
-        this.names = ["destroy", "leave"];
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
-            if (mpegPlayer.hasOwnProperty(msg.channel.server.id)) {
-                try {
-                    if (mpegPlayer[server.id])
-                        mpegPlayer[server.id].destroy();
-                    delete mpegPlayer[server.id];
-                } catch (err) {
-                    msg.reply("Holy shit Batman!! Something went wrong! Heres the log: ```js\n" + err + "```");
-                    console.log(err);
+                    lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
                 }
-            }
-        }
-    }
-}
-class play {
-    constructor(plugin) {
-        this.plugin = plugin;
-        this.id = "play"
-        this.names = ["play", "startmusic", "resume"];
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
-            if (mpegPlayer.hasOwnProperty(server.id)) {
-                try {
-                    playMusic(server);
-                } catch (err) {
-                    console.log(err);
-                }
-            } else {
-                msg.reply("not in a voice channel");
-            }
-        }
-    }
-}
-
-class queueMsg {
-
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "playlist";
-        this.names = ["browser", "queue", "playlist", "pl"];
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr) {
-            var queue = ["Current Playlist:\n\n"];
-            try {
-                var songs = lib.openJSON('./playlists/' + msg.channel.server.id + '/' + msg.channel.server.id + '.json');
-                var queueWord = queue;
-                var n = 0;
-                var tracks = songs.tracks;
-                if (songs.tracks.length > 20) {
-                    n = 20;
-                } else {
-                    n = songs.tracks.length;
-                }
-
-                for (var i = 0; i < n; i++) {
-                    if ((queueWord + "**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">").length <= 2000 && i < tracks.length) {
-                        queue.push(("**" + (i + 1) + "**:  `" + tracks[i].title.toString() + "`, <@" + tracks[i].user.toString() + ">"));
-                        queueWord = queue;
-                    } else {
-                        break;
-                    }
-                }
-                queue.push("\n\nPlaylist total length: " + songs.tracks.length);
-                queueWord = queue;
-                bot.startTyping(msg.channel);
-                setTimeout(function() {
-                    bot.stopTyping(msg.channel);
-                    bot.sendMessage(msg.channel, queueWord, function(error, message) {
-                        bot.deleteMessage(message, {
-                            wait: 17000
-                        });
-                    });
-                }, 750);
+                lib.writeJSON(`./playlists/${server.id}/${server.id}.json`, songs);
                 songs = null;
-            } catch (err) {
+                toUpdate.edit(`Added ${added} song(s) to the queue`);
+                shuffleOnAdd(added, args, channel, server);
+            });
+        }
+    }
+}
+
+function shuffleOnAdd(added, args, channel, server) {
+   //console.log(added)
+   //console.log(lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length)
+    if (args.length >= 3) {
+        if (added == lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
+            if (mpegPlayer.has(server.id)) {
+                var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
+    
+                var playlist = songs.tracks;
+    
+                for (var i = playlist.length - 1; i > 1; i--) {
+                    var n = Math.floor(Math.random() * (i + 1));
+                    
+                        var temp = playlist[i];
+                        playlist[i] = playlist[n];
+                        playlist[n] = temp;
+                }
+    
+                songs.tracks = playlist;
+    
+                channel.sendMessage("**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**").then(message => {
+                    message.delete(7000);
+                }).catch(console.log);
+                lib.writeJSON(mpegPlayer.get(server.id).plFile, songs);
+                songs = null;
+            }
+        }
+        else {
+            channel.sendMessage("Playlist must be empty to shuffle first song");
+        }
+    }
+    if (mpegPlayer.has(server.id)) {
+        if (!mpegPlayer.get(server.id).paused) {
+            mpegPlayer.get(server.id).playNext();
+        }
+    }
+}
+
+class destroy extends lib.Command {
+    constructor(plugin) {
+        super("destroy", null, plugin);
+        this.setAlias(["destroy", "leave"]);
+        this.role = "@everyone";
+    }
+    Message(message, author, channel, server) {
+        if (mpegPlayer.has(server.id)) {
+            try {
+                mpegPlayer.get(server.id).destroy();
+                mpegPlayer.delete(server.id);
+            }
+            catch (err) {
+                message.reply("Holy shit Batman!! Something went wrong! Heres the log: ```js\n" + err + "```");
                 console.log(err);
             }
         }
     }
 }
-
-var help = function(bot, msg, usr, channel, server) {
-    var helpMSG = [];
-    var Args = msg.content.split(' ');
-    if (Args.length == 1) {
-        helpMSG.push("**~Plugins~**\nType ##help <plugin> to view the commands for the plugin");
-        for (var plugin in cmdReg.cmds) {
-            helpMSG.push("`" + plugin + "`");
-        }
-        bot.sendMessage(channel, helpMSG);
-    } else {
-        if (cmdReg.cmds.hasOwnProperty(Args[1])) {
-            helpMSG.push("**~Show Commands For " + Args[1] + "~**")
-            for (var cmd in cmdReg.cmds[Args[1]]) {
-                var prefix = cmdReg.prefixes[Args[1]].prefixes;
-                helpMSG.push("`" + prefix + cmd + "` : **" + cmdReg.cmds[Args[1]][cmd].desc + "** Aliases: " + cmdReg.cmds[Args[1]][cmd].name.join(", "));
+class play extends lib.Command {
+    constructor(plugin) {
+        super("play", null, plugin);
+        this.role = "@everyone";
+        this.Message = function(message, author, channel, server) {
+            if (mpegPlayer.has(server.id)) {
+                try {
+                    mpegPlayer.get(server.id).playNext();
+                }
+                catch (err) {
+                    console.log(err);
+                }
             }
-        }
-        bot.sendMessage(channel, helpMSG);
-    }
-}
-
-class skip {
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "skip";
-        this.names = ["skip", "next", "newsong", "playnext"]
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
-
-            if (!mpegPlayer.hasOwnProperty(server.id)) return;
-
-            if (!checkUser(usr, server)) return;
-
-            msg.reply("skipping");
-            playNext(server);
-        }
-    }
-}
-
-class pause {
-
-    constructor(plugin) {
-        this.plugin = plugin
-        this.id = "pause"
-        this.names = ["pause", "stop", "stopmusic"]
-        this.role = "@everyone"
-        this.func = function(bot, msg, author, channel, srv) {
-            if (mpegPlayer.hasOwnProperty(srv.id)) {
-                var Guild = lib.openJSON(mpegPlayer[srv.id].plFile);
-                Guild.paused = true;
-                mpegPlayer[srv.id].paused = true;
-                mpegPlayer[srv.id].playing = false;
-                mpegPlayer[srv.id].currentTime += (mpegPlayer[srv.id].voiceConnection.streamTime / 1000);
-                mpegPlayer[srv.id].currentStream = false;
-                mpegPlayer[srv.id].voiceConnection.stopPlaying();
+            else {
+                message.reply("not in a voice channel");
             }
+        };
+    }
+}
+
+class resume extends lib.Command {
+    constructor(plugin) {
+        super("resume", null, plugin);
+        this.setAlias(["resume"]);
+        this.role = "@everyone";
+        this.Message = function(message, author, channel, server) {
+            if (mpegPlayer.has(server.id)) {
+                try {
+                    mpegPlayer.get(server.id).resume();
+                }
+                catch (err) {
+                    console.log(err);
+                }
+            }
+            else {
+                message.reply("not in a voice channel");
+            }
+        };
+    }
+}
+
+
+class queueMsg extends lib.Command {
+
+    constructor(plugin) {
+        super("playlist", null, plugin, {caseSensitive: false});
+        this.setAlias(["browser", "queue", "playlist", "pl"]);
+        this.role = "@everyone";
+        this.Message = (message, author, channel, server) => {
+            var queue = ["Current Playlist:\n\n"];
+            try {
+                var songs = lib.openJSON('./playlists/' + server.id + '/' + server.id + '.json');
+                var queueWord = queue;
+                var n = 0;
+                var tracks = songs.tracks;
+                if (songs.tracks.length > 20) {
+                    n = 20;
+                }
+                else {
+                    n = songs.tracks.length;
+                }
+                if (n != 0) {
+                    for (var i = 0; i < n; i++) {
+                        if ((`${queueWord}**${(i + 1)}**:  \`${tracks[i].title.toString()}\`, <@${tracks[i].user.toString()}>`).length <= 2000 && i < tracks.length) {
+                            queue.push((`**${(i + 1)}**:  \`${tracks[i].title.toString()}\`, <@${tracks[i].user.toString()}>`));
+                            queueWord = queue;
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    queue.push("\n\nPlaylist total length: " + songs.tracks.length);
+                    queue.push(`You can view the playlist online at: https://r3alb0t.xyz/guild/${server.id}/playlist`)
+                    queueWord = queue;
+                } else {
+                    queueWord = ["There are currently no items in your queue!"]
+                }
+                
+                
+                channel.startTyping();
+                setTimeout(function() {
+                    channel.stopTyping();
+                    channel.sendMessage(queueWord.join("\n")).then(message => {
+                        message.delete(17000);
+                    }).catch(console.log);
+                }, 750);
+                songs = null;
+            }
+            catch (err) {
+                console.log(err);
+            }
+        };
+    }
+}
+
+
+class skip extends lib.Command {
+    constructor(plugin) {
+        super("skip", null, plugin, {names: ["skip", "next", "newsong", "playnext"]});
+        this.role = "@everyone";
+    }
+    Message (message, author, channel, server) {
+
+        if (!mpegPlayer.has(server.id)) return;
+
+        if (!checkUser(message.member, server)) return;
+
+        message.reply("skipping");
+        mpegPlayer.get(server.id).skip();
+    }
+}
+
+class pause extends lib.Command {
+
+    constructor(plugin) {
+        super("pause", null, plugin, {names: ["pause", "stop", "stopmusic"]});
+    }
+    Message (msg, author, channel, srv) {
+        if (mpegPlayer.has(srv.id)) {
+            const Player = mpegPlayer.get(srv.id);
+            if (Player.paused) return;
+            Player.pause();
         }
     }
 }
-class shuffle {
+
+class shuffle extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin
-        this.id = "shuffle"
-        this.names = ["shuffle", "randomize"]
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
-            if (mpegPlayer.hasOwnProperty(server.id)) {
-                var songs = lib.openJSON(mpegPlayer[server.id].plFile);
+        super("shuffle", null, plugin);
+        this.setAlias(["shuffle", "randomize"]);
+        this.role = "@everyone";
+        this.Message = function(message, author, channel, server) {
+            if (mpegPlayer.has(server.id)) {
+                var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
 
                 var playlist = songs.tracks;
 
@@ -489,81 +457,79 @@ class shuffle {
                         var temp = playlist[i];
                         playlist[i] = playlist[n];
                         playlist[n] = temp;
-                    } else {
+                    }
+                    else {
                         i++;
                     }
                 }
 
                 songs.tracks = playlist;
 
-                bot.sendMessage(channel, "**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**", function(error, message) {
-                    if (error) {
-                        console.log(error);
-                    }
-                    bot.deleteMessage(message, {
-                        wait: 7000
-                    });
-                });
-                lib.writeJSON(mpegPlayer[server.id].plFile, songs);
+                channel.sendMessage("**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**").then(message => {
+                    message.delete(7000);
+                }).catch(console.log);
+                lib.writeJSON(mpegPlayer.get(server.id).plFile, songs);
                 songs = null;
             }
-        }
+        };
     }
 }
-class clearplaylist {
+class clearplaylist extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin
-        this.id = "clearplaylist"
-        this.names = ["cpl", "clearplaylist", "clearpl", "playlistclear"]
-        this.role = "@everyone"
-        this.func = function(bot, msg, usr, channel, server) {
-            if (mpegPlayer.hasOwnProperty(server.id)) {
+        super("clearplaylist", null, plugin);
+        this.setAlias(["cpl", "clearplaylist", "clearpl", "playlistclear"]);
+        this.role = "@everyone";
+        this.Message = function(message, author, channel, server) {
+            if (mpegPlayer.has(server.id)) {
                 try {
-                    var songs = lib.openJSON(mpegPlayer[server.id].plFile);
+                    var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
                     songs.tracks = [];
-                    mpegPlayer[server.id].voiceConnection.stopPlaying();
-                    lib.writeJSON(mpegPlayer[server.id].plFile, songs);
-                } catch (err) {
+                    mpegPlayer.get(server.id).stopPlaying();
+                    lib.writeJSON(mpegPlayer.get(server.id).plFile, songs);
+                }
+                catch (err) {
                     console.log(err);
                 }
             }
-        }
+        };
     }
 }
 
 
 
 
-var setRole = function(bot, message, author, channel, server) {
+var setRole = function(message, author, channel, server) {
     var Args = message.content.split(" ");
     if (Args.length >= 2) {
         if (mpegPlayer.hasOwnProperty(server.id)) {
             var guild = mpegPlayer[server.id];
-            var Guild = openJSON(mpegPlayer[server.id].plFile)
+            var Guild = lib.openJSON(mpegPlayer[server.id].plFile);
             if (lib.isRole(message, author, guild.Role) || server.owner.equals(author) || lib.hasPerms(author, server, "manageServer")) {
                 guild.Role = Args[1];
                 Guild.Role = guild.Role;
-            } else {
-                bot.sendMessage(channel, "You don't have permission to change this setting");
+            }
+            else {
+                channel.sendMessage("You don't have permission to change this setting");
             }
         }
-    } else {
-        bot.sendMessage(channel, "invalid argument count");
     }
-}
+    else {
+        channel.sendMessage("invalid argument count");
+    }
+};
 
-var setJoin = function(bot, message, author, channel, server) {
+var setJoin = function(message, author, channel, server) {
 
-}
+};
 
 
-class config {
+class config extends lib.Command {
     constructor(plugin) {
-        this.plugin = plugin
-        this.id = "config"
-        this.role = "@everyone"
-        this.names = ["config", "configure"]
-        this.func = function(bot, message, author, channel, server) {
+        this.plugin = plugin;
+        this.id = "config";
+        this.role = "@everyone";
+        this.names = ["config", "configure"];
+        this.func = function(message, author, channel, server) {
 
             var Args = message.content.split(" ");
 
@@ -572,28 +538,28 @@ class config {
             var configs = {
                 role: setRole,
                 autojoin: setJoin
-            }
+            };
 
             if (configs.hasOwnProperty(Args[1].toLowerCase())) {
                 message.content = Args.splice(0, 1).join(" ");
-                configs[Args[1]](bot, message, author, channel, server);
+                configs[Args[1]](message, author, channel, server);
             }
 
 
-        }
+        };
     }
 }
 
 
-function startUp(bot, index) {
+function startUp(client, index) {
 
     if (fs.existsSync("./playlists")) {
-        var dir = fs.readdirSync("./playlists");
+        const dir = fs.readdirSync("./playlists");
 
         if (index == dir.length) return;
 
-        var current = fs.readdirSync("./playlists/" + dir[index]);
-        var Guild = lib.openJSON("./playlists/" + dir[index] + "/" + current[0]);
+        const current = fs.readdirSync("./playlists/" + dir[index]);
+        const Guild = lib.openJSON("./playlists/" + dir[index] + "/" + current[0]);
         if (!Guild.hasOwnProperty("Role"))
             Guild.Role = "DJ";
         if (!Guild.hasOwnProperty("autoJoin"))
@@ -602,43 +568,66 @@ function startUp(bot, index) {
             Guild.defaultChannel = null;
         if (!Guild.hasOwnProperty("boundChannel"))
             Guild.boundChannel = null;
+        if (Guild.hasOwnProperty("server")) 
+            Guild.id = Guild.server;
+        
+        Guild.tracks.forEach((track, i) => {
+            track.requester = client.users.get(track.user).username;
+            Guild.tracks[i] = track;
+        });
+        
+        
 
         lib.writeJSON("./playlists/" + dir[index] + "/" + current[0], Guild);
 
-        if (Guild.autoJoin == true && Guild.defaultChannel != null) {
-            bot.joinVoiceChannel(bot.channels.get("id", Guild.defaultChannel), function(error, connection) {
-                if (error != null) console.log(err);
+        if (Guild.autoJoin == true && Guild.defaultChannel != null && client.channels.has(Guild.defaultChannel)) {
+            client.channels.get(Guild.defaultChannel).join().then(connection => {
 
-                mpegPlayer[Guild.server] = new iPod(bot, connection, bot.channels.get("id", Guild.boundChannel), Guild);
+                mpegPlayer.set(Guild.id, new iPod(connection, client.channels.get(Guild.boundChannel), Guild));
 
-                if (mpegPlayer[Guild.server].autoStart == true && Guild.tracks.length > 0 && connection.voiceChannel.members.length > 0 && !mpegPlayer[Guild.server].paused)
-                    playMusic(bot.servers.get("id", Guild.server));
-                startUp(bot, index + 1);
-            });
+                if (mpegPlayer.get(Guild.id).autoStart == true && Guild.tracks.length > 0 && connection.channel.members.length > 1 && !mpegPlayer.get(Guild.id).paused) mpegPlayer.get(Guild.id).playNext();
+                startUp(client, index + 1);
+            }).catch(console.log);
         }
     }
 }
 
-module.exports = class commands {
+
+
+function handleNewRole(server, role) {
+
+    if (mpegPlayer.hasOwnProperty(server.id)) {
+        mpegPlayer[server.id].Role = role;
+        const Guild = lib.openJSON(mpegPlayer[server.id].plFile);
+        Guild.Role = role;
+        lib.writeJSON(mpegPlayer[server.id].plFile, Guild);
+    }
+}
+
+
+module.exports = class commands extends EventEmitter{
     constructor(plugin) {
+        super()
         if (plugin != null) {
             this.plugin = plugin;
         }
     }
 
-    register(CommandRegistry) {
-        CommandRegistry.registerPrefix(this.plugin, "#$");
-        CommandRegistry.registerCommand(new volume(this.plugin))
-        CommandRegistry.registerCommand(new summon(this.plugin))
-        CommandRegistry.registerCommand(new destroy(this.plugin))
-        CommandRegistry.registerCommand(new getSong(this.plugin))
-        CommandRegistry.registerCommand(new play(this.plugin))
-        CommandRegistry.registerCommand(new queueMsg(this.plugin))
-        CommandRegistry.registerCommand(new pause(this.plugin))
-        CommandRegistry.registerCommand(new shuffle(this.plugin))
-        CommandRegistry.registerCommand(new skip(this.plugin))
-        CommandRegistry.registerCommand(new clearplaylist(this.plugin))
-        CommandRegistry.registerCommand(new config(this.plugin))
-        startUp(this.plugin.bot, 0);
+    register() {
+        this.plugin.registerCommand(new volume(this.plugin));
+        this.plugin.registerCommand(new summon(this.plugin));
+        this.plugin.registerCommand(new destroy(this.plugin));
+        this.plugin.registerCommand(new getSong(this.plugin));
+        this.plugin.registerCommand(new play(this.plugin));
+        this.plugin.registerCommand(new resume(this.plugin));
+        this.plugin.registerCommand(new queueMsg(this.plugin));
+        this.plugin.registerCommand(new pause(this.plugin));
+        this.plugin.registerCommand(new shuffle(this.plugin));
+        this.plugin.registerCommand(new skip(this.plugin));
+        this.plugin.registerCommand(new clearplaylist(this.plugin));
+        // this.plugin.registerCommand(new webList(this.plugin));
+        startUp(this.plugin, 0);
+
+        // this.plugin.bot.on("updateRole", handleNewRole);
     }
-}
+};
