@@ -53,51 +53,28 @@ class giveCredit extends lib.Command {
   }
   Message(message, author, channel, server) {
     var Args = message.content.split(' ');
-    if (Args.length == 1 || Args.length == 2) {
+    if (Args.length < 3) {
       channel.sendMessage("I need a user to give credits to.\nUsage: `##givecredits @Person credits`");
     } else if (Args.length >= 3) {
       if (message.mentions.users.size > 0) {
-        async.series({
-          isRole: (cb) => {
-            db.get(`Credits.${server.id}:role`, (err, role) => {
-              if (err) {
-                cb(err)
-                return
-              }
-              if (author.id === "104063667351322624") {
-                cb(null, true)
-                return
-              }
-              if (role != null) {
-                if (lib.isRoleServer(message.member, role)) {
-                  cb(null, true);
-                  return;
-                }
-              }
-              if (lib.hasPerms(message.member, "MANAGE_GUILD")) {
-                cb(null, true);
-                return;
-              }
-              cb(null, false);
-            })
-          }
-        }, (err, res) => {
+        db.get(`Credits.${server.id}:role`, (err, role) => {
           if (err) {
-            console.log(err)
-            return
+            return console.error(err);
           }
-          if (res.isRole) {
-            db.sadd(`Credits.${server.id}:members`, message.mentions.users.first().id)
-            db.incrby(`Credits.${server.id}:member:${message.mentions.users.first().id}:credits`, parseInt(Args[2], 10));
-            db.setex(`Credits.${server.id}:member:${message.mentions.users.first().id}:check`, 60, 1)
-            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:name`, message.mentions.users.first().username)
-            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:discriminator`, message.mentions.users.first().discriminator)
-            db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:avatar`, message.mentions.users.first().avatar)
-            channel.sendMessage(`I gave <@${message.mentions.users.first().id}> **${Args[2]}** credit(s)`);
+          if (role != null) {
+            if (lib.hasRole(message.member, role) || lib.hasPerms(message.member, "MANAGE_GUILD")) {
+              db.sadd(`Credits.${server.id}:members`, message.mentions.users.first().id)
+              db.incrby(`Credits.${server.id}:member:${message.mentions.users.first().id}:credits`, parseInt(Args[2], 10));
+              db.setex(`Credits.${server.id}:member:${message.mentions.users.first().id}:check`, 60, 1)
+              db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:name`, message.mentions.users.first().username)
+              db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:discriminator`, message.mentions.users.first().discriminator)
+              db.set(`Credits.${server.id}:member:${message.mentions.users.first().id}:avatar`, message.mentions.users.first().avatar)
+              channel.sendMessage(`I gave <@${message.mentions.users.first().id}> **${Args[2]}** credit(s)`);
+            }
           } else {
             channel.sendMessage("you don't have permission to give people credits")
           }
-        });
+        })
       } else {
         message.reply("You didn't mention anyone");
       }
