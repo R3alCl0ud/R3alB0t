@@ -1,37 +1,21 @@
-"use strict";
-
-var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/plugin');
-var commands = require('./lib/commands');
+const Plugin = require('DiscordForge').Plugin;
+let commands = require('./lib/commands');
 
 class wagYourCommands extends Plugin {
 
-    constructor(bot, plugin, registry) {
-        super(plugin.name);
-        this.id = plugin.id;
-        this.name = plugin.name;
-        this.author = plugin.author;
-        this.registry = registry;
-        this.version = plugin.version;
-        this.plugin = plugin
-        if (bot instanceof DiscordJS.Client) {
-            this.bot = bot;
+  constructor() {
+      super(plugin.id, plugin.name, plugin.author, plugin.version, "WagYourCommands");
+      this.loaded = false;
+      this.on('load', this.loadPlugin.bind(this));
+  }
 
-        } else {
-            console.log("Provided bot is not istance of Discord.js Bot");
-        }
-        this.loaded = false;
-    }
-
-
-
-    loadPlugin() {
-        if (!this.loaded) {
-            commands = new commands(this.plugin)
-            commands.register(this.registry)
-            this.loaded = true;
-        }
-    }
+  loadPlugin() {
+      if (!this.loaded) {
+          commands = new commands(this);
+          commands.register();
+          this.loaded = true;
+      }
+  }
 }
 
 var plugin = {

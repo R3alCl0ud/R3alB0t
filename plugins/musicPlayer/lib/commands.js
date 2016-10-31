@@ -1,4 +1,4 @@
-const lib = require("../../../lib");
+const lib = require('DiscordForge');
 const fs = require('fs');
 const request = require('request');
 const ytdl = require('youtube-dl');
@@ -31,7 +31,7 @@ class webList extends lib.Command {
     Message (message, author, channel, guild) {
         channel.sendMessage(`https://beta.r3alb0t.xyz/guild/${guild.id}/playlist`);
     }
-    
+
 }
 
 class volume extends lib.Command {
@@ -77,7 +77,7 @@ class summon extends lib.Command {
             }
 
             if (message.member.voiceChannel === null) return;
-            
+
             if (message.member.voiceChannel.guild.id !== server.id) return;
 
             if (!fs.existsSync("./playlists/" + server.id + "/")) {
@@ -264,19 +264,19 @@ function shuffleOnAdd(added, args, channel, server) {
         if (added == lib.openJSON(`./playlists/${server.id}/${server.id}.json`).tracks.length && args[2].toLowerCase() == "shuffle") {
             if (mpegPlayer.has(server.id)) {
                 var songs = lib.openJSON(mpegPlayer.get(server.id).plFile);
-    
+
                 var playlist = songs.tracks;
-    
+
                 for (var i = playlist.length - 1; i > 1; i--) {
                     var n = Math.floor(Math.random() * (i + 1));
-                    
+
                         var temp = playlist[i];
                         playlist[i] = playlist[n];
                         playlist[n] = temp;
                 }
-    
+
                 songs.tracks = playlist;
-    
+
                 channel.sendMessage("**Shuffle :diamonds: Shuffle :spades: Shuffle :hearts:**").then(message => {
                     message.delete(7000);
                 }).catch(console.log);
@@ -391,8 +391,8 @@ class queueMsg extends lib.Command {
                 } else {
                     queueWord = ["There are currently no items in your queue!"]
                 }
-                
-                
+
+
                 channel.startTyping();
                 setTimeout(function() {
                     channel.stopTyping();
@@ -568,15 +568,15 @@ function startUp(client, index) {
             Guild.defaultChannel = null;
         if (!Guild.hasOwnProperty("boundChannel"))
             Guild.boundChannel = null;
-        if (Guild.hasOwnProperty("server")) 
+        if (Guild.hasOwnProperty("server"))
             Guild.id = Guild.server;
-        
+
         Guild.tracks.forEach((track, i) => {
             track.requester = client.users.get(track.user).username;
             Guild.tracks[i] = track;
         });
-        
-        
+
+
 
         lib.writeJSON("./playlists/" + dir[index] + "/" + current[0], Guild);
 
@@ -613,7 +613,7 @@ module.exports = class commands extends EventEmitter{
         }
     }
 
-    register() {
+    register(client) {
         this.plugin.registerCommand(new volume(this.plugin));
         this.plugin.registerCommand(new summon(this.plugin));
         this.plugin.registerCommand(new destroy(this.plugin));
@@ -626,7 +626,7 @@ module.exports = class commands extends EventEmitter{
         this.plugin.registerCommand(new skip(this.plugin));
         this.plugin.registerCommand(new clearplaylist(this.plugin));
         // this.plugin.registerCommand(new webList(this.plugin));
-        startUp(this.plugin, 0);
+        startUp(client, 0);
 
         // this.plugin.bot.on("updateRole", handleNewRole);
     }
