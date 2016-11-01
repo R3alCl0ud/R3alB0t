@@ -9,17 +9,15 @@ Manager.on('launch', shard => {
 
 Manager.on('message', (shard, m) => {
     console.log(m)
-    
-    
+
+
     if (m._logChannel) {
         console.log("log shard: ", shard.id);
         logShard = shard;
         return;
     }
-    // if (guild instanceof String) return;
     if (m._guildCreate) {
         const guild = m._guildCreate
-        console.log(typeof guild, guild instanceof DiscordJS.Guild)
         if (typeof guild === 'object'){
             console.log(`Joined: ${guild.name}`)
             Manager.fetchClientValues('guilds.size').then(guilds => {
@@ -30,7 +28,6 @@ Manager.on('message', (shard, m) => {
     }
     if (m._guildDelete) {
         const guild = m._guildDelete
-        console.log(typeof guild, guild instanceof DiscordJS.Guild)
         if (typeof guild === 'object'){
             console.log(`Left: ${guild.name}`)
             Manager.fetchClientValues('guilds.size').then(guilds => {

@@ -1,6 +1,5 @@
-var DiscordJS = require('discord.js');
-var Plugin = require('../../lib/registry/models/plugin');
-var commands = require('./lib/commands');
+const Plugin = require('DiscordForge').Plugin;
+let commands = require('./lib/commands');
 
 class currency extends Plugin {
 

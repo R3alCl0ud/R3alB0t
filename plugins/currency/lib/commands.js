@@ -31,7 +31,7 @@ function handleMessage(message, author, channel, server) {
           .sort(`Credits.${author.id}:guilds`, "BY", "NOSORT", "GET", `Credits.*:member:${author.id}:credits`)
           .exec((err, res) => {
             if (!err) {
-              var sum = 0;
+              let sum = 0;
               for (const additive in res[7]) {
                 sum += parseInt(res[7][additive], 10);
               }
@@ -334,8 +334,8 @@ module.exports = class commands extends EventEmitter {
     this.plugin.registerCommand(new setRole(this.plugin));
     this.plugin.registerCommand(new listRewards(this.plugin));
     this.plugin.registerCommand(new buyReward(this.plugin));
-    this.plugin.on("message", (msg) => {
-      handleMessage(msg, msg.author, msg.channel, msg.guild);
+    this.plugin.on("message", (msg, client) => {
+      handleMessage(msg, msg.author, msg.channel, msg.guild, client);
     });
   }
 }
