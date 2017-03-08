@@ -1,0 +1,3 @@
+command.join.name=Join
+command.join.desc=Joins the voice channel you are connected to, If you are connected to a voice channel
+command.join.usage=Join

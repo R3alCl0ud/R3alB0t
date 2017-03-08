@@ -1,0 +1,127 @@
+[09:53:06] [DiscLoader/INFO]: Mod Discovery
+[09:53:06] [DiscLoader/INFO]: Looking for mods directory
+[09:53:06] [DiscLoader/INFO]: Mods Directory Located
+[09:53:06] [DiscLoader/INFO]: Discovering Mod Containers
+[09:53:06] [DiscLoader/INFO]: Checking candidates for @Mod annotation
+[09:53:07] [DiscLoader/INFO]: Registering uninitialized mods
+[09:53:07] [DiscLoader/INFO]: Registering Mod EventHandlers
+[09:53:07] [DiscLoader/INFO]: PreINIT
+[09:53:07] [DiscLoader/INFO]: Begin PreInit
+[09:53:07] [DiscLoader/INFO]: Registering Default Language
+[09:53:07] [DiscLoader/INFO]: Execute PreInit
+[09:53:07] [DiscLoader/INFO]: Init
+[09:53:07] [DiscLoader/INFO]: Waiting to Login
+[09:53:09] [Gateway Listener/INFO]: Connected to the gateway
+[09:53:09] [DiscLoader/INFO]: Caching API Objects
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:09] [DiscLoader/INFO]: Caching Presences
+[09:53:09] [DiscLoader/INFO]: Caching Emojis
+[09:53:09] [DiscLoader/INFO]: Caching Voice States
+[09:53:09] [DiscLoader/INFO]: Registering Icon
+[09:53:09] [DiscLoader/INFO]: Guilds Cached
+[09:53:09] [DiscLoader/INFO]: Caching Roles
+[09:53:09] [DiscLoader/INFO]: Caching Members
+[09:53:09] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
+[09:53:10] [DiscLoader/INFO]: Caching Roles
+[09:53:10] [DiscLoader/INFO]: Caching Members
+[09:53:10] [DiscLoader/INFO]: Caching Channels
+[09:53:10] [DiscLoader/INFO]: Caching Presences
+[09:53:10] [DiscLoader/INFO]: Caching Emojis
+[09:53:10] [DiscLoader/INFO]: Caching Voice States
+[09:53:10] [DiscLoader/INFO]: Registering Icon
+[09:53:10] [DiscLoader/INFO]: Guilds Cached
