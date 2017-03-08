@@ -6,18 +6,17 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 import io.discloader.discloader.entity.channels.TextChannel;
-import io.discloader.discloader.entity.channels.VoiceChannel;
 import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.network.voice.StreamSchedule;
 
 public class PlaylistManager extends StreamSchedule implements AudioLoadResultHandler {
 
-	private VoiceChannel channel;
+	// private VoiceChannel channel;
 	private TextChannel boundChannel;
 
 	public PlaylistManager(VoiceConnection connection, TextChannel boundChannel) {
 		super(connection.player, connection);
-		this.channel = connection.channel;
+		// this.channel = connection.channel;
 		this.boundChannel = boundChannel;
 		// this.tracks
 	}
@@ -34,7 +33,13 @@ public class PlaylistManager extends StreamSchedule implements AudioLoadResultHa
 	}
 
 	@Override
-	public void playlistLoaded(AudioPlaylist arg0) {
+	public void playlistLoaded(AudioPlaylist tracks) {
+		for (AudioTrack t : tracks.getTracks()) {
+			
+		}
+//		tracks.
+//		player
+		this.connection.channel.name.toString();
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.discloader.discloader.client.command.Command;
-import io.discloader.discloader.client.command.CommandHandler;
 import io.discloader.discloader.common.event.MessageCreateEvent;
 
 public class CommandPlay extends Command {
@@ -13,7 +12,7 @@ public class CommandPlay extends Command {
 		setDescription("adds a track/set to the playlist\nCurrently only works with YouTube");
 	}
 
-	private final String regex = String.format("%splay (.*)", CommandHandler.prefix);
+	private final String regex = "#$play (.*)";
 	private final Pattern pattern = Pattern.compile(regex);
 
 	public void execute(MessageCreateEvent e) {
@@ -22,10 +21,13 @@ public class CommandPlay extends Command {
 			Matcher track = pattern.matcher(e.message.content);
 			if (track.find()) {
 				String trackID = track.group(1);
+				System.out.println(trackID);
 				e.loader.voiceConnections.get(e.message.guild.id).play(trackID);
+			} else {
+				System.out.println(e.message.content);
 			}
 		} else {
-
+			System.out.println(e.message.content);
 		}
 	}
 }
