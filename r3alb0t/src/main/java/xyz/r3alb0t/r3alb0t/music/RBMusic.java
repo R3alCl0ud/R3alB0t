@@ -10,9 +10,11 @@ public class RBMusic {
 
 	public static Command join;
 	public static Command play;
-
+	public static Command volume;
+	
 	public static void registerCommands() {
 		CommandRegistry.registerCommand(join = new CommandJoin(), join.getUnlocalizedName());
 		CommandRegistry.registerCommand(play = new CommandPlay(), play.getUnlocalizedName());
+		CommandRegistry.registerCommand(volume = new CommandVolume(), volume.getUnlocalizedName());
 	}
 }
