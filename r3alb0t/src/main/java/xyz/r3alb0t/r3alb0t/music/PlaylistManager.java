@@ -6,9 +6,11 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 
 import io.discloader.discloader.entity.RichEmbed;
 import io.discloader.discloader.entity.channels.TextChannel;
+import io.discloader.discloader.entity.user.DLUser;
 import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.network.voice.StreamSchedule;
 
@@ -36,22 +38,46 @@ public class PlaylistManager extends StreamSchedule implements AudioLoadResultHa
 
 	@Override
 	public void playlistLoaded(AudioPlaylist tracks) {
-		boundChannel.sendMessage(String.format("Added %d track(s) to the playlist.", tracks.getTracks().size()));
+		RichEmbed embed = new RichEmbed("Music PLayer").setColor(0x2566C7);
+		DLUser user = connection.loader.user;
+		embed.setAuthor(user.username, "http://discloader.io", user.avatar.toString());
+		int i = 1;
+		for (AudioTrack track : tracks.getTracks()) {
+			if (embed.fields.size() == 23) {
+				embed.addField("Total Tracks added", String.format("Added *%d* tracks", tracks.getTracks().size()));
+				break;
+			}
+			AudioTrackInfo info = track.getInfo();
+			String name = String.format("%s - %d", tracks.getName(), i);
+			String t = String.format("[*%s*](%s)  by %s", info.title, info.uri, info.author);
+			embed.addField(name, t);
+			i++;
+		}
+		boundChannel.sendEmbed(embed);
 	}
 
 	@Override
-	public void trackLoaded(AudioTrack arg0) {
-		boundChannel.sendMessage("Added 1 track to the playlist.");
+	public void trackLoaded(AudioTrack track) {
+		RichEmbed embed = new RichEmbed("Music PLayer").setColor(0x2566C7);
+		DLUser user = connection.loader.user;
+		AudioTrackInfo info = track.getInfo();
+		System.out.println("" + info.length);
+		embed.setAuthor(user.username, info.uri, user.avatar.toString());
+		embed.addField("Added Track",
+				String.format("The track *%s* by *%s* has been added to the playlist", info.title, info.author));
+		// boundChannel.sendMessage("Added 1 track to the playlist.");
 	}
 
 	public void onTrackStart(AudioPlayer player, AudioTrack track) {
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
 		embed.addField("Now Playing", String.format("*%s* - %s", track.getInfo().title, track.getInfo().author));
-		if (tracks.size() > 1)
-			embed.addField("Up Next",
-					String.format("*%s* - %s", tracks.get(1).getInfo().title, tracks.get(1).getInfo().author));
-		embed.addField("Volume", String.format("%d%", player.getVolume()), true).addField("Current Time", getTime(),
-				true);
+		if (tracks.size() > 1 && tracks.get(1) != null) {
+
+			AudioTrackInfo info = tracks.get(1).getInfo();
+			embed.addField("Up Next", String.format("*%s* - %s", info.title, info.author));
+		}
+		embed.addField("Volume", String.format("%d", player.getVolume()) + "%", true);
+		embed.addField("Current Time", getTime(), true);
 		boundChannel.sendEmbed(embed);
 	}
 
