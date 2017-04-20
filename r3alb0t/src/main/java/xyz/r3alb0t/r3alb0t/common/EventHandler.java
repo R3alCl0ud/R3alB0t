@@ -14,7 +14,7 @@ public class EventHandler extends EventListenerAdapter {
 	public void RawPacket(RawEvent data) {
 		if (data.isGateway()) {
 			WebSocketFrame frame = data.getFrame();
-			if (frame.isTextFrame()) System.out.println(frame.getPayloadText());
+//			if (frame.isTextFrame()) System.out.println(frame.getPayloadText());
 		}
 	}
 
@@ -27,6 +27,7 @@ public class EventHandler extends EventListenerAdapter {
 	@Override
 	public void Ready(ReadyEvent event) {
 		event.loader.user.setGame("Converting to DiscLoader");
+		System.out.printf("Ready\n");
 	}
 
 }
