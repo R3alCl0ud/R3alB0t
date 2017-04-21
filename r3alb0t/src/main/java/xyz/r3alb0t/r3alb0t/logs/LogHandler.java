@@ -1,12 +1,18 @@
 package xyz.r3alb0t.r3alb0t.logs;
 
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.EventListenerAdapter;
+import io.discloader.discloader.common.event.UserUpdateEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceJoinEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceLeaveEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceSwitchEvent;
@@ -14,6 +20,7 @@ import io.discloader.discloader.common.event.guild.member.GuildMemberRemoveEvent
 import io.discloader.discloader.common.event.guild.member.GuildMemberUpdateEvent;
 import io.discloader.discloader.common.event.message.MessageDeleteEvent;
 import io.discloader.discloader.common.event.message.MessageUpdateEvent;
+import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
 import io.discloader.discloader.entity.channel.ITextChannel;
@@ -40,6 +47,26 @@ public class LogHandler extends EventListenerAdapter {
 	public static void save() {
 		String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new GuildStruct[0]));
 		System.out.println(json);
+	}
+
+	@Override
+	public void UserUpdate(UserUpdateEvent event) {
+		IGuild guild = EntityRegistry.getGuildByID("282226852616077312");
+		if (guild.getMember(event.user.getID()) == null) return;
+		BufferedImage bi = new BufferedImage(256, 128, BufferedImage.TYPE_INT_RGB);
+		Graphics bg = bi.getGraphics();
+		bg.drawImage(event.oldUser.getAvatar().getImage(), 0, 0, null);
+		bg.drawImage(event.user.getAvatar().getImage(), 128, 0, null);
+		bg.dispose();
+		File temp;
+		try {
+			temp = File.createTempFile(event.user.toString(), ".png");
+			ImageIO.write(bi, "png", temp);
+			// guild.getTextChannelByName("serverlog").sendFile(temp);
+			// System.out.println("attempted");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
