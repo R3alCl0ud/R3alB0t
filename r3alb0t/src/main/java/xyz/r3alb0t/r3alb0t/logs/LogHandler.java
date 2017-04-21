@@ -2,6 +2,8 @@ package xyz.r3alb0t.r3alb0t.logs;
 
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.EventListenerAdapter;
@@ -11,18 +13,34 @@ import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.Voice
 import io.discloader.discloader.common.event.guild.member.GuildMemberRemoveEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberUpdateEvent;
 import io.discloader.discloader.common.event.message.MessageDeleteEvent;
+import io.discloader.discloader.common.event.message.MessageUpdateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
+import io.discloader.discloader.util.DLUtil;
+import redis.clients.jedis.Jedis;
 
 public class LogHandler extends EventListenerAdapter {
 
 	private Resource vswitch = new Resource("r3alb0t", "texture/icon/logs/voiceSwitch.png");
 	private Resource vjoin = new Resource("r3alb0t", "texture/icon/logs/voiceJoin.png");
 	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
+
+	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
+	private static Jedis jedis = new Jedis("localhost");
+
+	public static void load() {
+		// jedis.connect();
+		// jedis.
+	}
+
+	public static void save() {
+		String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new GuildStruct[0]));
+		System.out.println(json);
+	}
 
 	@Override
 	public void GuildMemberRemove(GuildMemberRemoveEvent event) {
@@ -43,6 +61,7 @@ public class LogHandler extends EventListenerAdapter {
 		IGuild guild = event.guild;
 		IGuildMember member = event.member, oldMember = event.oldMember;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
 		RichEmbed embed = new RichEmbed().setAuthor(String.format("%s (ID: %d)", member.toString(), member.getID()), "", member.getUser().getAvatar().toString()).setTimestamp(OffsetDateTime.now());
 		if (!member.getNickname().equals(oldMember.getNickname())) {
 			embed.setColor(0xfefa2a).setTitle("Nickname changed");
@@ -55,26 +74,24 @@ public class LogHandler extends EventListenerAdapter {
 			embed.setTitle("Switched Voice Channels").addField("Old Channel", String.format("**%s** (ID: %d)", member.getVoiceChannel().getName(), member.getVoiceChannel().getID()), true)
 					.addField("New Channel", String.format("**%s** (ID: %d)", oldMember.getVoiceChannel().getName(), oldMember.getVoiceChannel().getID()), true).setColor(0xfafa22);
 		}
-		// System.out.println(DLUtil.gson.toJson(embed));
 
 		channel.sendEmbed(embed);
 	}
 
 	@Override
 	public void GuildMemberVoiceJoin(VoiceJoinEvent event) {
-		System.out.println("does this ever get here?");
 		if (event.getGuild().getID() != 282226852616077312l) return;
 		IGuild guild = event.getGuild();
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getChannel();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
 		RichEmbed embed = new RichEmbed("Joined a Voice Channel").setTimestamp(OffsetDateTime.now()).setColor(0x00fa00);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
 		try {
 			embed.setThumbnail(vjoin.getFile());
 		} catch (IOException e) {
-			// e.printStackTrace();
 		}
 		channel.sendEmbed(embed);
 	}
@@ -86,13 +103,13 @@ public class LogHandler extends EventListenerAdapter {
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getVoiceChannel();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
 		RichEmbed embed = new RichEmbed("Left Voice Channel").setTimestamp(OffsetDateTime.now()).setColor(0xa93d3d);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
 		try {
 			embed.setThumbnail(vleave.getFile());
 		} catch (IOException e) {
-			// e.printStackTrace();
 		}
 		channel.sendEmbed(embed);
 	}
@@ -104,6 +121,7 @@ public class LogHandler extends EventListenerAdapter {
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getVoiceChannel(), oldVoiceChannel = event.getOldVoiceChannel();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
 		RichEmbed embed = new RichEmbed("Switched Voice Channels").setTimestamp(OffsetDateTime.now()).setColor(0xff7000);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Previous Voice Channel", String.format("**%s** (ID: %d)", oldVoiceChannel.getName(), oldVoiceChannel.getID()), true);
@@ -115,10 +133,18 @@ public class LogHandler extends EventListenerAdapter {
 		channel.sendEmbed(embed);
 	}
 
-	// @Override
-	// public void MessageDelete(MessageDeleteEvent event) {
-	// System.out.println("test");
-	// }
+	@Override
+	public void MessageUpdate(MessageUpdateEvent event) {
+		System.out.println("Gets here?");
+		IMessage message = event.getMessage();
+		IGuild guild = message.getGuild();
+		if (guild == null || guild.getID() != 282226852616077312l) return;
+		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
+		RichEmbed embed = new RichEmbed("Message Edited").setColor(0xfcf45a).setTimestamp(OffsetDateTime.now()).addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()))
+				.addField("Old Content", event.getOldMessage().getContent(), true).addField("New Content", message.getContent(), true);
+		channel.sendEmbed(embed);
+	}
 
 	@Override
 	public void MessageDelete(MessageDeleteEvent event) {
@@ -126,6 +152,7 @@ public class LogHandler extends EventListenerAdapter {
 		IGuild guild = message.getGuild();
 		if (guild == null || guild.getID() != 282226852616077312l) return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null) return;
 		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now());
 		System.out.println("" + message.getContent());
 		embed.addField("Channel", event.getChannel().toMention(), true);
