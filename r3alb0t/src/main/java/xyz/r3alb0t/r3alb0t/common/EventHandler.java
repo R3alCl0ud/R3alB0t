@@ -4,6 +4,7 @@ import io.discloader.discloader.common.event.DLPreInitEvent;
 import io.discloader.discloader.common.event.EventListenerAdapter;
 import io.discloader.discloader.common.event.RawEvent;
 import io.discloader.discloader.common.event.ReadyEvent;
+import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 
 public class EventHandler extends EventListenerAdapter {
 
@@ -20,6 +21,7 @@ public class EventHandler extends EventListenerAdapter {
 	public void PreInit(DLPreInitEvent e) {
 		System.out.println("Registering music commands");
 		Commands.registerCommands();
+		LogHandler.load();
 	}
 
 	@Override

@@ -12,7 +12,7 @@ import javax.imageio.ImageIO;
 
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.EventListenerAdapter;
-import io.discloader.discloader.common.event.UserUpdateEvent;
+import io.discloader.discloader.common.event.guild.member.GuildMemberAddEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceJoinEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceLeaveEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceSwitchEvent;
@@ -27,6 +27,7 @@ import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
+import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
 
@@ -35,13 +36,17 @@ public class LogHandler extends EventListenerAdapter {
 	private Resource vswitch = new Resource("r3alb0t", "texture/icon/logs/voiceSwitch.png");
 	private Resource vjoin = new Resource("r3alb0t", "texture/icon/logs/voiceJoin.png");
 	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
+	private Resource mdelete = new Resource("r3alb0t", "texture/icon/logs/messageDelete.png");
+	private Resource medit = new Resource("r3alb0t", "texture/icon/logs/messageEdit.png");
 
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
 	private static Jedis jedis = new Jedis("localhost");
 
 	public static void load() {
 		// jedis.connect();
-		// jedis.
+		// jedis.auth("password");
+		// System.out.println(jedis.dbSize());
+		jedis.a
 	}
 
 	public static void save() {
@@ -50,36 +55,23 @@ public class LogHandler extends EventListenerAdapter {
 	}
 
 	@Override
-	public void UserUpdate(UserUpdateEvent event) {
-		IGuild guild = EntityRegistry.getGuildByID("282226852616077312");
-		if (guild.getMember(event.user.getID()) == null) return;
-		BufferedImage bi = new BufferedImage(256, 128, BufferedImage.TYPE_INT_RGB);
-		Graphics bg = bi.getGraphics();
-		bg.drawImage(event.oldUser.getAvatar().getImage(), 0, 0, null);
-		bg.drawImage(event.user.getAvatar().getImage(), 128, 0, null);
-		bg.dispose();
-		File temp;
-		try {
-			temp = File.createTempFile(event.user.toString(), ".png");
-			ImageIO.write(bi, "png", temp);
-			// guild.getTextChannelByName("serverlog").sendFile(temp);
-			// System.out.println("attempted");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void GuildMemberAdd(GuildMemberAddEvent event) {
+		// IGuild guild = event.guild;
+		// if (guild.getID() != )
+		IGuildMember member = event.getMember();
+		ITextChannel testChannel = EntityRegistry.getTextChannelByID(304639070082957312L);
+		RichEmbed embed = new RichEmbed("Member Joined").setColor(0x00f100).setTimestamp(OffsetDateTime.now());
+		embed.addField("Member", formatMember(member));
+		testChannel.sendEmbed(embed);
 	}
 
 	@Override
 	public void GuildMemberRemove(GuildMemberRemoveEvent event) {
-		// IGuildMember member = event.getMember();
-		// ITextChannel testChannel =
-		// EntityRegistry.getTextChannelByID(282230026869669888L);
-		// RichEmbed embed = new
-		// RichEmbed(member.toString()).setDescription("Left the
-		// guild").setColor(0xf10000).setThumbnail(Endpoints.avatar(member.getID(),
-		// member.getUser().getAvatar().toString()));
-		// embed.setTimestamp(OffsetDateTime.now());
-		// testChannel.sendEmbed(embed);
+		IGuildMember member = event.getMember();
+		ITextChannel testChannel = EntityRegistry.getTextChannelByID(304639070082957312L);
+		RichEmbed embed = new RichEmbed("Member Left").setColor(0xf10000).setTimestamp(OffsetDateTime.now());
+		embed.addField("Member", formatMember(member));
+		testChannel.sendEmbed(embed);
 	}
 
 	@Override
@@ -87,21 +79,35 @@ public class LogHandler extends EventListenerAdapter {
 		if (event.guild.getID() != 282226852616077312l) return;
 		IGuild guild = event.guild;
 		IGuildMember member = event.member, oldMember = event.oldMember;
+		IUser user = member.getUser(), oldUser = oldMember.getUser();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		if (channel == null) return;
-		RichEmbed embed = new RichEmbed().setAuthor(String.format("%s (ID: %d)", member.toString(), member.getID()), "", member.getUser().getAvatar().toString()).setTimestamp(OffsetDateTime.now());
+		RichEmbed embed = new RichEmbed().setTimestamp(OffsetDateTime.now());
+		embed.addField("Member", formatMember(member));
 		if (!member.getNickname().equals(oldMember.getNickname())) {
 			embed.setColor(0xfefa2a).setTitle("Nickname changed");
 			embed.addField("Old Nickname", oldMember.getNickname(), true).addField("New Nickname", member.getNickname(), true);
-		} else if (member.getVoiceChannel() == null && oldMember.getVoiceChannel() != null) {
-			embed.setTitle("Joined a voice channel").addField("Voice Channel", String.format("**%s** (ID: %d)", member.getVoiceChannel().getName(), member.getVoiceChannel().getID())).setColor(0x00fa00);
-		} else if (member.getVoiceChannel() != null && oldMember.getVoiceChannel() == null) {
-			embed.setTitle("Left a voice channel").addField("Voice Channel", String.format("**%s** (ID: %d)", oldMember.getVoiceChannel().getName(), oldMember.getVoiceChannel().getID())).setColor(0xfa2222);
-		} else if (member.getVoiceChannel() != null && oldMember.getVoiceChannel() != null) {
-			embed.setTitle("Switched Voice Channels").addField("Old Channel", String.format("**%s** (ID: %d)", member.getVoiceChannel().getName(), member.getVoiceChannel().getID()), true)
-					.addField("New Channel", String.format("**%s** (ID: %d)", oldMember.getVoiceChannel().getName(), oldMember.getVoiceChannel().getID()), true).setColor(0xfafa22);
+		} else if (!user.getUsername().equals(oldUser.getUsername())) {
+			embed.setColor(0xfefa2a).setTitle("Username changed");
+			embed.addField("Old Username", oldMember.getUser().getUsername(), true).addField("New Username", member.getUser().getUsername(), true);
+		} else if (!user.getAvatar().toString().equals(oldUser.getAvatar().toString())) {
+			embed.setColor(0xfefa2a).setTitle("Avatar changed");
+			BufferedImage bi = new BufferedImage(256, 128, BufferedImage.TYPE_INT_RGB);
+			Graphics bg = bi.getGraphics();
+			bg.drawImage(oldUser.getAvatar().getImage(), 0, 0, null);
+			bg.drawImage(user.getAvatar().getImage(), 128, 0, null);
+			bg.dispose();
+			File temp;
+			try {
+				temp = File.createTempFile(user.toString(), ".png");
+				ImageIO.write(bi, "png", temp);
+				embed.setImage(temp);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			return;
 		}
-
 		channel.sendEmbed(embed);
 	}
 
@@ -162,14 +168,32 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void MessageUpdate(MessageUpdateEvent event) {
-		System.out.println("Gets here?");
-		IMessage message = event.getMessage();
+		IMessage message = event.getMessage(), oldMessage = event.getOldMessage();
 		IGuild guild = message.getGuild();
 		if (guild == null || guild.getID() != 282226852616077312l) return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		if (channel == null) return;
-		RichEmbed embed = new RichEmbed("Message Edited").setColor(0xfcf45a).setTimestamp(OffsetDateTime.now()).addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()))
-				.addField("Old Content", event.getOldMessage().getContent(), true).addField("New Content", message.getContent(), true);
+		RichEmbed embed = new RichEmbed("Message Edited").setColor(0xfcf45a).setTimestamp(OffsetDateTime.now());
+		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()));
+		if (oldMessage != null) {
+			if (oldMessage.getContent().length() > 1000) {
+				embed.addField("Old Content", oldMessage.getContent().substring(0, oldMessage.getContent().length() / 2), true);
+				embed.addField("\u200b", oldMessage.getContent().substring(oldMessage.getContent().length() / 2), true);
+			} else {
+				embed.addField("Old Content", event.getOldMessage().getContent(), true);
+			}
+		}
+		if (message.getContent() != null && message.getContent().length() > 1000) {
+			embed.addField("New Content", message.getContent().substring(0, message.getContent().length() / 2), true);
+			embed.addField("\u200b", message.getContent().substring(message.getContent().length() / 2), true);
+		} else {
+			embed.addField("New Content", message.getContent(), true);
+		}
+		try {
+			embed.setThumbnail(medit);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		channel.sendEmbed(embed);
 	}
 
@@ -180,11 +204,24 @@ public class LogHandler extends EventListenerAdapter {
 		if (guild == null || guild.getID() != 282226852616077312l) return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		if (channel == null) return;
-		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now());
-		System.out.println("" + message.getContent());
+		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now()).setColor(0xff2020);
 		embed.addField("Channel", event.getChannel().toMention(), true);
 		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()), true);
-		embed.addField("Message Contents", message.getContent(), true);
+		if (message.getContent().length() > 1000) {
+			embed.addField("Message Contents", message.getContent().substring(0, message.getContent().length() / 2), true);
+			embed.addField("\u200b", message.getContent().substring(message.getContent().length() / 2), true);
+		} else {
+			embed.addField("Message Contents", message.getContent(), true);
+		}
+		try {
+			embed.setThumbnail(mdelete);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		channel.sendEmbed(embed);
+	}
+
+	public String formatMember(IGuildMember member) {
+		return String.format("**%s** (ID: %d)", member.getNickname(), member.getID());
 	}
 }
