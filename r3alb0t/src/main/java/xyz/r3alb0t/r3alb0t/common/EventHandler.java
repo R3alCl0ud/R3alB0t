@@ -14,6 +14,8 @@ public class EventHandler extends EventListenerAdapter {
 			// WebSocketFrame frame = data.getFrame();
 			// if (frame.isTextFrame())
 			// System.out.println(frame.getPayloadText());
+		} else if (data.isREST()) {
+			// System.out.println(data.getHttpResponse().getBody());
 		}
 	}
 

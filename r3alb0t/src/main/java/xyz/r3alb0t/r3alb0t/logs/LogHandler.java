@@ -1,17 +1,25 @@
 package xyz.r3alb0t.r3alb0t.logs;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.EventListenerAdapter;
+import io.discloader.discloader.common.event.guild.GuildBanAddEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberAddEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceJoinEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceLeaveEvent;
@@ -20,7 +28,6 @@ import io.discloader.discloader.common.event.guild.member.GuildMemberRemoveEvent
 import io.discloader.discloader.common.event.guild.member.GuildMemberUpdateEvent;
 import io.discloader.discloader.common.event.message.MessageDeleteEvent;
 import io.discloader.discloader.common.event.message.MessageUpdateEvent;
-import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
 import io.discloader.discloader.entity.channel.ITextChannel;
@@ -38,6 +45,7 @@ public class LogHandler extends EventListenerAdapter {
 	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
 	private Resource mdelete = new Resource("r3alb0t", "texture/icon/logs/messageDelete.png");
 	private Resource medit = new Resource("r3alb0t", "texture/icon/logs/messageEdit.png");
+	private Resource nameChange = new Resource("r3alb0t", "texture/icon/logs/nameChange.png");
 
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
 	private static Jedis jedis = new Jedis("localhost");
@@ -46,7 +54,7 @@ public class LogHandler extends EventListenerAdapter {
 		// jedis.connect();
 		// jedis.auth("password");
 		// System.out.println(jedis.dbSize());
-		jedis.a
+		// jedis.a
 	}
 
 	public static void save() {
@@ -55,23 +63,31 @@ public class LogHandler extends EventListenerAdapter {
 	}
 
 	@Override
+	public void GuildBanAdd(GuildBanAddEvent event) {
+		// event.
+	}
+
+	@Override
 	public void GuildMemberAdd(GuildMemberAddEvent event) {
-		// IGuild guild = event.guild;
-		// if (guild.getID() != )
+		IGuild guild = event.getGuild();
+		if (guild.getID() != 282226852616077312l) return;
 		IGuildMember member = event.getMember();
-		ITextChannel testChannel = EntityRegistry.getTextChannelByID(304639070082957312L);
+		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		RichEmbed embed = new RichEmbed("Member Joined").setColor(0x00f100).setTimestamp(OffsetDateTime.now());
 		embed.addField("Member", formatMember(member));
-		testChannel.sendEmbed(embed);
+		channel.sendEmbed(embed);
 	}
 
 	@Override
 	public void GuildMemberRemove(GuildMemberRemoveEvent event) {
+		IGuild guild = event.getGuild();
+		if (guild.getID() != 282226852616077312l) return;
 		IGuildMember member = event.getMember();
-		ITextChannel testChannel = EntityRegistry.getTextChannelByID(304639070082957312L);
+		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		RichEmbed embed = new RichEmbed("Member Left").setColor(0xf10000).setTimestamp(OffsetDateTime.now());
+		embed.setDescription("A member has **left** or has been **kicked** from the guild");
 		embed.addField("Member", formatMember(member));
-		testChannel.sendEmbed(embed);
+		channel.sendEmbed(embed);
 	}
 
 	@Override
@@ -87,6 +103,27 @@ public class LogHandler extends EventListenerAdapter {
 		if (!member.getNickname().equals(oldMember.getNickname())) {
 			embed.setColor(0xfefa2a).setTitle("Nickname changed");
 			embed.addField("Old Nickname", oldMember.getNickname(), true).addField("New Nickname", member.getNickname(), true);
+			try {
+				BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
+				Graphics bg = bi.getGraphics();
+				bg.drawImage(new ImageIcon(nameChange.getFile().toURI().toURL()).getImage(), 0, 0, null);
+				bg.setColor(Color.BLACK);
+				bg.setFont(new Font(".Nadeem PUA", Font.PLAIN, 28));
+				FontMetrics fm = bg.getFontMetrics();
+				List<String> lines = wrapText(member.getNickname(), fm, 210);
+				for (int i = 0; i < lines.size(); i++)
+					bg.drawString(lines.get(i), 30, 162 + (32 * i));
+				File temp = File.createTempFile("" + member.getID(), ".png");
+				bg.dispose();
+				ImageIO.write(bi, "png", temp);
+				embed.setThumbnail(temp);
+				channel.sendEmbed(embed).thenAccept(action -> {
+					temp.delete();
+				});
+				return;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		} else if (!user.getUsername().equals(oldUser.getUsername())) {
 			embed.setColor(0xfefa2a).setTitle("Username changed");
 			embed.addField("Old Username", oldMember.getUser().getUsername(), true).addField("New Username", member.getUser().getUsername(), true);
@@ -223,5 +260,30 @@ public class LogHandler extends EventListenerAdapter {
 
 	public String formatMember(IGuildMember member) {
 		return String.format("**%s** (ID: %d)", member.getNickname(), member.getID());
+	}
+
+	public List<String> wrapText(String txt, FontMetrics fm, int maxWidth) {
+		StringTokenizer st = new StringTokenizer(txt);
+
+		List<String> list = new ArrayList<>();
+		String line = "";
+		String lineBeforeAppend = "";
+		while (st.hasMoreTokens()) {
+			String seg = st.nextToken();
+			lineBeforeAppend = line;
+			line += seg + " ";
+			int width = fm.stringWidth(line);
+			if (width < maxWidth) {
+				continue;
+			} else { // new Line.
+				list.add(lineBeforeAppend);
+				line = seg + " ";
+			}
+		}
+		// the remaining part.
+		if (line.length() > 0) {
+			list.add(line);
+		}
+		return list;
 	}
 }
