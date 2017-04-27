@@ -64,7 +64,13 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildBanAdd(GuildBanAddEvent event) {
-		// event.
+		IGuild guild = event.getGuild();
+		if (guild.getID() != 282226852616077312l) return;
+		IUser user = event.getBannedUser();
+		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		RichEmbed embed = new RichEmbed("User Banned").setColor(0xff2020).setTimestamp(OffsetDateTime.now());
+		embed.addField("Banned User", String.format("%s (ID: %d)", user.asMention(), user.getID()));
+		channel.sendEmbed(embed);
 	}
 
 	@Override
@@ -112,7 +118,7 @@ public class LogHandler extends EventListenerAdapter {
 				FontMetrics fm = bg.getFontMetrics();
 				List<String> lines = wrapText(member.getNickname(), fm, 210);
 				for (int i = 0; i < lines.size(); i++)
-					bg.drawString(lines.get(i), 30, 162 + (32 * i));
+					bg.drawString(lines.get(i), 30, 164 + (32 * i));
 				File temp = File.createTempFile("" + member.getID(), ".png");
 				bg.dispose();
 				ImageIO.write(bi, "png", temp);
