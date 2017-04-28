@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.Voice
 import io.discloader.discloader.common.event.guild.member.GuildMemberEvent.VoiceSwitchEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberRemoveEvent;
 import io.discloader.discloader.common.event.guild.member.GuildMemberUpdateEvent;
-import io.discloader.discloader.common.event.message.GuildMessageCreateEvent;
 import io.discloader.discloader.common.event.message.MessageDeleteEvent;
 import io.discloader.discloader.common.event.message.MessageUpdateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
@@ -37,7 +37,6 @@ import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.util.DLUtil;
-import static io.discloader.discloader.util.DLUtil.gson;
 
 public class LogHandler extends EventListenerAdapter {
 
@@ -47,6 +46,8 @@ public class LogHandler extends EventListenerAdapter {
 	private Resource mdelete = new Resource("r3alb0t", "texture/icon/logs/messageDelete.png");
 	private Resource medit = new Resource("r3alb0t", "texture/icon/logs/messageEdit.png");
 	private Resource nameChange = new Resource("r3alb0t", "texture/icon/logs/nameChange.png");
+	private Resource sjoin = new Resource("r3alb0t", "texture/icon/logs/joinServer.png");
+	private Resource sleave = new Resource("r3alb0t", "texture/icon/logs/leaveServer.png");
 
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
 	// private static Jedis jedis = new Jedis("localhost");
@@ -62,11 +63,6 @@ public class LogHandler extends EventListenerAdapter {
 	public static void save() {
 		String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new GuildStruct[0]));
 		System.out.println(json);
-	}
-
-	public void GuildMessageCreate(GuildMessageCreateEvent e) {
-		if (e.getGuild().getID() != 282226852616077312l) return;
-		if (e.getMessage().getContent().equals("//fuckme")) e.getGuild().getTextChannelByName("testing").sendFile(vjoin);
 	}
 
 	@Override
@@ -88,6 +84,11 @@ public class LogHandler extends EventListenerAdapter {
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		RichEmbed embed = new RichEmbed("Member Joined").setColor(0x00f100).setTimestamp(OffsetDateTime.now());
 		embed.addField("Member", formatMember(member));
+		try {
+			embed.setThumbnail(sjoin);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		channel.sendEmbed(embed);
 	}
 
@@ -100,6 +101,11 @@ public class LogHandler extends EventListenerAdapter {
 		RichEmbed embed = new RichEmbed("Member Left").setColor(0xf10000).setTimestamp(OffsetDateTime.now());
 		embed.setDescription("A member has **left** or has been **kicked** from the guild");
 		embed.addField("Member", formatMember(member));
+		try {
+			embed.setThumbnail(sleave);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		channel.sendEmbed(embed);
 	}
 
@@ -120,7 +126,7 @@ public class LogHandler extends EventListenerAdapter {
 			try {
 				BufferedImage bi = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
 				Graphics bg = bi.getGraphics();
-				bg.drawImage(new ImageIcon(nameChange.getFile().toURI().toURL()).getImage(), 0, 0, null);
+				bg.drawImage(new ImageIcon(nameChange.toURL()).getImage(), 0, 0, null);
 				bg.setColor(Color.BLACK);
 				bg.setFont(new Font(".Nadeem PUA", Font.PLAIN, 28));
 				FontMetrics fm = bg.getFontMetrics();
@@ -180,7 +186,7 @@ public class LogHandler extends EventListenerAdapter {
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
 		try {
 
-			System.out.println(vjoin.getFile().getCanonicalPath());
+			System.out.println(vjoin.getFileName());
 			embed.setThumbnail(vjoin);
 		} catch (IOException e) {
 		}
@@ -199,7 +205,7 @@ public class LogHandler extends EventListenerAdapter {
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
 		try {
-			embed.setThumbnail(vleave.getFile());
+			embed.setThumbnail(vleave);
 		} catch (IOException e) {
 		}
 		channel.sendEmbed(embed);
@@ -218,9 +224,9 @@ public class LogHandler extends EventListenerAdapter {
 		embed.addField("Previous Voice Channel", String.format("**%s** (ID: %d)", oldVoiceChannel.getName(), oldVoiceChannel.getID()), true);
 		embed.addField("Current Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
 		try {
-			System.out.println(vswitch.getFileName());
+			// System.out.println(vswitch.getFileName());
 			embed.setThumbnail(vswitch);
-			System.out.println("hmm: " + gson.toJson(embed));
+			// System.out.println("hmm: " + gson.toJson(embed));
 		} catch (IOException e) {
 		}
 		channel.sendEmbed(embed);
@@ -250,7 +256,7 @@ public class LogHandler extends EventListenerAdapter {
 			embed.addField("New Content", message.getContent(), true);
 		}
 		try {
-			embed.setThumbnail(medit.getFile());
+			embed.setThumbnail(medit);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -274,7 +280,7 @@ public class LogHandler extends EventListenerAdapter {
 			embed.addField("Message Contents", message.getContent(), true);
 		}
 		try {
-			embed.setThumbnail(mdelete.getFile());
+			embed.setThumbnail(mdelete);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
