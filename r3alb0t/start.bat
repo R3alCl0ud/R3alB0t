@@ -1,0 +1,1 @@
+java -jar target/r3alb0t-0.0.1-SNAPSHOT.jar
