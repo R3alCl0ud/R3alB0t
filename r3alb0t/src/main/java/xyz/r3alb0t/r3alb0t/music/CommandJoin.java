@@ -9,11 +9,11 @@ import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 
 public class CommandJoin extends Command {
-
+	
 	public CommandJoin() {
 		setUnlocalizedName("join");
 	}
-
+	
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
@@ -39,5 +39,5 @@ public class CommandJoin extends Command {
 			}
 		}
 	}
-
+	
 }
