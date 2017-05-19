@@ -1,10 +1,5 @@
 package xyz.r3alb0t.r3alb0t.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
@@ -33,35 +28,38 @@ public class CommandPlay extends Command {
 			PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 			if (args.length > 0) {
 				String trackID = args[0];
-				EntityRegistry.getVoiceConnectionByGuild(guild).findTrackOrTracks(trackID, new AudioLoadResultHandler() {
-
-					@Override
-					public void trackLoaded(AudioTrack track) {
-						System.out.println(track);
-						plManager.trackLoaded(track);
-					}
-
-					@Override
-					public void playlistLoaded(AudioPlaylist playlist) {
-						plManager.playlistLoaded(playlist);
-					}
-
-					@Override
-					public void noMatches() {
-						channel.sendMessage(String.format("No audio found at: %s", args[0]));
-					}
-
-					@Override
-					public void loadFailed(FriendlyException exception) {
-						String err = exception.toString();
-						StackTraceElement[] trace = exception.getStackTrace();
-						for (StackTraceElement traceElement : trace) {
-							err += ("\tat " + traceElement);
-						}
-						channel.sendMessage(err);
-					}
-
-				});
+				if (!trackID.startsWith("http")) trackID = "ytsearch:" + trackID;
+				EntityRegistry.getVoiceConnectionByGuild(guild).findTrackOrTracks(trackID, plManager);
+				// new AudioLoadResultHandler() {
+				//
+				// @Override
+				// public void trackLoaded(AudioTrack track) {
+				// System.out.println(track);
+				// plManager.trackLoaded(track);
+				// }
+				//
+				// @Override
+				// public void playlistLoaded(AudioPlaylist playlist) {
+				// plManager.playlistLoaded(playlist);
+				// }
+				//
+				// @Override
+				// public void noMatches() {
+				// channel.sendMessage(String.format("No audio found at: %s",
+				// args[0]));
+				// }
+				//
+				// @Override
+				// public void loadFailed(FriendlyException exception) {
+				// String err = exception.toString();
+				// StackTraceElement[] trace = exception.getStackTrace();
+				// for (StackTraceElement traceElement : trace) {
+				// err += ("\tat " + traceElement);
+				// }
+				// channel.sendMessage(err);
+				// }
+				//
+				// };
 			} else {
 				plManager.startNext();
 			}
