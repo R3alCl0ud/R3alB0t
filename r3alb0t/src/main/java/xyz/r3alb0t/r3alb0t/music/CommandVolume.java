@@ -15,7 +15,7 @@ public class CommandVolume extends Command {
 
 	public CommandVolume() {
 		setUnlocalizedName("volume");
-		setArgsRegex("(\\d+)");
+		setArgsRegex("(\\d+?)");
 	}
 
 	public Resource getResourceLocation() {

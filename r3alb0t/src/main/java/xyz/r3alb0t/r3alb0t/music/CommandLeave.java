@@ -27,7 +27,9 @@ public class CommandLeave extends Command {
 		if (guild != null) {
 			VoiceConnect connection = EntityRegistry.getVoiceConnectionByGuild(guild);
 			if (connection != null) {
-				connection.disconnect();
+				connection.disconnect().thenAcceptAsync(vc -> {
+					RBMusic.plManagers.remove(guild.getID());
+				});
 			}
 		}
 	}

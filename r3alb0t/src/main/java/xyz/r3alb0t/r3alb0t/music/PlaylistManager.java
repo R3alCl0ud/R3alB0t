@@ -19,21 +19,22 @@ import io.discloader.discloader.core.entity.user.DLUser;
 import io.discloader.discloader.entity.IEmoji;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.message.IMessage;
+import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.entity.voice.VoiceConnect;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
-	
+
 	private VoiceConnect connection;
 	private ITextChannel boundChannel;
 	private IMessage nowplaying;
-	
+
 	private List<AudioTrack> tracks;
-	
+
 	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
 	private Resource rshuffle = new Resource("r3alb0t", "texture/command/shuffle.png");
-	
+
 	public PlaylistManager(VoiceConnect connection, ITextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
@@ -41,16 +42,16 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		tracks = new ArrayList<>();
 		connection.addListener(this);
 		connection.getLoader().addEventHandler(new EventListenerAdapter() {
-			
+
 			public void MessageReactionAdd(MessageReactionAddEvent e) {
 				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getLoader().user.getID() == e.getUser().getID()) return;
-				
+
 				IEmoji emoji = e.getReaction().getEmoji();
 				if (emoji.toString().equals("⏸")) {
 					connection.pause();
 				} else if (emoji.toString().equals("🔀")) {
 					shuffle();
-					
+
 					if (nowplaying != null) {
 						nowplaying.deleteAllReactions().thenAcceptAsync(n -> {
 							nowplaying.addReaction("⏸");
@@ -63,7 +64,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					embed.addField("Shuffling", "Playlist has been shuffled");
 					embed.setThumbnail(rshuffle);
 					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
-						
+
 					});
 				} else if (emoji.toString().equals("⏭") && tracks.size() >= 2) {
 					connection.play(tracks.get(1));
@@ -71,12 +72,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
 					embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+					embed.addField("Current Time", getTime(), true);
 					if (tracks.size() > 1 && tracks.get(1) != null) {
 						AudioTrackInfo next = tracks.get(1).getInfo();
 						embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
 					}
-					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-					embed.addField("Current Time", getTime(), true);
 					embed.setThumbnail(playing);
 					if (nowplaying != null) nowplaying.delete();
 					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
@@ -94,9 +95,9 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				}
 			}
 		});
-		
+
 	}
-	
+
 	@Override
 	public void end(AudioTrack track, AudioTrackEndReason endReason) {
 		tracks.remove(track);
@@ -105,7 +106,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 		if (endReason.mayStartNext) startNext();
 	}
-	
+
 	public long getLength() {
 		long l = 0;
 		for (AudioTrack track : tracks) {
@@ -113,7 +114,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 		return l;
 	}
-	
+
 	public String getTime() {
 		long l = connection.getPlayingTrack().getDuration() / 1000l;
 		long s = l % 60l;
@@ -121,22 +122,26 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		long c = connection.getPlayingTrack().getPosition() / 1000l, cs = c % 60l, cm = c / 60l;
 		return String.format("%02d:%02d/%d:%02d", cm, cs, m, s);
 	}
+
+	public List<AudioTrack> getTracks() {
+		return tracks;
+	}
 	
 	@Override
 	public void loadFailed(FriendlyException e) {
 		e.printStackTrace();
 		boundChannel.sendMessage("Unable to add requested track(s) to the playlist");
 	}
-	
+
 	public void loadTrack(String id) {
 		connection.findTrackOrTracks(id, this);
 	}
-	
+
 	@Override
 	public void noMatches() {
 		boundChannel.sendMessage("Unable to add requested track(s) to the playlist");
 	}
-	
+
 	public void paused(AudioTrack track) {
 		AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
@@ -160,11 +165,11 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			});
 		});
 	}
-	
+
 	public void pause() {
 		connection.pause();
 	}
-	
+
 	@Override
 	public void playlistLoaded(AudioPlaylist tracks) {
 		RichEmbed embed = new RichEmbed("Music PLayer").setColor(0x2566C7);
@@ -187,7 +192,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
-	
+
 	public void shuffle() {
 		if (tracks.size() < 3) return;
 		if (connection.getPlayingTrack() != null) {
@@ -210,18 +215,19 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			}
 		}
 	}
-	
+
 	@Override
 	public void started(AudioTrack track) {
+		// System.out.println(track.getClass());
 		AudioTrackInfo info = track.getInfo();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
 		embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+		embed.addField("Current Time", getTime(), true);
 		if (tracks.size() > 1 && tracks.get(1) != null) {
 			AudioTrackInfo next = tracks.get(1).getInfo();
 			embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
 		}
-		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-		embed.addField("Current Time", getTime(), true);
 		embed.setThumbnail(playing);
 		if (nowplaying != null) nowplaying.delete();
 		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
@@ -235,7 +241,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			});
 		});
 	}
-	
+
 	public void startNext() {
 		AudioTrack cp = connection.getPlayingTrack();
 		if ((connection.isPaused() || cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
@@ -245,7 +251,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			System.out.println("not starting a new track");
 		}
 	}
-	
+
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		tracks.add(track);
@@ -257,5 +263,20 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
-	
+
+	public AudioTrack getPlayingTrack() {
+		return connection.getPlayingTrack();
+	}
+
+	public void trackLoaded(AudioTrack track, IUser requester) {
+		tracks.add(track);
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		DLUser user = connection.getLoader().user;
+		AudioTrackInfo info = track.getInfo();
+		embed.setAuthor(user.getUsername(), info.uri, user.getAvatar().toString());
+		embed.addField("Added Track", String.format("The track [*%s*](%s) by *%s* has been added to the playlist", info.title, info.uri, info.author), true);
+		embed.addField("Requested by", requester.asMention(), true);
+		boundChannel.sendEmbed(embed);
+		startNext();
+	}
 }

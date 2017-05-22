@@ -16,16 +16,16 @@ import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.message.IMessage;
 
 public class CommandPlay extends Command {
-	
+
 	public CommandPlay() {
 		setUnlocalizedName("play");
 		setDescription("adds a track/set to the playlist\n");
 	}
-	
+
 	public Resource getResourceLocation() {
 		return new Resource("r3alb0t", "texture/command/Play.png");
 	}
-	
+
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
@@ -37,35 +37,35 @@ public class CommandPlay extends Command {
 				String trackID = args[0];
 				if (!trackID.startsWith("http")) trackID = "ytsearch:" + trackID;
 				EntityRegistry.getVoiceConnectionByGuild(guild).findTrackOrTracks(trackID, new AudioLoadResultHandler() {
-					
+
 					@Override
 					public void trackLoaded(AudioTrack track) {
-						System.out.println(track);
-						plManager.trackLoaded(track);
+						plManager.trackLoaded(track, message.getAuthor());
 					}
-					
+
 					@Override
 					public void playlistLoaded(AudioPlaylist playlist) {
 						if (!playlist.isSearchResult()) {
 							plManager.playlistLoaded(playlist);
 							return;
 						}
-						RichEmbed embed = new RichEmbed("Search Results").setColor(0x0).setDescription("Showing search results for: " + args[0]);
+						RBMusic.searchResults.put(guild.getID(), playlist);
+						RichEmbed embed = new RichEmbed("Search Results").setColor(0x28a7f6).setDescription("Showing search results for: " + args[0]);
 						for (int i = 0; i < 10; i++) {
 							AudioTrackInfo info = playlist.getTracks().get(i).getInfo();
 							String name = String.format("%d - %s", i + 1, playlist.getName());
 							String t = String.format("[*%s*](%s)  by %s", info.title, info.uri, info.author);
 							embed.addField(name, t);
 						}
-						
+						embed.addField("Select a track", "Type `c!select <number>` to select a track from the search results");
 						channel.sendEmbed(embed);
 					}
-					
+
 					@Override
 					public void noMatches() {
 						channel.sendMessage(String.format("No audio found at: %s", args[0]));
 					}
-					
+
 					@Override
 					public void loadFailed(FriendlyException exception) {
 						String err = exception.toString();
@@ -75,7 +75,7 @@ public class CommandPlay extends Command {
 						}
 						channel.sendMessage(err);
 					}
-					
+
 				});
 			} else {
 				plManager.startNext();
