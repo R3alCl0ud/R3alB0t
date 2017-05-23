@@ -6,7 +6,7 @@ import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.message.IMessage;
-import io.discloader.discloader.entity.voice.VoiceConnect;
+import io.discloader.discloader.entity.voice.VoiceConnection;
 
 /**
  * @author Perry Berman
@@ -26,7 +26,7 @@ public class CommandVolume extends Command {
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setThumbnail(getResourceLocation());
-		VoiceConnect connection = EntityRegistry.getVoiceConnectionByGuild(message.getGuild());
+		VoiceConnection connection = EntityRegistry.getVoiceConnectionByGuild(message.getGuild());
 		if (message.getGuild() != null && connection != null) {
 			if (args.length > 0) {
 				int volume = Integer.parseInt(args[0], 10);

@@ -1,5 +1,6 @@
 package xyz.r3alb0t.r3alb0t.music;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,12 +21,12 @@ import io.discloader.discloader.entity.IEmoji;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.message.IMessage;
 import io.discloader.discloader.entity.user.IUser;
-import io.discloader.discloader.entity.voice.VoiceConnect;
+import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
 
-	private VoiceConnect connection;
+	private VoiceConnection connection;
 	private ITextChannel boundChannel;
 	private IMessage nowplaying;
 
@@ -35,7 +36,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
 	private Resource rshuffle = new Resource("r3alb0t", "texture/command/shuffle.png");
 
-	public PlaylistManager(VoiceConnect connection, ITextChannel boundChannel) {
+	public PlaylistManager(VoiceConnection connection, ITextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
 		nowplaying = null;
@@ -61,6 +62,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						});
 					}
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
+					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 					embed.addField("Shuffling", "Playlist has been shuffled");
 					embed.setThumbnail(rshuffle);
 					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
@@ -71,6 +73,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				} else if (emoji.toString().equals("🔄")) {
 					AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 					embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
 					embed.addField("Current Time", getTime(), true);
@@ -115,6 +118,10 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		return l;
 	}
 
+	public AudioTrack getPlayingTrack() {
+		return connection.getPlayingTrack();
+	}
+
 	public String getTime() {
 		long l = connection.getPlayingTrack().getDuration() / 1000l;
 		long s = l % 60l;
@@ -126,7 +133,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	public List<AudioTrack> getTracks() {
 		return tracks;
 	}
-	
+
 	@Override
 	public void loadFailed(FriendlyException e) {
 		e.printStackTrace();
@@ -142,9 +149,14 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendMessage("Unable to add requested track(s) to the playlist");
 	}
 
+	public void pause() {
+		connection.pause();
+	}
+
 	public void paused(AudioTrack track) {
 		AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		embed.addField("Paused", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 		if (tracks.size() > 1 && tracks.get(1) != null) {
 			AudioTrackInfo next = tracks.get(1).getInfo();
@@ -166,15 +178,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		});
 	}
 
-	public void pause() {
-		connection.pause();
-	}
-
 	@Override
 	public void playlistLoaded(AudioPlaylist tracks) {
 		RichEmbed embed = new RichEmbed("Music PLayer").setColor(0x2566C7);
 		DLUser user = connection.getLoader().user;
 		embed.setAuthor(user.getUsername(), "http://discloader.io", user.getAvatar().toString());
+		embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		int i = 1;
 		for (AudioTrack track : tracks.getTracks())
 			this.tracks.add(track);
@@ -191,6 +200,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 		boundChannel.sendEmbed(embed);
 		startNext();
+	}
+
+	@Override
+	public void resumed(AudioTrack track) {
+		System.out.println("Gets called?");
+		started(track);
 	}
 
 	public void shuffle() {
@@ -218,9 +233,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	@Override
 	public void started(AudioTrack track) {
-		// System.out.println(track.getClass());
 		AudioTrackInfo info = track.getInfo();
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
 		embed.addField("Current Time", getTime(), true);
@@ -244,7 +258,9 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	public void startNext() {
 		AudioTrack cp = connection.getPlayingTrack();
-		if ((connection.isPaused() || cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
+		if (connection.isPaused()) {
+			connection.resume();
+		} else if ((cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
 			System.out.println("starting next track");
 			connection.play(tracks.get(0));
 		} else {
@@ -255,7 +271,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		tracks.add(track);
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		DLUser user = connection.getLoader().user;
 		AudioTrackInfo info = track.getInfo();
 		embed.setAuthor(user.getUsername(), info.uri, user.getAvatar().toString());
@@ -264,13 +280,9 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		startNext();
 	}
 
-	public AudioTrack getPlayingTrack() {
-		return connection.getPlayingTrack();
-	}
-
 	public void trackLoaded(AudioTrack track, IUser requester) {
 		tracks.add(track);
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		DLUser user = connection.getLoader().user;
 		AudioTrackInfo info = track.getInfo();
 		embed.setAuthor(user.getUsername(), info.uri, user.getAvatar().toString());

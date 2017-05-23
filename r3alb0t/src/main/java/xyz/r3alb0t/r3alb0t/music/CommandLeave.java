@@ -5,7 +5,7 @@ import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.entity.guild.IGuild;
-import io.discloader.discloader.entity.voice.VoiceConnect;
+import io.discloader.discloader.entity.voice.VoiceConnection;
 
 /**
  * @author Perry Berman
@@ -25,7 +25,7 @@ public class CommandLeave extends Command {
 	public void execute(MessageCreateEvent e) {
 		IGuild guild = e.getMessage().getGuild();
 		if (guild != null) {
-			VoiceConnect connection = EntityRegistry.getVoiceConnectionByGuild(guild);
+			VoiceConnection connection = EntityRegistry.getVoiceConnectionByGuild(guild);
 			if (connection != null) {
 				connection.disconnect().thenAcceptAsync(vc -> {
 					RBMusic.plManagers.remove(guild.getID());

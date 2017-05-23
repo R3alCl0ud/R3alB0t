@@ -35,6 +35,10 @@ public class CommandPlay extends Command {
 			PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 			if (args.length > 0) {
 				String trackID = args[0];
+				if (trackID.length() < 1) {
+					plManager.startNext();
+					return;
+				}
 				if (!trackID.startsWith("http")) trackID = "ytsearch:" + trackID;
 				EntityRegistry.getVoiceConnectionByGuild(guild).findTrackOrTracks(trackID, new AudioLoadResultHandler() {
 
