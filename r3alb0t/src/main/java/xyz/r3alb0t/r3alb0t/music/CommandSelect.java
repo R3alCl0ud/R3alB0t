@@ -15,7 +15,7 @@ public class CommandSelect extends Command {
 	public CommandSelect() {
 		setUnlocalizedName("select");
 		setDescription("adds a track/set to the playlist\nCurrently only works with YouTube");
-		setArgsRegex("(\\d+?)");
+		setArgsRegex("(\\d+)");
 	}
 
 	@Override
