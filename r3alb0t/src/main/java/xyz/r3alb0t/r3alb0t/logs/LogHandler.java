@@ -63,7 +63,6 @@ public class LogHandler extends EventListenerAdapter {
 
 	public static void save() {
 		String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new GuildStruct[0]));
-		System.out.println(json);
 	}
 
 	// @Override

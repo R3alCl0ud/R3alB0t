@@ -4,6 +4,7 @@ import io.discloader.discloader.common.event.DLPreInitEvent;
 import io.discloader.discloader.common.event.EventListenerAdapter;
 import io.discloader.discloader.common.event.RawEvent;
 import io.discloader.discloader.common.event.ReadyEvent;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 
 public class EventHandler extends EventListenerAdapter {
@@ -21,7 +22,7 @@ public class EventHandler extends EventListenerAdapter {
 
 	@Override
 	public void PreInit(DLPreInitEvent e) {
-		System.out.println("Registering music commands");
+		R3alB0t.logger.info("Registering music commands");
 		Commands.registerCommands();
 		LogHandler.load();
 	}
@@ -29,7 +30,7 @@ public class EventHandler extends EventListenerAdapter {
 	@Override
 	public void Ready(ReadyEvent event) {
 		event.loader.user.setGame("Converting to DiscLoader");
-		System.out.printf("Ready\n");
+		R3alB0t.logger.info("Ready");
 	}
 
 }

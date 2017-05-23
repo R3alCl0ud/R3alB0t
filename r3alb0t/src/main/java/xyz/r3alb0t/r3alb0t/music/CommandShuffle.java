@@ -1,5 +1,7 @@
 package xyz.r3alb0t.r3alb0t.music;
 
+import java.time.OffsetDateTime;
+
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
@@ -26,6 +28,7 @@ public class CommandShuffle extends Command {
 			PlaylistManager plm = RBMusic.plManagers.get(guild.getID());
 			plm.shuffle();
 			RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
+			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 			embed.addField("Shuffling", "Playlist has been shuffled");
 			embed.setThumbnail(getResourceLocation());
 			message.getChannel().sendEmbed(embed);

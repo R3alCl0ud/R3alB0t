@@ -3,6 +3,7 @@ package xyz.r3alb0t.r3alb0t.music;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -12,6 +13,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
 
+import io.discloader.discloader.client.logger.DLLogger;
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.EventListenerAdapter;
 import io.discloader.discloader.common.event.message.MessageReactionAddEvent;
@@ -35,6 +37,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
 	private Resource rshuffle = new Resource("r3alb0t", "texture/command/shuffle.png");
+
+	public static final Logger logger = new DLLogger(PlaylistManager.class).getLogger();
 
 	public PlaylistManager(VoiceConnection connection, ITextChannel boundChannel) {
 		this.connection = connection;
@@ -204,7 +208,6 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	@Override
 	public void resumed(AudioTrack track) {
-		System.out.println("Gets called?");
 		started(track);
 	}
 
@@ -261,10 +264,10 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		if (connection.isPaused()) {
 			connection.resume();
 		} else if ((cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
-			System.out.println("starting next track");
+			logger.info("starting next track");
 			connection.play(tracks.get(0));
 		} else {
-			System.out.println("not starting a new track");
+			logger.info("not starting a new track");
 		}
 	}
 

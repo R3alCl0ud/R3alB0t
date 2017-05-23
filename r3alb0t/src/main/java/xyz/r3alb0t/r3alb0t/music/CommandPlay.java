@@ -1,5 +1,7 @@
 package xyz.r3alb0t.r3alb0t.music;
 
+import java.time.OffsetDateTime;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -62,6 +64,7 @@ public class CommandPlay extends Command {
 							embed.addField(name, t);
 						}
 						embed.addField("Select a track", "Type `c!select <number>` to select a track from the search results");
+						embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 						channel.sendEmbed(embed);
 					}
 
