@@ -36,7 +36,6 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
-	private Resource rshuffle = new Resource("r3alb0t", "texture/command/shuffle.png");
 
 	public static final Logger logger = new DLLogger(PlaylistManager.class).getLogger();
 
@@ -52,51 +51,18 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getLoader().user.getID() == e.getUser().getID()) return;
 
 				IEmoji emoji = e.getReaction().getEmoji();
+				System.out.println(emoji);
 				if (emoji.toString().equals("⏸")) {
 					connection.pause();
 				} else if (emoji.toString().equals("🔀")) {
 					shuffle();
-
-					if (nowplaying != null) {
-						nowplaying.deleteAllReactions().thenAcceptAsync(n -> {
-							nowplaying.addReaction("⏸");
-							nowplaying.addReaction("🔀");
-							nowplaying.addReaction("🔄");
-							if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
-						});
-					}
-					RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
-					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-					embed.addField("Shuffling", "Playlist has been shuffled");
-					embed.setThumbnail(rshuffle);
-					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
-
-					});
+					e.getReaction().removeUserReaction(e.getUser());
+					sendEmbed();
 				} else if (emoji.toString().equals("⏭") && tracks.size() >= 2) {
 					connection.play(tracks.get(1));
 				} else if (emoji.toString().equals("🔄")) {
-					AudioTrackInfo info = connection.getPlayingTrack().getInfo();
-					RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
-					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-					embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
-					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-					embed.addField("Current Time", getTime(), true);
-					if (tracks.size() > 1 && tracks.get(1) != null) {
-						AudioTrackInfo next = tracks.get(1).getInfo();
-						embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
-					}
-					embed.setThumbnail(playing);
-					if (nowplaying != null) nowplaying.delete();
-					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
-						nowplaying = msg;
-						nowplaying.addReaction("⏸").thenAccept(a -> {
-							nowplaying.addReaction("🔀").thenAccept(b -> {
-								nowplaying.addReaction("🔄").thenAccept(c -> {
-									if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
-								});
-							});
-						});
-					});
+					e.getReaction().removeUserReaction(e.getUser());
+					sendEmbed();
 				} else if (emoji.toString().equals("▶")) {
 					connection.resume();
 				}
@@ -236,27 +202,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	@Override
 	public void started(AudioTrack track) {
-		AudioTrackInfo info = track.getInfo();
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-		embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
-		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-		embed.addField("Current Time", getTime(), true);
-		if (tracks.size() > 1 && tracks.get(1) != null) {
-			AudioTrackInfo next = tracks.get(1).getInfo();
-			embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
-		}
-		embed.setThumbnail(playing);
-		if (nowplaying != null) nowplaying.delete();
-		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
-			nowplaying = msg;
-			nowplaying.addReaction("⏸").thenAccept(a -> {
-				nowplaying.addReaction("🔀").thenAccept(b -> {
-					nowplaying.addReaction("🔄").thenAccept(c -> {
-						if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
-					});
-				});
-			});
-		});
+		sendEmbed();
 	}
 
 	public void startNext() {
@@ -293,5 +239,85 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		embed.addField("Requested by", requester.asMention(), true);
 		boundChannel.sendEmbed(embed);
 		startNext();
+	}
+
+	private void sendEmbed() {
+		if (nowplaying != null) {
+			if (nowplaying.getID() == boundChannel.getLastMessageID()) {
+				RichEmbed embed = RichEmbed.from(nowplaying.getEmbeds().get(0));
+				AudioTrackInfo info = getPlayingTrack() == null ? null : getPlayingTrack().getInfo();
+				if (info != null) embed.getFields().get(0).setValue(String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+				embed.getFields().get(1).setValue(String.format("%d", connection.getVolume()) + "%");
+				embed.getFields().get(2).setValue(getTime());
+				if (embed.getFields().size() >= 4 && tracks.size() > 1 && tracks.get(1) != null) {
+					AudioTrackInfo next = tracks.get(1).getInfo();
+					embed.getFields().get(3).setValue(String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
+				}
+				embed.setTimestamp(OffsetDateTime.now());
+				embed.setThumbnail("attachment://" + (connection.isPaused() ? "Pause.png" : "Play.png"));
+				nowplaying.edit(embed).thenAcceptAsync(msg -> {
+					nowplaying = msg;
+				});
+				return;
+			} else {
+				nowplaying.delete().thenAcceptAsync(n -> {
+					AudioTrackInfo info = connection.getPlayingTrack().getInfo();
+					RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+					embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+					embed.addField("Current Time", getTime(), true);
+					if (tracks.size() > 1 && tracks.get(1) != null) {
+						AudioTrackInfo next = tracks.get(1).getInfo();
+						embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
+					}
+					embed.setThumbnail(playing);
+					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
+						nowplaying = msg;
+						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+							nowplaying.addReaction("🔀").thenAccept(b -> {
+								nowplaying.addReaction("🔄").thenAccept(c -> {
+									nowplaying.addReaction("🔇").thenAccept(d -> {
+										nowplaying.addReaction("🔉").thenAccept(e -> {
+											nowplaying.addReaction("🔊").thenAccept(f -> {
+												if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+											});
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+			}
+		} else {
+			AudioTrackInfo info = connection.getPlayingTrack().getInfo();
+			RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+			embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+			embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+			embed.addField("Current Time", getTime(), true);
+			if (tracks.size() > 1 && tracks.get(1) != null) {
+				AudioTrackInfo next = tracks.get(1).getInfo();
+				embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
+			}
+			embed.setThumbnail(connection.isPaused() ? pause : playing);
+			boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
+				nowplaying = msg;
+				nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+					nowplaying.addReaction("🔀").thenAccept(b -> {
+						nowplaying.addReaction("🔄").thenAccept(c -> {
+							nowplaying.addReaction("🔇").thenAccept(d -> {
+								nowplaying.addReaction("🔉").thenAccept(e -> {
+									nowplaying.addReaction("🔊").thenAccept(f -> {
+										if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		}
 	}
 }

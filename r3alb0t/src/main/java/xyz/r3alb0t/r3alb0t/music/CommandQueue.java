@@ -29,7 +29,8 @@ public class CommandQueue extends Command {
 		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) {
 			PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 			List<AudioTrack> tracks = plManager.getTracks();
-			RichEmbed embed = new RichEmbed("Queue").setDescription("The current playlist").setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now()).setColor(0x2566C7);
+			RichEmbed embed = new RichEmbed("Queue").setDescription("The current playlist").setColor(0x2566C7);
+			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 			for (int i = 0; i < 10 && i < tracks.size(); i++) {
 				AudioTrackInfo info = tracks.get(i).getInfo();
 				embed.addField("" + (i + 1), String.format("[%s](%s) by %s", info.title, info.uri, info.author));
