@@ -18,7 +18,7 @@ public class CommandQueue extends Command {
 	public CommandQueue() {
 		setUnlocalizedName("queue");
 		setDescription("adds a track/set to the playlist\nCurrently only works with YouTube");
-		setArgsRegex("(\\d+?)");
+		setArgsRegex("(\\d+)");
 	}
 
 	@Override
@@ -26,14 +26,22 @@ public class CommandQueue extends Command {
 		IMessage message = e.getMessage();
 		IGuild guild = message.getGuild();
 		ITextChannel channel = message.getChannel();
+		int page = 1;
+		if (args.length >= 1) page = Integer.parseInt(args[0], 10);
+		for (String arg : args)
+			System.out.println(arg);
 		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) {
 			PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 			List<AudioTrack> tracks = plManager.getTracks();
 			RichEmbed embed = new RichEmbed("Queue").setDescription("The current playlist").setColor(0x2566C7);
 			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-			for (int i = 0; i < 10 && i < tracks.size(); i++) {
+			for (int i = 10 * (page - 1); i < 10 * page && i < tracks.size(); i++) {
 				AudioTrackInfo info = tracks.get(i).getInfo();
-				embed.addField("" + (i + 1), String.format("[%s](%s) by %s", info.title, info.uri, info.author));
+				try {
+					embed.addField("" + (i + 1), String.format("[%s](%s) `[%s]` by %s", info.title, info.uri, plManager.getLength(tracks.get(i)), info.author));
+				} catch (Exception e1) {
+					e1.printStackTrace();
+				}
 			}
 			long tr = plManager.getLength();
 			if (plManager.getPlayingTrack() != null) {

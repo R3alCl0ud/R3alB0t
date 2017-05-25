@@ -20,40 +20,48 @@ import io.discloader.discloader.common.event.message.MessageReactionAddEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.core.entity.user.DLUser;
 import io.discloader.discloader.entity.IEmoji;
-import io.discloader.discloader.entity.channel.ITextChannel;
+import io.discloader.discloader.entity.channel.IGuildTextChannel;
+import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
+import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 import io.discloader.discloader.entity.user.IUser;
+import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
 
 	private VoiceConnection connection;
-	private ITextChannel boundChannel;
+	private IGuildVoiceChannel channel;
+	private IGuildTextChannel boundChannel;
 	private IMessage nowplaying;
 
 	private List<AudioTrack> tracks;
+
+	private int volume = 0;
 
 	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
 
 	public static final Logger logger = new DLLogger(PlaylistManager.class).getLogger();
 
-	public PlaylistManager(VoiceConnection connection, ITextChannel boundChannel) {
+	String emo = "🔁 🔂";
+
+	public PlaylistManager(VoiceConnection connection, IGuildTextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
+		channel = connection.getChannel();
 		nowplaying = null;
 		tracks = new ArrayList<>();
 		connection.addListener(this);
 		connection.getLoader().addEventHandler(new EventListenerAdapter() {
 
 			public void MessageReactionAdd(MessageReactionAddEvent e) {
-				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getLoader().user.getID() == e.getUser().getID()) return;
-
+				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot()) return;
+				IGuildMember member = connection.getChannel().getGuild().getMember(e.getUser().getID());
 				IEmoji emoji = e.getReaction().getEmoji();
-				System.out.println(emoji);
 				if (emoji.toString().equals("⏸")) {
-					connection.pause();
+					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.pause();
 				} else if (emoji.toString().equals("🔀")) {
 					shuffle();
 					e.getReaction().removeUserReaction(e.getUser());
@@ -64,7 +72,46 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					e.getReaction().removeUserReaction(e.getUser());
 					sendEmbed();
 				} else if (emoji.toString().equals("▶")) {
-					connection.resume();
+					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.resume();
+				} else if (emoji.toString().equals("🔇")) {
+					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+						volume = connection.getVolume();
+						connection.setVolume(0);
+					}
+					e.getReaction().removeUserReaction(e.getUser());
+					sendEmbed();
+				} else if (emoji.toString().equals("🔊")) {
+					int nv = connection.getVolume() + 5;
+					if (connection.getVolume() == 0) {
+						connection.setVolume(volume);
+					} else if (nv < 100) {
+						connection.setVolume(nv);
+					} else {
+						connection.setVolume(nv);
+						e.getReaction().removeReaction();
+					}
+					e.getReaction().removeUserReaction(e.getUser());
+					if (nowplaying.getReaction("🔉") == null && nv > 0) nowplaying.addReaction("🔉");
+					sendEmbed();
+				} else if (emoji.toString().equals("🔉")) {
+					int nv = connection.getVolume() - 5;
+					if (connection.getVolume() == 0) {
+						connection.setVolume(volume);
+					} else if (nv > 0) {
+						connection.setVolume(nv);
+					} else if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+						connection.setVolume(nv);
+						e.getReaction().removeReaction();
+					}
+					e.getReaction().removeUserReaction(e.getUser());
+					if (nowplaying.getReaction("🔊") == null && nv < 100) nowplaying.addReaction("🔊");
+					sendEmbed();
+				} else if (emoji.toString().equals("⏏")) {
+					if (channel.permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
+						connection.disconnect().thenAccept(a -> {
+							if (nowplaying != null) nowplaying.delete();
+						});
+					}
 				}
 			}
 		});
@@ -93,11 +140,20 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	}
 
 	public String getTime() {
-		long l = connection.getPlayingTrack().getDuration() / 1000l;
+		return getTime(connection.getPlayingTrack());
+	}
+
+	public String getTime(AudioTrack track) {
+		long l = track.getDuration() / 1000l;
 		long s = l % 60l;
 		long m = l / 60l;
-		long c = connection.getPlayingTrack().getPosition() / 1000l, cs = c % 60l, cm = c / 60l;
-		return String.format("%02d:%02d/%d:%02d", cm, cs, m, s);
+		long c = track.getPosition() / 1000l, cs = c % 60l, cm = c / 60l;
+		return String.format("%d:%02d/%d:%02d", cm, cs, m, s);
+	}
+
+	public String getLength(AudioTrack track) {
+		long l = track.getDuration() / 1000l, m = l / 60l, s = l % 60l;
+		return String.format("%d:%02d", m, s);
 	}
 
 	public List<AudioTrack> getTracks() {
@@ -277,10 +333,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
 							nowplaying.addReaction("🔀").thenAccept(b -> {
 								nowplaying.addReaction("🔄").thenAccept(c -> {
-									nowplaying.addReaction("🔇").thenAccept(d -> {
-										nowplaying.addReaction("🔉").thenAccept(e -> {
-											nowplaying.addReaction("🔊").thenAccept(f -> {
-												if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+									nowplaying.addReaction("⏏").thenAccept(z -> {
+										if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+										nowplaying.addReaction("🔇").thenAccept(d -> {
+											nowplaying.addReaction("🔉").thenAccept(e -> {
+												nowplaying.addReaction("🔊").thenAccept(f -> {
+												});
 											});
 										});
 									});
@@ -304,13 +362,17 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			embed.setThumbnail(connection.isPaused() ? pause : playing);
 			boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
 				nowplaying = msg;
-				nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
-					nowplaying.addReaction("🔀").thenAccept(b -> {
-						nowplaying.addReaction("🔄").thenAccept(c -> {
-							nowplaying.addReaction("🔇").thenAccept(d -> {
-								nowplaying.addReaction("🔉").thenAccept(e -> {
-									nowplaying.addReaction("🔊").thenAccept(f -> {
-										if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+				if (boundChannel.permissionsOf(boundChannel.getGuild().getCurrentMember()).hasPermission(Permissions.ADD_REACTIONS)) nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+					nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(v -> {
+						nowplaying.addReaction("🔀").thenAccept(b -> {
+							nowplaying.addReaction("🔄").thenAccept(c -> {
+								nowplaying.addReaction("⏏").thenAccept(z -> {
+									if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+									nowplaying.addReaction("🔇").thenAccept(d -> {
+										nowplaying.addReaction("🔉").thenAccept(e -> {
+											nowplaying.addReaction("🔊").thenAccept(f -> {
+											});
+										});
 									});
 								});
 							});

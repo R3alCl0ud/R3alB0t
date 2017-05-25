@@ -6,16 +6,17 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 
 public class CommandJoin extends Command {
-	
+
 	public CommandJoin() {
 		setUnlocalizedName("join");
 	}
-	
+
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
@@ -24,7 +25,7 @@ public class CommandJoin extends Command {
 			IGuildVoiceChannel channel = member.getVoiceChannel();
 			if (channel != null && !EntityRegistry.hasVoiceConnection(message.getGuild().getID())) {
 				channel.join().thenAcceptAsync(connection -> {
-					PlaylistManager pl = new PlaylistManager(connection, message.getChannel());
+					PlaylistManager pl = new PlaylistManager(connection, (IGuildTextChannel) message.getChannel());
 					RBMusic.plManagers.put(message.getGuild().getID(), pl);
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
 					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
@@ -42,5 +43,5 @@ public class CommandJoin extends Command {
 			}
 		}
 	}
-	
+
 }

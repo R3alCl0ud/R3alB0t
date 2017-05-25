@@ -27,6 +27,7 @@ public class R3alB0t {
 	public static Gson gson = new Gson();
 
 	public static void main(String[] args) {
+		logger.info(String.format("Int: Bytes: %d, Max: %d, Min: %d",  Integer.BYTES, Integer.MAX_VALUE, Integer.MIN_VALUE));
 		try {
 			File options = new File("options.json");
 			if (options.exists() && !options.isDirectory()) {
