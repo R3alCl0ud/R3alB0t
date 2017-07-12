@@ -27,7 +27,8 @@ public class CommandQueue extends Command {
 		IGuild guild = message.getGuild();
 		ITextChannel channel = message.getChannel();
 		int page = 1;
-		if (args.length >= 1) page = Integer.parseInt(args[0], 10);
+		System.out.println(args[0]);
+		if (args.length >= 1 && args[0] != null) page = Integer.parseInt(args[0], 10);
 		for (String arg : args)
 			System.out.println(arg);
 		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) {

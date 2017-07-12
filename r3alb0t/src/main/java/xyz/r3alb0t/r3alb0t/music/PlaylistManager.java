@@ -83,7 +83,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				} else if (emoji.toString().equals("🔊")) {
 					int nv = connection.getVolume() + 5;
 					if (connection.getVolume() == 0) {
-						connection.setVolume(volume);
+						connection.setVolume(volume == 0 ? nv : volume);
 					} else if (nv < 100) {
 						connection.setVolume(nv);
 					} else {
@@ -96,7 +96,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				} else if (emoji.toString().equals("🔉")) {
 					int nv = connection.getVolume() - 5;
 					if (connection.getVolume() == 0) {
-						connection.setVolume(volume);
+						connection.setVolume(volume == 0 ? nv : volume);
 					} else if (nv > 0) {
 						connection.setVolume(nv);
 					} else if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
@@ -184,12 +184,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
 		embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		embed.addField("Paused", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+		embed.addField("Current Time", getTime(), true);
 		if (tracks.size() > 1 && tracks.get(1) != null) {
 			AudioTrackInfo next = tracks.get(1).getInfo();
 			embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
 		}
-		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-		embed.addField("Current Time", getTime(), true);
 		embed.setThumbnail(pause);
 		if (nowplaying != null) nowplaying.delete();
 		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
