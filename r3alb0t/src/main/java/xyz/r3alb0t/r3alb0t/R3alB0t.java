@@ -11,7 +11,9 @@ import com.google.gson.Gson;
 
 import io.discloader.discloader.client.logger.DLLogger;
 import io.discloader.discloader.common.DLOptions;
-import io.discloader.discloader.common.DiscLoader;
+import io.discloader.discloader.common.Shard;
+import io.discloader.discloader.common.ShardManager;
+import io.discloader.discloader.common.event.sharding.ShardingListenerAdapter;
 import xyz.r3alb0t.r3alb0t.common.EventHandler;
 import xyz.r3alb0t.r3alb0t.common.LogHandler;
 import xyz.r3alb0t.r3alb0t.config.Config;
@@ -27,7 +29,8 @@ public class R3alB0t {
 	public static Gson gson = new Gson();
 
 	public static void main(String[] args) {
-		logger.info(String.format("Int: Bytes: %d, Max: %d, Min: %d",  Integer.BYTES, Integer.MAX_VALUE, Integer.MIN_VALUE));
+		// logger.info(String.format("Int: Bytes: %d, Max: %d, Min: %d",
+		// Integer.BYTES, Integer.MAX_VALUE, Integer.MIN_VALUE));
 		try {
 			File options = new File("options.json");
 			if (options.exists() && !options.isDirectory()) {
@@ -44,9 +47,16 @@ public class R3alB0t {
 			}
 
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true, false);
-			DiscLoader loader = new DiscLoader(dlOptions);
-			loader.addEventHandler(new EventHandler());
-			loader.login();
+			dlOptions.setSharding(0, 4);
+			ShardManager manager = new ShardManager(dlOptions);
+			manager.addShardingListener(new ShardingListenerAdapter() {
+
+				public void ShardLaunched(Shard shard) {
+					logger.info(String.format("Shard #%d: Launched", shard.getShardID()));
+					shard.getLoader().addEventHandler(new EventHandler());
+				}
+			});
+			manager.launchShards();
 		} catch (Exception e) {
 			LogHandler.throwing(e);
 		}

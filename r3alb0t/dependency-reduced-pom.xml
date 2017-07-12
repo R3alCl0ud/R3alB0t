@@ -23,7 +23,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>xyz.r3alb0t.r3alb0t.Main</mainClass>
+              <mainClass>xyz.r3alb0t.r3alb0t.R3alB0t</mainClass>
             </manifest>
           </archive>
         </configuration>
