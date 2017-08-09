@@ -11,15 +11,17 @@ import io.discloader.discloader.entity.message.IMessage;
 
 /**
  * @author Perry Berman
- *
  */
 public class CommandShuffle extends Command {
+
 	public CommandShuffle() {
 		setUnlocalizedName("shuffle").setDescription("Shuffles the playlist");
 	}
+
 	public Resource getResourceLocation() {
 		return new Resource("r3alb0t", "texture/command/shuffle.png");
 	}
+
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
