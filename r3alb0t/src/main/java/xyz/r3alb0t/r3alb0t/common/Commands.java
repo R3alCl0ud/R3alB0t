@@ -4,6 +4,8 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.registry.CommandRegistry;
 import redis.clients.jedis.Jedis;
 import xyz.r3alb0t.r3alb0t.common.commands.CommandInfo;
+import xyz.r3alb0t.r3alb0t.currency.commands.CommandBalance;
+import xyz.r3alb0t.r3alb0t.currency.commands.CommandCurrency;
 import xyz.r3alb0t.r3alb0t.custom.CustomCommands;
 import xyz.r3alb0t.r3alb0t.logs.commands.CommandLogs;
 import xyz.r3alb0t.r3alb0t.music.CommandJoin;
@@ -33,6 +35,10 @@ public class Commands {
 	// Logs commands
 	public static Command logs;
 	
+	// Currency commands
+	public static Command currency;
+	public static Command balence;
+	
 	public static Jedis DataBase = new Jedis("localhost");
 	
 	public static void registerCommands() {
@@ -58,5 +64,9 @@ public class Commands {
 		
 		// Register Logs commands
 		CommandRegistry.registerCommand(logs = new CommandLogs(), logs.getUnlocalizedName());
+		
+		// Register Currency commands;
+		CommandRegistry.registerCommand(currency = new CommandCurrency(), currency.getUnlocalizedName());
+		CommandRegistry.registerCommand(balence = new CommandBalance(), balence.getUnlocalizedName());
 	}
 }
