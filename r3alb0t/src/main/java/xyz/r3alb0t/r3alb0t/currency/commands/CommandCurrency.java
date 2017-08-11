@@ -8,13 +8,14 @@ import io.discloader.discloader.client.command.CommandTree;
 
 /**
  * @author Perry Berman
- *
  */
 public class CommandCurrency extends CommandTree {
+
 	private Map<String, Command> subs;
 	private static Command enable;
 	private static Command disable;
-	
+	private static Command give;
+
 	/**
 	 * 
 	 */
@@ -23,12 +24,14 @@ public class CommandCurrency extends CommandTree {
 		subs = new HashMap<>();
 		enable = new CommandEnable();
 		disable = new CommandDisable();
+		give = new CommandGive();
 		subs.put(enable.getUnlocalizedName(), enable);
 		subs.put(disable.getUnlocalizedName(), disable);
+		subs.put(give.getUnlocalizedName(), give);
 	}
-	
+
 	public Map<String, Command> getSubCommands() {
 		return subs;
 	}
-	
+
 }

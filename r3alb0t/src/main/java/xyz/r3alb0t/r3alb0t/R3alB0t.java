@@ -22,16 +22,18 @@ import xyz.r3alb0t.r3alb0t.config.Config;
  * Hello world!
  */
 public class R3alB0t {
-	
+
 	public static final Logger logger = new DLLogger(R3alB0t.class).getLogger();
-	
+
 	public static Config config;
 	public static Gson gson = new Gson();
 	private static ShardManager manager;
-	
+
 	public static void main(String[] args) {
 		// logger.info(String.format("Int: Bytes: %d, Max: %d, Min: %d",
 		// Integer.BYTES, Integer.MAX_VALUE, Integer.MIN_VALUE));
+		String test = "##testing 123";
+		logger.info(test.substring(9, test.length()));
 		try {
 			File options = new File("options.json");
 			if (options.exists() && !options.isDirectory()) {
@@ -46,12 +48,12 @@ public class R3alB0t {
 				fw.write(gson.toJson(config));
 				fw.close();
 			}
-			
+
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true, false);
 			dlOptions.setSharding(0, 2);
 			ShardManager manager = new ShardManager(dlOptions);
 			manager.addShardingListener(new ShardingListenerAdapter() {
-				
+
 				public void ShardLaunched(Shard shard) {
 					logger.info(String.format("Shard #%d: Launched", shard.getShardID()));
 					shard.getLoader().addEventHandler(new EventHandler(shard));
@@ -63,12 +65,12 @@ public class R3alB0t {
 			LogHandler.throwing(e);
 		}
 	}
-	
+
 	/**
 	 * @return the manager
 	 */
 	public static ShardManager getShardManager() {
 		return manager;
 	}
-	
+
 }
