@@ -10,14 +10,16 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
  * @author Perry Berman
  */
 public class CommandEnable extends Command {
-
+	
 	/**
 	 * 
 	 */
 	public CommandEnable() {
 		setUnlocalizedName("enable");
+		setDescription("Enables automatic credit dispencing");
+		setUsage("currency enable");
 	}
-
+	
 	public void execute(MessageCreateEvent e, String[] args) {
 		for (String arg : args)
 			System.out.println(arg + "test");
@@ -28,5 +30,5 @@ public class CommandEnable extends Command {
 		Currency.getGuilds().add(guild.getID());
 		e.getChannel().sendMessage("Automated credit dispencing enabled");
 	}
-
+	
 }
