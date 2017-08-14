@@ -3,7 +3,6 @@ package xyz.r3alb0t.r3alb0t.music;
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
-import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.message.IMessage;
@@ -26,8 +25,8 @@ public class CommandPause extends Command {
 		IMessage message = e.getMessage();
 		IGuild guild = message.getGuild();
 		ITextChannel channel = message.getChannel();
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0xfadd38).setThumbnail(getResourceLocation());
+		// RichEmbed embed = new RichEmbed("Music Player").setColor(0xfadd38).setThumbnail(getResourceLocation());
 		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) RBMusic.plManagers.get(guild.getID()).pause();
-		channel.sendEmbed(embed);
+		// channel.sendEmbed(embed);
 	}
 }

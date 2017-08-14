@@ -14,20 +14,19 @@ import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.message.IMessage;
 
 public class CommandQueue extends Command {
-
+	
 	public CommandQueue() {
 		setUnlocalizedName("queue");
 		setDescription("adds a track/set to the playlist\nCurrently only works with YouTube");
 		setArgsRegex("(\\d+)");
 	}
-
+	
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
 		IGuild guild = message.getGuild();
 		ITextChannel channel = message.getChannel();
 		int page = 1;
-		System.out.println(args[0]);
 		if (args.length >= 1 && args[0] != null) page = Integer.parseInt(args[0], 10);
 		for (String arg : args)
 			System.out.println(arg);
