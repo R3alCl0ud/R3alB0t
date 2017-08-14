@@ -32,7 +32,7 @@ import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
 
 	private VoiceConnection connection;
-	private IGuildVoiceChannel channel;
+	// private IGuildVoiceChannel channel;
 	private IGuildTextChannel boundChannel;
 	private IMessage nowplaying;
 
@@ -50,7 +50,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	public PlaylistManager(VoiceConnection connection, IGuildTextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
-		channel = connection.getChannel();
+		// channel = connection.getChannel();
 		nowplaying = null;
 		tracks = new ArrayList<>();
 		connection.addListener(this);
@@ -61,7 +61,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				IGuildMember member = connection.getChannel().getGuild().getMember(e.getUser().getID());
 				IEmoji emoji = e.getReaction().getEmoji();
 				if (emoji.toString().equals("⏸")) {
-					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.pause();
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.pause();
 				} else if (emoji.toString().equals("🔀")) {
 					shuffle();
 					e.getReaction().removeUserReaction(e.getUser());
@@ -72,9 +72,9 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					e.getReaction().removeUserReaction(e.getUser());
 					sendEmbed();
 				} else if (emoji.toString().equals("▶")) {
-					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.resume();
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) connection.resume();
 				} else if (emoji.toString().equals("🔇")) {
-					if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
 						volume = connection.getVolume();
 						connection.setVolume(0);
 					}
@@ -99,7 +99,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						connection.setVolume(volume == 0 ? nv : volume);
 					} else if (nv > 0) {
 						connection.setVolume(nv);
-					} else if (channel.permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+					} else if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
 						connection.setVolume(nv);
 						e.getReaction().removeReaction();
 					}
@@ -107,7 +107,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					if (nowplaying.getReaction("🔊") == null && nv < 100) nowplaying.addReaction("🔊");
 					sendEmbed();
 				} else if (emoji.toString().equals("⏏")) {
-					if (channel.permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
 						connection.disconnect().thenAccept(a -> {
 							if (nowplaying != null) nowplaying.delete();
 						});
@@ -125,6 +125,10 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			boundChannel.sendMessage("Failed to load track");
 		}
 		if (endReason.mayStartNext) startNext();
+	}
+
+	public IGuildVoiceChannel getVoiceChannel() {
+		return connection.getChannel();
 	}
 
 	public long getLength() {
