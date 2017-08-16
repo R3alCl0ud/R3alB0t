@@ -89,13 +89,11 @@ public class CommandRewards extends CommandTree {
 				rwsj.put(rj.name, rj);
 			}
 			rewards.sort((a, b) -> {
-				System.out.println(DLUtil.gson.toJson(a));
-				System.out.println(DLUtil.gson.toJson(b));
 				if (a.id.equals(b.required) || (a.required != null && a.required.equals(b.required) && a.price > b.price) || (a.required == null && b.required == null && a.price > b.price)) return 1;
 				if (b.id.equals(a.required) || (a.required != null && a.required.equals(b.required) && a.price < b.price) || (a.required == null && b.required == null && a.price < b.price)) return -1;
 				if (a.price == b.price) {
-					if (a.name.compareTo(b.name) > 0) return 1;
-					if (a.name.compareTo(b.name) < 0) return -1;
+					if (a.name.compareToIgnoreCase(b.name) > 0) return 1;
+					if (a.name.compareToIgnoreCase(b.name) < 0) return -1;
 				}
 				return 0;
 			});
@@ -104,7 +102,7 @@ public class CommandRewards extends CommandTree {
 			embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 			for (int i = 0 + (5 * (page - 1)); i < rewards.size(); i++) {
 				RewardJSON rj = rewards.get(i);
-				String text = String.format("**ID**: %s\n**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.id, rj.price, rj.required == null ? "none" : rwsj.get(rj.required).name, roles.contains(guild.getRoleByID(rj.id)));
+				String text = String.format("**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.price, rj.required == null ? "none" : rwsj.get(rj.required).name, roles.contains(guild.getRoleByID(rj.id)));
 				embed.addField(rj.name, text);
 			}
 			e.getChannel().sendEmbed(embed);

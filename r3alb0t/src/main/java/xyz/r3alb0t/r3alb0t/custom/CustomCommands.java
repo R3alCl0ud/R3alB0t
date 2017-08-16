@@ -1,5 +1,10 @@
 package xyz.r3alb0t.r3alb0t.custom;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.util.SnowflakeUtil;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
@@ -11,19 +16,34 @@ import xyz.r3alb0t.r3alb0t.common.Commands;
 public class CustomCommands {
 	
 	private static PubSub pubSub;
-	private static Jedis DB = new Jedis("localhost"), DataBase = Commands.DataBase;
+	private static Jedis Subber = new Jedis("localhost"), DataBase = Commands.DataBase;
+	private static final Map<Long, Map<String, CommandJSON>> guildCommands = new HashMap<>();
 	
 	/**
 	 * Loads the custom commands from the DataBase
 	 */
 	public static void loadCommands() {
 		pubSub = new PubSub();
-		// DB.connect();
-		// DB.auth("B3$tP4$$");
-		// DB.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete",
-		// "Commands.*:update", "Commands.*:*");
-		// Set<String> titles =
-		// DataBase.smembers("Commands.282226852616077312");
+		Subber.connect();
+		Subber.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete", "Commands.*:update", "Commands.*:*");
+		// pubSub.p
+	}
+	
+	public static Map<String, CommandJSON> getCommands(IGuild guild) {
+		Map<String, CommandJSON> cmds = guildCommands.get(guild.getID());
+		if (cmds == null || cmds.isEmpty()) {
+			cmds = cmds != null ? cmds : new HashMap<>();
+			String gID = SnowflakeUtil.asString(guild);
+			Set<String> titles = DataBase.smembers("Commands." + gID);
+			for (String title : titles) {
+				CommandJSON cmd = new CommandJSON();
+				cmd.title = title;
+				cmd.message = DataBase.get("Commands." + gID + ":" + title);
+				cmds.put(title, cmd);
+			}
+			guildCommands.put(guild.getID(), cmds);
+		}
+		return cmds;
 	}
 	
 	public static class PubSub extends JedisPubSub {

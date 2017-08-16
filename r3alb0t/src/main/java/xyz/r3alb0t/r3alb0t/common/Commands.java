@@ -8,7 +8,7 @@ import xyz.r3alb0t.r3alb0t.common.commands.CommandServerInfo;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandBalance;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandCurrency;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandRewards;
-import xyz.r3alb0t.r3alb0t.custom.CustomCommands;
+import xyz.r3alb0t.r3alb0t.custom.commands.CommandCommands;
 import xyz.r3alb0t.r3alb0t.logs.commands.CommandLogs;
 import xyz.r3alb0t.r3alb0t.music.CommandJoin;
 import xyz.r3alb0t.r3alb0t.music.CommandLeave;
@@ -43,6 +43,9 @@ public class Commands {
 	public static Command balence;
 	public static Command rewards;
 	
+	// Custom Commands commands
+	public static Command commands;
+	
 	public static Jedis DataBase = new Jedis("localhost");
 	
 	public static void registerCommands() {
@@ -51,8 +54,8 @@ public class Commands {
 		// DataBase.auth("B3$tP4$$");
 		
 		// load custom commands
-		CustomCommands.loadCommands();
 		
+
 		// Register misc commands
 		CommandRegistry.registerCommand(commandInfo = new CommandInfo(), commandInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandServerInfo = new CommandServerInfo(), commandServerInfo.getUnlocalizedName());
@@ -74,5 +77,8 @@ public class Commands {
 		CommandRegistry.registerCommand(currency = new CommandCurrency(), currency.getUnlocalizedName());
 		CommandRegistry.registerCommand(balence = new CommandBalance(), balence.getUnlocalizedName());
 		CommandRegistry.registerCommand(rewards = new CommandRewards("rewards"), rewards.getUnlocalizedName());
+		
+		// Register CC commands
+		CommandRegistry.registerCommand(commands = new CommandCommands(), commands.getUnlocalizedName());
 	}
 }
