@@ -8,22 +8,23 @@ import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.user.IUser;
+import io.discloader.discloader.entity.util.Permissions;
 import redis.clients.jedis.Jedis;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 /**
  * @author Perry Berman
- *
  */
 public class CommandBalance extends Command {
-	
+
 	private static Jedis db = DataBase.getDataBase();
-	
+
 	public CommandBalance() {
 		setUnlocalizedName("balance");
+		setArgsRegex("<@!?(\\d+)>");
 	}
-	
+
 	public void execute(MessageCreateEvent e, String[] args) {
 		IGuild guild = e.getMessage().getGuild();
 		if (guild == null) {
@@ -32,21 +33,24 @@ public class CommandBalance extends Command {
 		}
 		RichEmbed embed = new RichEmbed().setColor(0xf4cb42).setThumbnail(getResourceLocation());
 		embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-		IUser author = e.getMessage().getAuthor();
-		
-		embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
+		IUser user = e.getMessage().getAuthor();
+		if (e.getMessage().getMentions().getUsers().size() > 0 && guild.getMember(user.getID()).getPermissions().hasAny(Permissions.MANAGE_GUILD)) {
+			user = e.getMessage().getMentions().getUsers().get(0);
+		}
+		embed.setAuthor(user.toString(), "", user.getAvatar().toString());
+		embed.setDescription(String.format("Showing the balance of %s", user.asMention()));
 		long balence = 0;
-		if (!db.exists(Currency.userBal(guild.getID(), author.getID()))) {
-			db.incrBy(Currency.userBal(guild.getID(), author.getID()), 0);
+		if (!db.exists(Currency.userBal(guild.getID(), user.getID()))) {
+			db.incrBy(Currency.userBal(guild.getID(), user.getID()), 0);
 		} else {
-			balence = Long.parseLong(db.get(Currency.userBal(guild.getID(), author.getID())), 10);
+			balence = Long.parseLong(db.get(Currency.userBal(guild.getID(), user.getID())), 10);
 		}
 		embed.addField("Current Balance", "¥" + balence);
 		e.getChannel().sendEmbed(embed);
 	}
-	
+
 	public Resource getResourceLocation() {
 		return new Resource("r3alb0t", "texture/command/Currency.png");
 	}
-	
+
 }

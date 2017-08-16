@@ -24,7 +24,7 @@ public class CommandGive extends Command {
 		super();
 		setUnlocalizedName("give");
 		setUsage("currency give <@user> <amount>");
-		setArgsRegex("<(@\\d+>|@!\\d+)> -?(\\d+)");
+		setArgsRegex("<@!?(\\d+)> -?(\\d+)");
 	}
 	
 	public void execute(MessageCreateEvent e, String[] args) {

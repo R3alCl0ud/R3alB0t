@@ -21,9 +21,6 @@ public class CommandEnable extends Command {
 	}
 	
 	public void execute(MessageCreateEvent e, String[] args) {
-		for (String arg : args)
-			System.out.println(arg + "test");
-		System.out.println("enabled");
 		IGuild guild = e.getMessage().getGuild();
 		if (guild == null) return;
 		DataBase.getDataBase().sadd("currency.guilds", Long.toUnsignedString(guild.getID(), 10));

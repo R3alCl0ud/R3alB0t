@@ -8,23 +8,30 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 /**
  * @author Perry Berman
- *
  */
 public class CurrencyEvents extends EventListenerAdapter {
-	
+
 	@Override
 	public void GuildMessageCreate(GuildMessageCreateEvent e) {
-		
+
 		if (Currency.getGuilds().contains(e.getGuild().getID())) {
-			// System.out.println(e.getGuild().getName());
-			// System.out.println(CommandHandler.prefix + "balance");
 			IUser author = e.getMessage().getAuthor();
 			if (author.isBot() || e.getMessage().getContent().equalsIgnoreCase(CommandHandler.prefix + "balance")) return;
 			if (!DataBase.getDataBase().exists(Currency.userCooldown(e.getGuild().getID(), author.getID()))) {
-				DataBase.getDataBase().incrBy(Currency.userBal(e.getGuild().getID(), author.getID()), 10l);
-				DataBase.getDataBase().setex(Currency.userCooldown(e.getGuild().getID(), author.getID()), 120, "spicy");
+				String s = DataBase.getDataBase().get(Currency.coolDown(e.getGuild().getID())), in = DataBase.getDataBase().get(Currency.interest(e.getGuild().getID()));
+				;
+				if (s == null) {
+					DataBase.getDataBase().set(Currency.coolDown(e.getGuild().getID()), "120");
+				}
+				if (in == null) {
+					DataBase.getDataBase().set(Currency.interest(e.getGuild().getID()), "10");
+				}
+				int cooldown = s == null ? 120 : Integer.parseInt(s, 10);
+				long interest = in == null ? 10 : Integer.parseInt(in, 10);
+				DataBase.getDataBase().incrBy(Currency.userBal(e.getGuild().getID(), author.getID()), interest);
+				DataBase.getDataBase().setex(Currency.userCooldown(e.getGuild().getID(), author.getID()), cooldown, "spicy");
 			}
 		}
 	}
-	
+
 }
