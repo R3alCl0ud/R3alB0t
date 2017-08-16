@@ -18,24 +18,24 @@ import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class EventHandler extends EventListenerAdapter {
-	
+
 	private Shard shard;
 	private static boolean registered = false;
 	private static IEventListener currency, ccmds;
-	
+
 	public EventHandler(Shard shard) {
 		this.shard = shard;
 	}
-	
+
 	@Override
 	public void PreInit(DLPreInitEvent e) {
 		R3alB0t.logger.info("Registering music commands");
 		Commands.registerCommands();
 		LogHandler.load();
 		DataBase.getDataBase().connect();
-		
+
 	}
-	
+
 	@Override
 	public void Ready(ReadyEvent event) {
 		if (!registered) {
@@ -49,7 +49,7 @@ public class EventHandler extends EventListenerAdapter {
 		}
 		event.getLoader().addEventHandler(currency);
 		event.getLoader().addEventHandler(ccmds);
-		event.getLoader().user.setGame("Testing all the things");
+		// event.getLoader().user.setGame("Testing all the things");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
 		if (!registered) {
@@ -57,7 +57,7 @@ public class EventHandler extends EventListenerAdapter {
 			CustomCommands.loadCommands();
 		}
 	}
-	
+
 	@Override
 	public void RawPacket(RawEvent data) {
 		WebSocketFrame frame = data.getFrame();
