@@ -9,7 +9,9 @@ import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.entity.util.Permissions;
+import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
+import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
@@ -39,13 +41,13 @@ public class CommandBalance extends Command {
 		}
 		embed.setAuthor(user.toString(), "", user.getAvatar().toString());
 		embed.setDescription(String.format("Showing the balance of %s", user.asMention()));
-		long balence = 0;
+		AccountJSON account = null;
 		if (!db.exists(Currency.userBal(guild.getID(), user.getID()))) {
-			db.incrBy(Currency.userBal(guild.getID(), user.getID()), 0);
+			db.set(Currency.userBal(guild.getID(), user.getID()), (account = new AccountJSON(user)).toString());
 		} else {
-			balence = Long.parseLong(db.get(Currency.userBal(guild.getID(), user.getID())), 10);
+			account = DLUtil.gson.fromJson(db.get(Currency.userBal(guild.getID(), user.getID())), AccountJSON.class);
 		}
-		embed.addField("Current Balance", "¥" + balence);
+		embed.addField("Current Balance", "¥" + account.getBalance());
 		e.getChannel().sendEmbed(embed);
 	}
 

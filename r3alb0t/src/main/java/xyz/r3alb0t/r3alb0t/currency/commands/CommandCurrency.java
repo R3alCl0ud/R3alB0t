@@ -31,7 +31,8 @@ public class CommandCurrency extends CommandTree {
 	 */
 	public CommandCurrency() {
 		super("currency");
-		setDescription("Base command for managing currency");
+		setDescription("Base command for managing currency.");
+		setFullDescription("Base command for managing currency.\nBy enabling currency you **__explicitly__** authorize <@132347121520214016> to store *EndUserData(EUD)* such as *Usernames/Nicknames/names* of the members/roles/channels of this guild.");
 		subs = new HashMap<>();
 		enable = new CommandEnable();
 		disable = new CommandDisable();

@@ -22,6 +22,7 @@ import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.entity.util.SnowflakeUtil;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
+import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.currency.RewardJSON;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
@@ -135,8 +136,13 @@ public class CommandRewards extends CommandTree {
 			IUser author = e.getMessage().getAuthor();
 			IGuildMember member = e.getMessage().getMember();
 			RewardJSON rj = DLUtil.gson.fromJson(db.get(Currency.reward(guild.getID(), args[0].toLowerCase())), RewardJSON.class);
-			String b = db.get(Currency.userBal(guild.getID(), member.getID()));
-			long balance = Long.parseLong(b == null ? "0" : b, 10);
+			AccountJSON account = null;
+			if (!db.exists(Currency.userBal(guild.getID(), author.getID()))) {
+				account = new AccountJSON(author);
+			} else {
+				account = DLUtil.gson.fromJson(db.get(Currency.userBal(guild.getID(), author.getID())), AccountJSON.class);
+			}
+			long balance = account.getBalance();
 			IRole role = guild.getRoleByID(rj.id);
 			if (balance < rj.price) {
 				e.getChannel().sendMessage("Error: Insufficient funds");
@@ -148,10 +154,12 @@ public class CommandRewards extends CommandTree {
 				e.getChannel().sendMessage("Error: The role *" + guild.getRoleByID(rj.required).getName() + "* is required to purchase this reward");
 				return;
 			}
+			final AccountJSON act = account;
 			member.giveRole(role).thenAccept(a -> {
 				if (rj.required != null) {
 					a.takeRole(guild.getRoleByName(rj.required)).thenAccept(c -> {
-						db.decrBy(Currency.userBal(guild.getID(), member.getID()), rj.price);
+						act.setBalance((balance - rj.price));
+						db.set(Currency.userBal(guild.getID(), member.getID()), act.toString());
 						RichEmbed embed = new RichEmbed("Purchase Receipt").setColor(0xf4a742);
 						embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
 						embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);

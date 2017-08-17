@@ -49,7 +49,7 @@ public class EventHandler extends EventListenerAdapter {
 		}
 		event.getLoader().addEventHandler(currency);
 		event.getLoader().addEventHandler(ccmds);
-		// event.getLoader().user.setGame("Testing all the things");
+		event.getLoader().user.setGame("Testing all the things");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
 		if (!registered) {
@@ -64,7 +64,7 @@ public class EventHandler extends EventListenerAdapter {
 		if (data.isGateway() && frame.isTextFrame() && !frame.getPayloadText().contains("PRESENCE_UPDATE")) {
 			// R3alB0t.logger.info(frame.getPayloadText());
 		} else if (data.isREST() && data.getHttpResponse() != null && data.getHttpResponse().getBody() != null) {
-			R3alB0t.logger.info(data.getHttpResponse().getBody());
+			// R3alB0t.logger.info(data.getHttpResponse().getBody());
 		}
 	}
 }
