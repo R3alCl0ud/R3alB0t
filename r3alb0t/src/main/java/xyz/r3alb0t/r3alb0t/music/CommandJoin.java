@@ -30,7 +30,7 @@ public class CommandJoin extends Command {
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
 					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 					embed.addField("Joined Voice", String.format("Joined the VoiceChannel *%s*", channel.getName()));
-					message.getChannel().sendEmbed(embed);
+					e.getChannel().sendEmbed(embed);
 				}).exceptionally(ex -> {
 					ex.printStackTrace();
 					return null;
@@ -48,7 +48,7 @@ public class CommandJoin extends Command {
 				RichEmbed embed = new RichEmbed("Music Player").setColor(0x55cdF2);
 				embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 				embed.addField("Error", "You are not in a voice channel");
-				message.getChannel().sendEmbed(embed);
+				e.getChannel().sendEmbed(embed);
 			}
 		}
 	}
