@@ -15,18 +15,20 @@ import xyz.r3alb0t.r3alb0t.common.Commands;
  */
 public class CustomCommands {
 	
-	private static PubSub pubSub;
-	private static Jedis Subber = new Jedis("localhost"), DataBase = Commands.DataBase;
+	private static final PubSub pubSub = new PubSub();;
+	private static final Jedis Subber = new Jedis("localhost"), DataBase = Commands.DataBase;
 	private static final Map<Long, Map<String, CommandJSON>> guildCommands = new HashMap<>();
 	
 	/**
 	 * Loads the custom commands from the DataBase
 	 */
 	public static void loadCommands() {
-		pubSub = new PubSub();
 		Subber.connect();
-		Subber.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete", "Commands.*:update", "Commands.*:*");
-		// pubSub.p
+		new Thread("PubSub thread") {
+			public void run() {
+				Subber.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete", "Commands.*:update", "Commands.*:*");
+			}
+		}.start();
 	}
 	
 	public static Map<String, CommandJSON> getCommands(IGuild guild) {
@@ -59,7 +61,7 @@ public class CustomCommands {
 		}
 		
 		public void onPSubscribe(String pattern, int subscribedChannels) {
-			System.out.printf("Subscribed to the [%s] pattern\n", pattern);
+			// System.out.printf("Subscribed to the [%s] pattern\n", pattern);
 		}
 		
 		public void onPUnsubscribe(String pattern, int subscribedChannels) {
