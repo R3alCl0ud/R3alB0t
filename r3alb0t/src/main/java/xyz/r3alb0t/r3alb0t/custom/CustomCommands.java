@@ -15,35 +15,34 @@ import xyz.r3alb0t.r3alb0t.common.Commands;
  */
 public class CustomCommands {
 	
-	private static final PubSub pubSub = new PubSub();;
-	private static final Jedis Subber = new Jedis("localhost"), DataBase = Commands.DataBase;
+	private static PubSub pubSub;
+	private static Jedis Subber, DataBase = Commands.DataBase;
 	private static final Map<Long, Map<String, CommandJSON>> guildCommands = new HashMap<>();
 	
 	/**
 	 * Loads the custom commands from the DataBase
 	 */
 	public static void loadCommands() {
-		Subber.connect();
 		new Thread("PubSub thread") {
+			@Override
 			public void run() {
-				Subber.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete", "Commands.*:update", "Commands.*:*");
+				pubSub = new PubSub();
+				Subber = new Jedis("localhost");
+				Subber.connect();
+				Subber.psubscribe(pubSub, "Commands.*:create", "Commands.*:delete", "Commands.*:update");// , "Commands.*:*"
 			}
 		}.start();
 	}
 	
 	public static Map<String, CommandJSON> getCommands(IGuild guild) {
-		Map<String, CommandJSON> cmds = guildCommands.get(guild.getID());
-		if (cmds == null || cmds.isEmpty()) {
-			cmds = cmds != null ? cmds : new HashMap<>();
-			String gID = SnowflakeUtil.asString(guild);
-			Set<String> titles = DataBase.smembers("Commands." + gID);
-			for (String title : titles) {
-				CommandJSON cmd = new CommandJSON();
-				cmd.title = title;
-				cmd.message = DataBase.get("Commands." + gID + ":" + title);
-				cmds.put(title, cmd);
-			}
-			guildCommands.put(guild.getID(), cmds);
+		Map<String, CommandJSON> cmds = new HashMap<>();
+		String gID = SnowflakeUtil.asString(guild);
+		Set<String> titles = DataBase.smembers("Commands." + gID);
+		for (String title : titles) {
+			CommandJSON cmd = new CommandJSON();
+			cmd.title = title;
+			cmd.message = DataBase.get("Commands." + gID + ":" + title);
+			cmds.put(title, cmd);
 		}
 		return cmds;
 	}
@@ -61,7 +60,7 @@ public class CustomCommands {
 		}
 		
 		public void onPSubscribe(String pattern, int subscribedChannels) {
-			// System.out.printf("Subscribed to the [%s] pattern\n", pattern);
+			System.out.printf("Subscribed to the [%s] pattern\n", pattern);
 		}
 		
 		public void onPUnsubscribe(String pattern, int subscribedChannels) {
@@ -71,8 +70,6 @@ public class CustomCommands {
 			String info = channel.substring(9);
 			long guildID = SnowflakeUtil.parse(info.split(":")[0]);
 			String cmd = info.split(":")[1];
-			System.out.println(guildID);
-			System.out.println(cmd);
 			System.out.printf("Pattern: %s\nChannel: %s\nMessage: %s\n", "" + pattern, "" + channel, "" + message);
 		}
 	}

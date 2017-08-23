@@ -8,7 +8,11 @@ import io.discloader.discloader.common.event.EventListenerAdapter;
 import io.discloader.discloader.common.event.IEventListener;
 import io.discloader.discloader.common.event.RawEvent;
 import io.discloader.discloader.common.event.ReadyEvent;
+import io.discloader.discloader.common.event.guild.GuildCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
+import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.entity.channel.ITextChannel;
+import io.discloader.discloader.entity.util.SnowflakeUtil;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.currency.CurrencyEvents;
@@ -46,16 +50,28 @@ public class EventHandler extends EventListenerAdapter {
 			Currency.load();
 			currency = new CurrencyEvents();
 			ccmds = new CommandEvents();
+			CustomCommands.loadCommands();
+			registered = true;
 		}
 		event.getLoader().addEventHandler(currency);
 		event.getLoader().addEventHandler(ccmds);
 		event.getLoader().user.setGame("Testing all the things");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
-		if (!registered) {
-			registered = true;
-			CustomCommands.loadCommands();
-		}
+		// for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {
+		// DataBase.getDataBase().sadd("guilds", SnowflakeUtil.asString(guild));
+		// }
+	}
+	
+	@Override
+	public void GuildCreate(GuildCreateEvent e) {
+		ITextChannel logChannel = EntityRegistry.getTextChannelByID("190559195031011330");
+		if (logChannel == null) return;
+		RichEmbed embed = new RichEmbed("Guild Joined");
+		embed.setTimestamp().addField("Guild Name", e.getGuild().getName(), true).setColor(0x00df70);
+		embed.addField("Total Guilds", String.format("%d guild(s) across %d shard(s)", EntityRegistry.getGuilds().size(), e.getLoader().getShard().getShardCount()), true);
+		DataBase.getDataBase().sadd("guilds", SnowflakeUtil.asString(e.getGuild()));
+		logChannel.sendEmbed(embed);
 	}
 	
 	@Override

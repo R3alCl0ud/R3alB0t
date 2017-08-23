@@ -15,7 +15,6 @@ public class CommandEvents extends EventListenerAdapter {
 	public void GuildMessageCreate(GuildMessageCreateEvent e) {
 		String content = e.getMessage().getContent();
 		if (!content.startsWith(CommandHandler.prefix) || e.getMessage().getAuthor().isBot()) return;
-		// e.getGuild()
 		Map<String, CommandJSON> cmds = CustomCommands.getCommands(e.getGuild());
 		if (cmds.containsKey(content.substring(2))) {
 			e.getChannel().sendMessage(cmds.get(content.substring(2)).message);
