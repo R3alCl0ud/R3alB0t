@@ -5,7 +5,6 @@ public class Config {
 	public String prefix = "c!";
 	public Auth auth = new Auth();
 	public class Auth {
-
 		public String token = "TOKEN";
 		public String dbIP = "localhost";
 		public String dbPassword = "PASSWORD";

@@ -25,7 +25,7 @@ public class CommandEnable extends Command {
 	public void execute(MessageCreateEvent e, String[] args) {
 		IGuild guild = e.getMessage().getGuild();
 		if (guild == null) return;
-		DataBase.getDataBase().sadd("currency.guilds", Long.toUnsignedString(guild.getID(), 10));
+		DataBase.getClient().sadd("currency.guilds", Long.toUnsignedString(guild.getID(), 10));
 		Currency.getGuilds().add(guild.getID());
 		MessageBuilder builder = new MessageBuilder(e.getChannel());
 		builder.append("Currency: ").code("enabled").append('.').newLine().newLine().append("DISCLAIMER", Formatting.UNDERLINE, Formatting.BOLD).newLine();

@@ -15,7 +15,7 @@ public class Currency {
 	private static final List<Long> Guilds = new ArrayList<>();
 	
 	public static void load() {
-		Set<String> guilds = DataBase.getDataBase().smembers("currency.guilds");
+		Set<String> guilds = DataBase.getClient().smembers("currency.guilds");
 		for (String guild : guilds) {
 			Guilds.add(SnowflakeUtil.parse(guild));
 		}

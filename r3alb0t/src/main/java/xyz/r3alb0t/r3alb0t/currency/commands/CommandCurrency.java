@@ -85,7 +85,7 @@ public class CommandCurrency extends CommandTree {
 				if (guild == null) {
 					e.getChannel().sendMessage(getUsage());
 				} else if (args.length == 0) {
-					Jedis db = DataBase.getDataBase();
+					Jedis db = DataBase.getClient();
 					String s = db.get(Currency.coolDown(guild.getID()));
 					if (s == null) {
 						db.set(Currency.coolDown(guild.getID()), "120");
@@ -93,7 +93,7 @@ public class CommandCurrency extends CommandTree {
 					int cooldown = Integer.parseInt(s == null ? "120" : s, 10);
 					e.getChannel().sendMessage("The Payout Cooldown is `" + cooldown + "(seconds)`");
 				} else {
-					Jedis db = DataBase.getDataBase();
+					Jedis db = DataBase.getClient();
 					db.set(Currency.coolDown(guild.getID()), args[0]);
 					e.getChannel().sendMessage("The Payout Cooldown has been set to `" + args[0] + "(seconds)`");
 				}
@@ -118,7 +118,7 @@ public class CommandCurrency extends CommandTree {
 				if (guild == null) {
 					e.getChannel().sendMessage(getUsage());
 				} else if (args.length == 0) {
-					Jedis db = DataBase.getDataBase();
+					Jedis db = DataBase.getClient();
 					String s = db.get(Currency.interest(guild.getID()));
 					if (s == null) {
 						db.set(Currency.interest(guild.getID()), "10");
@@ -126,7 +126,7 @@ public class CommandCurrency extends CommandTree {
 					int cooldown = s == null ? 10 : Integer.parseInt(s, 10);
 					e.getChannel().sendMessage("The Payout is `¥" + cooldown + "`");
 				} else {
-					Jedis db = DataBase.getDataBase();
+					Jedis db = DataBase.getClient();
 					db.set(Currency.interest(guild.getID()), args[0]);
 					e.getChannel().sendMessage("The Payout has been set to `¥" + args[0] + "`");
 				}

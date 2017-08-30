@@ -25,7 +25,7 @@ public class CommandDisable extends Command {
 	public void execute(MessageCreateEvent e, String[] args) {
 		IGuild guild = e.getMessage().getGuild();
 		if (guild == null) return;
-		DataBase.getDataBase().srem("currency.guilds", SnowflakeUtil.asString(guild));
+		DataBase.getClient().srem("currency.guilds", SnowflakeUtil.asString(guild));
 		Currency.getGuilds().remove(guild.getID());
 		e.getChannel().sendMessage("Automated credit dispencing disabled");
 	}

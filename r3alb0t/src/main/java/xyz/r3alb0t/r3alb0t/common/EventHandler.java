@@ -22,31 +22,31 @@ import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class EventHandler extends EventListenerAdapter {
-	
+
 	private Shard shard;
 	private static boolean registered = false;
 	private static IEventListener currency, ccmds;
-	
+
 	public EventHandler(Shard shard) {
 		this.shard = shard;
 	}
-	
+
 	@Override
 	public void PreInit(DLPreInitEvent e) {
 		R3alB0t.logger.info("Registering music commands");
 		Commands.registerCommands();
 		LogHandler.load();
-		DataBase.getDataBase().connect();
-		
+		DataBase.getClient().connect();
+
 	}
-	
+
 	@Override
 	public void Ready(ReadyEvent event) {
 		if (!registered) {
 			R3alB0t.logger.info("Registering music commands");
 			Commands.registerCommands();
 			LogHandler.load();
-			if (!DataBase.getDataBase().isConnected()) DataBase.getDataBase().connect();
+			if (DataBase.getClient() == null || !DataBase.getClient().isConnected()) DataBase.connect();
 			Currency.load();
 			currency = new CurrencyEvents();
 			ccmds = new CommandEvents();
@@ -62,7 +62,7 @@ public class EventHandler extends EventListenerAdapter {
 		// DataBase.getDataBase().sadd("guilds", SnowflakeUtil.asString(guild));
 		// }
 	}
-	
+
 	@Override
 	public void GuildCreate(GuildCreateEvent e) {
 		ITextChannel logChannel = EntityRegistry.getTextChannelByID("190559195031011330");
@@ -70,10 +70,10 @@ public class EventHandler extends EventListenerAdapter {
 		RichEmbed embed = new RichEmbed("Guild Joined");
 		embed.setTimestamp().addField("Guild Name", e.getGuild().getName(), true).setColor(0x00df70);
 		embed.addField("Total Guilds", String.format("%d guild(s) across %d shard(s)", EntityRegistry.getGuilds().size(), e.getLoader().getShard().getShardCount()), true);
-		DataBase.getDataBase().sadd("guilds", SnowflakeUtil.asString(e.getGuild()));
+		DataBase.getClient().sadd("guilds", SnowflakeUtil.asString(e.getGuild()));
 		logChannel.sendEmbed(embed);
 	}
-	
+
 	@Override
 	public void RawPacket(RawEvent data) {
 		WebSocketFrame frame = data.getFrame();

@@ -30,25 +30,25 @@ import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
-	
+
 	private VoiceConnection connection;
 	// private IGuildVoiceChannel channel;
 	private IGuildTextChannel boundChannel;
 	private IMessage nowplaying;
-	
+
 	private List<AudioTrack> tracks;
-	
+
 	private int volume = 0;
-	
+
 	private long position = 0l;
-	
+
 	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
 	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
-	
+
 	public static final Logger logger = new DLLogger(PlaylistManager.class).getLogger();
-	
+
 	String emo = "🔁 🔂";
-	
+
 	public PlaylistManager(VoiceConnection connection, IGuildTextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
@@ -57,7 +57,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		tracks = new ArrayList<>();
 		connection.addListener(this);
 		connection.getLoader().addEventHandler(new EventListenerAdapter() {
-			
+
 			public void MessageReactionAdd(MessageReactionAddEvent e) {
 				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot()) return;
 				IGuildMember member = connection.getChannel().getGuild().getMember(e.getUser().getID());
@@ -117,9 +117,9 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 				}
 			}
 		});
-		
+
 	}
-	
+
 	@Override
 	public void end(AudioTrack track, AudioTrackEndReason endReason) {
 		if (!connection.isPaused()) tracks.remove(track);
@@ -128,11 +128,11 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 		if (endReason.mayStartNext) startNext();
 	}
-	
+
 	public IGuildVoiceChannel getVoiceChannel() {
 		return connection.getChannel();
 	}
-	
+
 	public long getLength() {
 		long l = 0;
 		for (AudioTrack track : tracks) {
@@ -140,52 +140,53 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 		return l;
 	}
-	
+
 	public AudioTrack getPlayingTrack() {
 		return connection.getPlayingTrack();
 	}
-	
+
 	public String getTime() {
 		return getTime(connection.getPlayingTrack());
 	}
-	
+
 	public String getTime(AudioTrack track) {
+		if (track == null) return "0:00/0:00";
 		long l = track.getDuration() / 1000l;
 		long s = l % 60l;
 		long m = l / 60l;
 		long c = track.getPosition() / 1000l, cs = c % 60l, cm = c / 60l;
 		return String.format("%d:%02d/%d:%02d", cm, cs, m, s);
 	}
-	
+
 	public String getLength(AudioTrack track) {
 		long l = track.getDuration() / 1000l, m = l / 60l, s = l % 60l;
 		return String.format("%d:%02d", m, s);
 	}
-	
+
 	public List<AudioTrack> getTracks() {
 		return tracks;
 	}
-	
+
 	@Override
 	public void loadFailed(FriendlyException e) {
 		e.printStackTrace();
 		boundChannel.sendMessage("Unable to add requested track(s) to the playlist");
 	}
-	
+
 	public void loadTrack(String id) {
 		connection.findTrackOrTracks(id, this);
 	}
-	
+
 	@Override
 	public void noMatches() {
 		boundChannel.sendMessage("Unable to add requested track(s) to the playlist");
 	}
-	
+
 	public void pause() {
 		position = connection.getPlayingTrack().getPosition();
 		connection.pause();
 	}
-	
+
 	public void paused(AudioTrack track) {
 		AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
@@ -210,7 +211,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			});
 		});
 	}
-	
+
 	@Override
 	public void playlistLoaded(AudioPlaylist tracks) {
 		RichEmbed embed = new RichEmbed("Music PLayer").setColor(0x2566C7);
@@ -234,12 +235,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
-	
+
 	@Override
 	public void resumed(AudioTrack track) {
 		started(track);
 	}
-	
+
 	public void shuffle() {
 		if (tracks.size() < 3) return;
 		if (connection.getPlayingTrack() != null) {
@@ -262,24 +263,26 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			}
 		}
 	}
-	
+
 	@Override
 	public void started(AudioTrack track) {
 		sendEmbed();
 	}
-	
+
 	public void startNext() {
-		AudioTrack cp = connection.getPlayingTrack();
 		if (connection.isPaused()) {
 			connection.resume();
-		} else if ((cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
+			return;
+		}
+		AudioTrack cp = connection.getPlayingTrack();
+		if ((cp == null || cp.getState() == AudioTrackState.FINISHED) && tracks.size() > 0) {
 			logger.info("starting next track");
 			connection.play(tracks.get(0));
 		} else {
 			logger.info("not starting a new track");
 		}
 	}
-	
+
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		tracks.add(track);
@@ -291,7 +294,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
-	
+
 	public void trackLoaded(AudioTrack track, IUser requester) {
 		tracks.add(track);
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
@@ -303,7 +306,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
-	
+
 	private void sendEmbed() {
 		if (nowplaying != null) {
 			if (nowplaying.getID() == boundChannel.getLastMessageID()) {

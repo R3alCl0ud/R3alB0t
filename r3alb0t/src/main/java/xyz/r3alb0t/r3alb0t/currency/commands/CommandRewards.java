@@ -32,7 +32,7 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
  */
 public class CommandRewards extends CommandTree {
 
-	private static Jedis db = DataBase.getDataBase();
+	private static Jedis db = DataBase.getClient();
 
 	private Map<String, Command> subs;
 

@@ -14,10 +14,13 @@ import io.discloader.discloader.util.DLUtil.ChannelType;
 public class CommandLogs extends CommandTree {
 
 	private Map<String, Command> subs;
+	private static Command enable;
 
 	public CommandLogs() {
 		super("logs");
 		subs = new HashMap<>();
+		subs.put((enable = new CommandEnable()).getUnlocalizedName(), enable);
+
 	}
 
 	public void defaultResponse(MessageCreateEvent e) {

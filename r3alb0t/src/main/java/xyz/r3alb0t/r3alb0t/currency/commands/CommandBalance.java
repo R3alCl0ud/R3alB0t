@@ -20,7 +20,7 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
  */
 public class CommandBalance extends Command {
 
-	private static Jedis db = DataBase.getDataBase();
+	private static Jedis db = DataBase.getClient();
 
 	public CommandBalance() {
 		setUnlocalizedName("balance");
