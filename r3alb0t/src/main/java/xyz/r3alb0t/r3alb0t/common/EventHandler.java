@@ -12,6 +12,7 @@ import io.discloader.discloader.common.event.guild.GuildCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ITextChannel;
+import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.util.SnowflakeUtil;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
@@ -43,10 +44,11 @@ public class EventHandler extends EventListenerAdapter {
 	@Override
 	public void Ready(ReadyEvent event) {
 		if (!registered) {
+			R3alB0t.logger.info("Starting DataBase connection if not already connected");
+			if (DataBase.getClient() == null || !DataBase.getClient().isConnected()) DataBase.connect();
 			R3alB0t.logger.info("Registering music commands");
 			Commands.registerCommands();
 			LogHandler.load();
-			if (DataBase.getClient() == null || !DataBase.getClient().isConnected()) DataBase.connect();
 			Currency.load();
 			currency = new CurrencyEvents();
 			ccmds = new CommandEvents();
@@ -58,9 +60,9 @@ public class EventHandler extends EventListenerAdapter {
 		event.getLoader().user.setGame("Testing all the things");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
-		// for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {
-		// DataBase.getDataBase().sadd("guilds", SnowflakeUtil.asString(guild));
-		// }
+		for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {
+			DataBase.getClient().sadd("guilds", SnowflakeUtil.asString(guild));
+		}
 	}
 
 	@Override
