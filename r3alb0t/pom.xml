@@ -4,7 +4,7 @@
 
 	<groupId>xyz.r3alb0t</groupId>
 	<artifactId>r3alb0t</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>4.1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>r3alb0t</name>
