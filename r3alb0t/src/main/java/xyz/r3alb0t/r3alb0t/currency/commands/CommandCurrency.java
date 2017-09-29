@@ -20,55 +20,7 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
  */
 public class CommandCurrency extends CommandTree {
 
-	private Map<String, Command> subs;
-	private static Command enable;
-	private static Command disable;
-	private static Command give;
-	private static Command set;
-
-	/**
-	 * 
-	 */
-	public CommandCurrency() {
-		super("currency");
-		setDescription("Base command for managing currency.");
-		setFullDescription("Base command for managing currency.\nBy enabling currency you **__explicitly__** authorize <@132347121520214016> to store *EndUserData(EUD)* such as *Usernames/Nicknames/names* of the members/roles/channels of this guild.");
-		subs = new HashMap<>();
-		enable = new CommandEnable();
-		disable = new CommandDisable();
-		give = new CommandGive();
-		set = new CommandSet();
-		subs.put(enable.getUnlocalizedName(), enable);
-		subs.put(disable.getUnlocalizedName(), disable);
-		subs.put(give.getUnlocalizedName(), give);
-		subs.put(set.getUnlocalizedName(), set);
-	}
-
-	public Map<String, Command> getSubCommands() {
-		return subs;
-	}
-
-	public Resource getResourceLocation() {
-		return new Resource("r3alb0t", "texture/command/Currency.png");
-	}
-
 	public static class CommandSet extends CommandTree {
-
-		private Map<String, Command> subs;
-		private Command coolDown;
-		private Command interest;
-
-		public CommandSet() {
-			super("set");
-			setUsage("currency set <property>");
-			subs = new HashMap<>();
-			subs.put((coolDown = new CommandCoolDown()).getUnlocalizedName(), coolDown);
-			subs.put((interest = new CommandInterest()).getUnlocalizedName(), interest);
-		}
-
-		public Map<String, Command> getSubCommands() {
-			return subs;
-		}
 
 		public class CommandCoolDown extends Command {
 
@@ -103,7 +55,6 @@ public class CommandCurrency extends CommandTree {
 				return member.getPermissions().hasAny(Permissions.MANAGE_GUILD, Permissions.ADMINISTRATOR);
 			}
 		}
-
 		public class CommandInterest extends Command {
 
 			public CommandInterest() {
@@ -136,6 +87,71 @@ public class CommandCurrency extends CommandTree {
 				return member.getPermissions().hasAny(Permissions.MANAGE_GUILD, Permissions.ADMINISTRATOR);
 			}
 		}
+		
+		public class CommandUseXP extends Command {
+			public CommandUseXP() {
+				super();
+				setUnlocalizedName("usexp");
+				setDescription("Use XP instead of credits");
+				setArgsRegex("(yes|no)");
+				setUsage("usexp [yes/no]");
+			}
+		}
+		private Map<String, Command> subs;
+
+		private Command coolDown;
+
+		private Command interest;
+
+		public CommandSet() {
+			super("set");
+			setUsage("currency set <property>");
+			subs = new HashMap<>();
+			subs.put((coolDown = new CommandCoolDown()).getUnlocalizedName(), coolDown);
+			subs.put((interest = new CommandInterest()).getUnlocalizedName(), interest);
+		}
+
+		public Map<String, Command> getSubCommands() {
+			return subs;
+		}
+	}
+	private static Command enable;
+	private static Command disable;
+	private static Command give;
+	private static Command set;
+
+	private Map<String, Command> subs;
+
+	/**
+	 * 
+	 */
+	public CommandCurrency() {
+		super("currency");
+		setDescription("Base command for managing currency.");
+		setFullDescription(
+				"Base command for managing currency.\nBy enabling currency you **__explicitly__** authorize <@132347121520214016> to store *EndUserData(EUD)* such as *Usernames/Nicknames/names* of the members/roles/channels of this guild.");
+		subs = new HashMap<>();
+		enable = new CommandEnable();
+		disable = new CommandDisable();
+		give = new CommandGive();
+		set = new CommandSet();
+		subs.put(enable.getUnlocalizedName(), enable);
+		subs.put(disable.getUnlocalizedName(), disable);
+		subs.put(give.getUnlocalizedName(), give);
+		subs.put(set.getUnlocalizedName(), set);
+	}
+
+	public void defaultResponse(MessageCreateEvent e) {
+		String text = "Available option(s) are:\n" + this.subsText(this, 0);
+		e.getChannel().sendMessage(text);
+	}
+
+	public Resource getResourceLocation() {
+		return new Resource("r3alb0t", "texture/command/Currency.png");
+	}
+
+	public Map<String, Command> getSubCommands() {
+		return subs;
 	}
 
 }

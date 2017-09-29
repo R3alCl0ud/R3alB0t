@@ -9,8 +9,8 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.command.CommandTree;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.entity.channel.ChannelTypes;
 import io.discloader.discloader.entity.guild.IGuild;
-import io.discloader.discloader.util.DLUtil.ChannelType;
 import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 
 public class CommandEnable extends CommandTree {
@@ -24,7 +24,7 @@ public class CommandEnable extends CommandTree {
 	}
 
 	public void defaultResponse(MessageCreateEvent e) {
-		if (e.getChannel().getType() != ChannelType.TEXT) {
+		if (e.getChannel().getType() != ChannelTypes.TEXT) {
 			RichEmbed embed = new RichEmbed("Enable Logging").setColor(0xff0101).addField("Error", "This command can only be executed in a **GuildTextChannel**").setTimestamp(OffsetDateTime.now(ZoneId.systemDefault()));
 			e.getChannel().sendEmbed(embed);
 			return;

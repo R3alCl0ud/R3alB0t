@@ -35,11 +35,13 @@ public class CommandRewards extends CommandTree {
 	private static Jedis db = DataBase.getClient();
 
 	private Map<String, Command> subs;
+	private List<String> aliases;
 
 	private static Command create;
 	private static Command list;
 	private static Command buy;
 	private static Command calculate;
+	private static Command status;
 
 	/**
 	 * @param unlocalizedName
@@ -47,6 +49,8 @@ public class CommandRewards extends CommandTree {
 	public CommandRewards(String unlocalizedName) {
 		super(unlocalizedName);
 		setDescription("Base command for managing rewards.");
+		aliases = new ArrayList<>();
+		aliases.add("ranks");
 		subs = new HashMap<>();
 		subs.put((create = new CreateRewards()).getUnlocalizedName(), create);
 		subs.put((list = new ListRewards()).getUnlocalizedName(), list);
@@ -57,6 +61,11 @@ public class CommandRewards extends CommandTree {
 	@Override
 	public Map<String, Command> getSubCommands() {
 		return subs;
+	}
+
+	@Override
+	public List<String> getAliases() {
+		return aliases;
 	}
 
 	@Override
@@ -156,29 +165,38 @@ public class CommandRewards extends CommandTree {
 			}
 			final AccountJSON act = account;
 			member.giveRole(role).thenAccept(a -> {
-				if (rj.required != null) {
-					a.takeRole(guild.getRoleByName(rj.required)).thenAccept(c -> {
-						act.setBalance((balance - rj.price));
-						db.set(Currency.userBal(guild.getID(), member.getID()), act.toString());
-						RichEmbed embed = new RichEmbed("Purchase Receipt").setColor(0xf4a742);
-						embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
-						embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);
-						embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance", "¥" + (balance - rj.price), true);
-						embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-						embed.setThumbnail(CommandRewards.this.getResourceLocation());
-						e.getChannel().sendEmbed(embed);
-					});
-				} else {
-					db.decrBy(Currency.userBal(guild.getID(), member.getID()), rj.price);
-					RichEmbed embed = new RichEmbed("Purchase Receipt").setColor(0xf4a742);
-					embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
-					embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);
-					embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance", "¥" + (balance - rj.price), true);
-					embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-					embed.setThumbnail(CommandRewards.this.getResourceLocation());
-					e.getChannel().sendEmbed(embed);
-					author.sendEmbed(embed);
-				}
+				// if (rj.required != null) {
+				// a.takeRole(guild.getRoleByName(rj.required)).thenAccept(c ->
+				// {
+				// act.setBalance((balance - rj.price));
+				// db.set(Currency.userBal(guild.getID(), member.getID()),
+				// act.toString());
+				// RichEmbed embed = new RichEmbed("Purchase
+				// Receipt").setColor(0xf4a742);
+				// embed.setAuthor(author.getUsername(), "",
+				// author.getAvatar().toString());
+				// embed.addField("Item", String.format("**Name:** %s\n**ID:**
+				// %d\n**Price:** %d\n**Quantity:** x1", role.getName(),
+				// role.getID(), rj.price), true);
+				// embed.addField("Total Payed", "¥" + rj.price,
+				// true).addField("Remaining Balance", "¥" + (balance -
+				// rj.price), true);
+				// embed.setFooter("©R3alB0t
+				// 2017").setTimestamp(OffsetDateTime.now());
+				// embed.setThumbnail(CommandRewards.this.getResourceLocation());
+				// e.getChannel().sendEmbed(embed);
+				// });
+				// } else {}
+				act.setBalance((balance - rj.price));
+				db.set(Currency.userBal(guild.getID(), member.getID()), act.toString());
+				RichEmbed embed = new RichEmbed("Purchase Receipt").setColor(0xf4a742);
+				embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
+				embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);
+				embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance", "¥" + (balance - rj.price), true);
+				embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+				embed.setThumbnail(CommandRewards.this.getResourceLocation());
+				e.getChannel().sendEmbed(embed);
+				author.sendEmbed(embed);
 			});
 		}
 
@@ -234,6 +252,31 @@ public class CommandRewards extends CommandTree {
 		@Override
 		public boolean shouldExecute(IGuildMember member, IGuildTextChannel channel) {
 			return member.getGuild().isOwner(member) || member.getPermissions().hasPermission(Permissions.ADMINISTRATOR) || member.getPermissions().hasPermission(Permissions.MANAGE_GUILD);
+		}
+	}
+
+	public class AccountStatus extends Command {
+
+		public AccountStatus() {
+			super();
+			setUnlocalizedName("status").setDescription("Check your account's status");
+		}
+
+		public void execute(MessageCreateEvent e, String[] args) {
+			IGuild guild = e.getMessage().getGuild();
+			if (guild == null) {
+				e.getChannel().sendMessage("this command can only be ran in a guild");
+				return;
+			}
+			IUser author = e.getMessage().getAuthor();
+			if (author.getID() == 104063667351322624l) {
+
+			} else if (args.length == 1) {
+
+			} else {
+				String t = Currency.userBal(guild.getID(), author.getID());
+
+			}
 		}
 	}
 
