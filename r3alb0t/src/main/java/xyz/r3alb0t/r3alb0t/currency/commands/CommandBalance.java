@@ -1,6 +1,8 @@
 package xyz.r3alb0t.r3alb0t.currency.commands;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.render.util.Resource;
@@ -21,10 +23,18 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
 public class CommandBalance extends Command {
 
 	private static Jedis db = DataBase.getClient();
+	private List<String> aliases;
 
 	public CommandBalance() {
 		setUnlocalizedName("balance");
 		setArgsRegex("<@!?(\\d+)>");
+		aliases = new ArrayList<>();
+		aliases.add("status");
+	}
+
+	@Override
+	public List<String> getAliases() {
+		return aliases;
 	}
 
 	public void execute(MessageCreateEvent e, String[] args) {
@@ -36,7 +46,8 @@ public class CommandBalance extends Command {
 		RichEmbed embed = new RichEmbed().setColor(0xf4cb42).setThumbnail(getResourceLocation());
 		embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		IUser user = e.getMessage().getAuthor();
-		if (e.getMessage().getMentions().getUsers().size() > 0 && guild.getMember(user.getID()).getPermissions().hasAny(Permissions.MANAGE_GUILD)) {
+		if (e.getMessage().getMentions().getUsers().size() > 0
+				&& guild.getMember(user.getID()).getPermissions().hasAny(Permissions.MANAGE_GUILD)) {
 			user = e.getMessage().getMentions().getUsers().get(0);
 		}
 		embed.setAuthor(user.toString(), "", user.getAvatar().toString());

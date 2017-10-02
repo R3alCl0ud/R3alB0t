@@ -52,10 +52,11 @@ public class CommandRewards extends CommandTree {
 		aliases = new ArrayList<>();
 		aliases.add("ranks");
 		subs = new HashMap<>();
-		subs.put((create = new CreateRewards()).getUnlocalizedName(), create);
-		subs.put((list = new ListRewards()).getUnlocalizedName(), list);
 		subs.put((buy = new BuyReward()).getUnlocalizedName(), buy);
 		subs.put((calculate = new CommandCalculate()).getUnlocalizedName(), calculate);
+		subs.put((create = new CreateRewards()).getUnlocalizedName(), create);
+		subs.put((list = new ListRewards()).getUnlocalizedName(), list);
+		subs.put((status = new AccountStatus()).getUnlocalizedName(), status);
 	}
 
 	@Override
@@ -84,11 +85,13 @@ public class CommandRewards extends CommandTree {
 
 		public void execute(MessageCreateEvent e, String[] args) {
 			IGuild guild = e.getMessage().getGuild();
-			if (guild == null) return;
+			if (guild == null)
+				return;
 			IGuildMember member = e.getMessage().getMember();
 			List<IRole> roles = member.getRoles();
 			Set<String> rs = db.smembers(Currency.rewards(guild.getID()));
-			if (rs.isEmpty()) return;
+			if (rs.isEmpty())
+				return;
 			int page = 1;
 			if (args.length == 1) {
 				page = Integer.parseInt(args[0]);
@@ -101,11 +104,19 @@ public class CommandRewards extends CommandTree {
 				rwsj.put(rj.name, rj);
 			}
 			rewards.sort((a, b) -> {
-				if (a.id.equals(b.required) || (a.required != null && a.required.equals(b.required) && a.price > b.price) || (a.required == null && b.required == null && a.price > b.price)) return 1;
-				if (b.id.equals(a.required) || (a.required != null && a.required.equals(b.required) && a.price < b.price) || (a.required == null && b.required == null && a.price < b.price)) return -1;
+				if (a.id.equals(b.required)
+						|| (a.required != null && a.required.equals(b.required) && a.price > b.price)
+						|| (a.required == null && b.required == null && a.price > b.price))
+					return 1;
+				if (b.id.equals(a.required)
+						|| (a.required != null && a.required.equals(b.required) && a.price < b.price)
+						|| (a.required == null && b.required == null && a.price < b.price))
+					return -1;
 				if (a.price == b.price) {
-					if (a.name.compareToIgnoreCase(b.name) > 0) return 1;
-					if (a.name.compareToIgnoreCase(b.name) < 0) return -1;
+					if (a.name.compareToIgnoreCase(b.name) > 0)
+						return 1;
+					if (a.name.compareToIgnoreCase(b.name) < 0)
+						return -1;
 				}
 				return 0;
 			});
@@ -114,7 +125,9 @@ public class CommandRewards extends CommandTree {
 			embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 			for (int i = 0 + (5 * (page - 1)); i < rewards.size(); i++) {
 				RewardJSON rj = rewards.get(i);
-				String text = String.format("**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.price, rj.required == null ? "none" : rwsj.get(rj.required).name, roles.contains(guild.getRoleByID(rj.id)));
+				String text = String.format("**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.price,
+						rj.required == null ? "none" : rwsj.get(rj.required).name,
+						roles.contains(guild.getRoleByID(rj.id)));
 				embed.addField(rj.name, text);
 			}
 			e.getChannel().sendEmbed(embed);
@@ -132,9 +145,13 @@ public class CommandRewards extends CommandTree {
 
 		public void execute(MessageCreateEvent e, String[] args) {
 			IGuild guild = e.getMessage().getGuild();
-			if (guild == null) return;
+			if (guild == null)
+				return;
 			if (args.length == 0 || args[0] == null) {
-				e.getChannel().sendMessage("To purchase a reward run `" + CommandHandler.prefix + "rewards buy <reward>`\nA list of rewards can be found by running `" + CommandHandler.prefix + "rewards list`");
+				e.getChannel()
+						.sendMessage("To purchase a reward run `" + CommandHandler.prefix
+								+ "rewards buy <reward>`\nA list of rewards can be found by running `"
+								+ CommandHandler.prefix + "rewards list`");
 				return;
 			}
 			args[0] = args[0].trim();
@@ -144,12 +161,14 @@ public class CommandRewards extends CommandTree {
 			}
 			IUser author = e.getMessage().getAuthor();
 			IGuildMember member = e.getMessage().getMember();
-			RewardJSON rj = DLUtil.gson.fromJson(db.get(Currency.reward(guild.getID(), args[0].toLowerCase())), RewardJSON.class);
+			RewardJSON rj = DLUtil.gson.fromJson(db.get(Currency.reward(guild.getID(), args[0].toLowerCase())),
+					RewardJSON.class);
 			AccountJSON account = null;
 			if (!db.exists(Currency.userBal(guild.getID(), author.getID()))) {
 				account = new AccountJSON(author);
 			} else {
-				account = DLUtil.gson.fromJson(db.get(Currency.userBal(guild.getID(), author.getID())), AccountJSON.class);
+				account = DLUtil.gson.fromJson(db.get(Currency.userBal(guild.getID(), author.getID())),
+						AccountJSON.class);
 			}
 			long balance = account.getBalance();
 			IRole role = guild.getRoleByID(rj.id);
@@ -160,7 +179,8 @@ public class CommandRewards extends CommandTree {
 				e.getChannel().sendMessage("Error: Reward already purchased");
 				return;
 			} else if (rj.required != null && !member.getRoles().contains(guild.getRoleByName(rj.required))) {
-				e.getChannel().sendMessage("Error: The role *" + guild.getRoleByID(rj.required).getName() + "* is required to purchase this reward");
+				e.getChannel().sendMessage("Error: The role *" + guild.getRoleByID(rj.required).getName()
+						+ "* is required to purchase this reward");
 				return;
 			}
 			final AccountJSON act = account;
@@ -191,8 +211,10 @@ public class CommandRewards extends CommandTree {
 				db.set(Currency.userBal(guild.getID(), member.getID()), act.toString());
 				RichEmbed embed = new RichEmbed("Purchase Receipt").setColor(0xf4a742);
 				embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
-				embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);
-				embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance", "¥" + (balance - rj.price), true);
+				embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1",
+						role.getName(), role.getID(), rj.price), true);
+				embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance",
+						"¥" + (balance - rj.price), true);
 				embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 				embed.setThumbnail(CommandRewards.this.getResourceLocation());
 				e.getChannel().sendEmbed(embed);
@@ -218,12 +240,14 @@ public class CommandRewards extends CommandTree {
 
 		public void execute(MessageCreateEvent e, String[] args) {
 			IGuild guild = e.getMessage().getGuild();
-			if (guild == null) return;
+			if (guild == null)
+				return;
 			if (args.length < 2) {
 				e.getChannel().sendMessage("Usage: " + getUsage());
 				return;
 			}
-			IRole role = guild.getRoleByName(args[0]) == null ? guild.getRoleByID(args[0]) : guild.getRoleByName(args[0]), required = null;
+			IRole role = guild.getRoleByName(args[0]) == null ? guild.getRoleByID(args[0])
+					: guild.getRoleByName(args[0]), required = null;
 			long price = Long.parseLong(args[1], 10);
 			if (role == null) {
 				e.getChannel().sendMessage("Error: unknown role");
@@ -234,7 +258,9 @@ public class CommandRewards extends CommandTree {
 			reward.id = SnowflakeUtil.asString(role);
 			reward.price = price;
 			reward.name = role.getName();
-			if (args.length == 3 && args[2] != null && ((required = guild.getRoleByName(args[2].trim())) != null || (required = guild.getRoleByID(args[2].trim())) != null)
+			if (args.length == 3 && args[2] != null
+					&& ((required = guild.getRoleByName(args[2].trim())) != null
+							|| (required = guild.getRoleByID(args[2].trim())) != null)
 					&& db.exists(Currency.reward(guild.getID(), required.getName().toLowerCase()))) {
 				reward.required = required.getName();
 			}
@@ -245,13 +271,15 @@ public class CommandRewards extends CommandTree {
 			embed.setThumbnail(CommandRewards.this.getResourceLocation());
 			embed.setDescription("New reward created");
 			embed.addField("Name", role.getName(), true).addField("Price", "¥" + reward.price, true);
-			if (reward.required != null) embed.addField("Requires", required.getName(), true);
+			if (reward.required != null)
+				embed.addField("Requires", required.getName(), true);
 			e.getChannel().sendEmbed(embed);
 		}
 
 		@Override
 		public boolean shouldExecute(IGuildMember member, IGuildTextChannel channel) {
-			return member.getGuild().isOwner(member) || member.getPermissions().hasPermission(Permissions.ADMINISTRATOR) || member.getPermissions().hasPermission(Permissions.MANAGE_GUILD);
+			return member.getGuild().isOwner(member) || member.getPermissions().hasPermission(Permissions.ADMINISTRATOR)
+					|| member.getPermissions().hasPermission(Permissions.MANAGE_GUILD);
 		}
 	}
 
@@ -269,6 +297,7 @@ public class CommandRewards extends CommandTree {
 				return;
 			}
 			IUser author = e.getMessage().getAuthor();
+			RichEmbed embed = new RichEmbed("Account Status");
 			if (author.getID() == 104063667351322624l) {
 
 			} else if (args.length == 1) {
@@ -277,6 +306,7 @@ public class CommandRewards extends CommandTree {
 				String t = Currency.userBal(guild.getID(), author.getID());
 
 			}
+			e.getChannel().sendEmbed(embed);
 		}
 	}
 

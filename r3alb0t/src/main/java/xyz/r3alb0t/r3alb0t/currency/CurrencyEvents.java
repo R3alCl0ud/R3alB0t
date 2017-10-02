@@ -13,15 +13,18 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
  * @author Perry Berman
  */
 public class CurrencyEvents extends EventListenerAdapter {
-	
+
 	@Override
 	public void GuildMessageCreate(GuildMessageCreateEvent e) {
 		IGuild guild = e.getGuild();
 		if (Currency.getGuilds().contains(guild.getID())) {
 			IUser author = e.getMessage().getAuthor();
-			if (author.isBot() || e.getMessage().getContent().equalsIgnoreCase(CommandHandler.prefix + "balance")) return;
+			if (author.isBot() || e.getMessage().getContent().equalsIgnoreCase(CommandHandler.prefix + "balance")
+					|| e.getMessage().getContent().equalsIgnoreCase(CommandHandler.prefix + "status"))
+				return;
 			if (!DataBase.getClient().exists(Currency.userCooldown(e.getGuild().getID(), author.getID()))) {
-				String s = DataBase.getClient().get(Currency.coolDown(e.getGuild().getID())), in = DataBase.getClient().get(Currency.interest(e.getGuild().getID()));
+				String s = DataBase.getClient().get(Currency.coolDown(e.getGuild().getID())),
+						in = DataBase.getClient().get(Currency.interest(e.getGuild().getID()));
 				if (s == null) {
 					DataBase.getClient().set(Currency.coolDown(e.getGuild().getID()), "120");
 				}
@@ -35,15 +38,19 @@ public class CurrencyEvents extends EventListenerAdapter {
 					DataBase.getClient().sadd(Currency.users(guild.getID()), SnowflakeUtil.asString(author));
 				}
 				if (!DataBase.getClient().exists(Currency.userBal(guild.getID(), author.getID()))) {
-					DataBase.getClient().set(Currency.userBal(guild.getID(), author.getID()), (account = new AccountJSON(author)).toString());
+					DataBase.getClient().set(Currency.userBal(guild.getID(), author.getID()),
+							(account = new AccountJSON(author)).toString());
 				} else {
-					account = DLUtil.gson.fromJson(DataBase.getClient().get(Currency.userBal(guild.getID(), author.getID())), AccountJSON.class);
+					account = DLUtil.gson.fromJson(
+							DataBase.getClient().get(Currency.userBal(guild.getID(), author.getID())),
+							AccountJSON.class);
 				}
 				account.setBalance(account.getBalance() + payout);
 				DataBase.getClient().set(Currency.userBal(e.getGuild().getID(), author.getID()), account.toString());
-				DataBase.getClient().setex(Currency.userCooldown(e.getGuild().getID(), author.getID()), cooldown, "spicy");
+				DataBase.getClient().setex(Currency.userCooldown(e.getGuild().getID(), author.getID()), cooldown,
+						"spicy");
 			}
 		}
 	}
-	
+
 }
