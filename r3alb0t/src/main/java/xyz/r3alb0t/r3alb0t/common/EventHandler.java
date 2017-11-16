@@ -45,7 +45,8 @@ public class EventHandler extends EventListenerAdapter {
 	public void Ready(ReadyEvent event) {
 		if (!registered) {
 			R3alB0t.logger.info("Starting DataBase connection if not already connected");
-			if (DataBase.getClient() == null || !DataBase.getClient().isConnected()) DataBase.connect();
+			if (DataBase.getClient() == null || !DataBase.getClient().isConnected())
+				DataBase.connect();
 			R3alB0t.logger.info("Registering music commands");
 			Commands.registerCommands();
 			LogHandler.load();
@@ -68,7 +69,8 @@ public class EventHandler extends EventListenerAdapter {
 	@Override
 	public void GuildCreate(GuildCreateEvent e) {
 		ITextChannel logChannel = EntityRegistry.getTextChannelByID("190559195031011330");
-		if (logChannel == null) return;
+		if (logChannel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Guild Joined");
 		embed.setTimestamp().addField("Guild Name", e.getGuild().getName(), true).setColor(0x00df70);
 		embed.addField("Total Guilds", String.format("%d guild(s) across %d shard(s)", EntityRegistry.getGuilds().size(), e.getLoader().getShard().getShardCount()), true);

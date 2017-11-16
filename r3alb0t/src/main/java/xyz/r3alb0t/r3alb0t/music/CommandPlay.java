@@ -22,6 +22,7 @@ public class CommandPlay extends Command {
 	public CommandPlay() {
 		setUnlocalizedName("play");
 		setDescription("adds a track/set to the playlist\n");
+		setArgsRegex("(.*+)");
 	}
 
 	public Resource getResourceLocation() {
@@ -41,7 +42,8 @@ public class CommandPlay extends Command {
 					plManager.startNext();
 					return;
 				}
-				if (!trackID.startsWith("http")) trackID = "ytsearch:" + trackID;
+				if (!trackID.startsWith("http"))
+					trackID = "ytsearch:" + trackID;
 				EntityRegistry.getVoiceConnectionByGuild(guild).findTrackOrTracks(trackID, new AudioLoadResultHandler() {
 
 					@Override

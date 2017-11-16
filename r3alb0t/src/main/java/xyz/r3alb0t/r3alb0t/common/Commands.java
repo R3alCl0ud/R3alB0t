@@ -4,6 +4,7 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.registry.CommandRegistry;
 import xyz.r3alb0t.r3alb0t.common.commands.CommandInfo;
 import xyz.r3alb0t.r3alb0t.common.commands.CommandServerInfo;
+import xyz.r3alb0t.r3alb0t.common.commands.CommandTest;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandBalance;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandCurrency;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandRewards;
@@ -33,7 +34,7 @@ public class Commands {
 	// Misc commands
 	public static Command commandInfo;
 	public static Command commandServerInfo;
-	// public static Command commandTest; // using for testing emoji stuff
+	public static Command commandTest; // using for testing emoji stuff
 
 	// Logs commands
 	public static Command logs;
@@ -52,8 +53,7 @@ public class Commands {
 		// Register misc/test commands
 		CommandRegistry.registerCommand(commandInfo = new CommandInfo(), commandInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandServerInfo = new CommandServerInfo(), commandServerInfo.getUnlocalizedName());
-		// CommandRegistry.registerCommand(commandTest = new CommandTest(),
-		// commandTest.getUnlocalizedName());
+		CommandRegistry.registerCommand(commandTest = new CommandTest(), commandTest.getUnlocalizedName());
 
 		// Register Music commands
 		CommandRegistry.registerCommand(join = new CommandJoin(), join.getUnlocalizedName());
