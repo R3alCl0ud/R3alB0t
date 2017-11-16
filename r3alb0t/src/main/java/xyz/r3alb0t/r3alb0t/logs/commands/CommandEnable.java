@@ -14,15 +14,15 @@ import io.discloader.discloader.entity.guild.IGuild;
 import xyz.r3alb0t.r3alb0t.logs.LogHandler;
 
 public class CommandEnable extends CommandTree {
-
+	
 	private Map<String, Command> subs;
-
+	
 	public CommandEnable() {
 		super("enable");
 		subs = new HashMap<>();
 		setDescription("enables logging for the guild");
 	}
-
+	
 	public void defaultResponse(MessageCreateEvent e) {
 		if (e.getChannel().getType() != ChannelTypes.TEXT) {
 			RichEmbed embed = new RichEmbed("Enable Logging").setColor(0xff0101).addField("Error", "This command can only be executed in a **GuildTextChannel**").setTimestamp(OffsetDateTime.now(ZoneId.systemDefault()));
@@ -31,10 +31,10 @@ public class CommandEnable extends CommandTree {
 		}
 		IGuild guild = e.getMessage().getGuild();
 		if (LogHandler.enabledGuilds.containsKey(guild.getID())) {
-
+			
 		}
 	}
-
+	
 	public Map<String, Command> getSubCommands() {
 		return subs;
 	}
