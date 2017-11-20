@@ -59,11 +59,13 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		connection.getLoader().addEventHandler(new EventListenerAdapter() {
 
 			public void MessageReactionAdd(MessageReactionAddEvent e) {
-				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot()) return;
-				IGuildMember member = connection.getChannel().getGuild().getMember(e.getUser().getID());
+				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())
+					return;
+				IGuildMember member = boundChannel.getGuild().getMember(e.getUser().getID());
 				IEmoji emoji = e.getReaction().getEmoji();
 				if (emoji.toString().equals("⏸")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) pause();
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
+						pause();
 				} else if (emoji.toString().equals("🔀")) {
 					shuffle();
 					e.getReaction().removeUserReaction(e.getUser());
@@ -74,7 +76,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					e.getReaction().removeUserReaction(e.getUser());
 					sendEmbed();
 				} else if (emoji.toString().equals("▶")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) startNext();
+					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
+						startNext();
 				} else if (emoji.toString().equals("🔇")) {
 					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
 						volume = connection.getVolume();
@@ -93,7 +96,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						e.getReaction().removeReaction();
 					}
 					e.getReaction().removeUserReaction(e.getUser());
-					if (nowplaying.getReaction("🔉") == null && nv > 0) nowplaying.addReaction("🔉");
+					if (nowplaying.getReaction("🔉") == null && nv > 0)
+						nowplaying.addReaction("🔉");
 					sendEmbed();
 				} else if (emoji.toString().equals("🔉")) {
 					int nv = connection.getVolume() - 5;
@@ -106,12 +110,14 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						e.getReaction().removeReaction();
 					}
 					e.getReaction().removeUserReaction(e.getUser());
-					if (nowplaying.getReaction("🔊") == null && nv < 100) nowplaying.addReaction("🔊");
+					if (nowplaying.getReaction("🔊") == null && nv < 100)
+						nowplaying.addReaction("🔊");
 					sendEmbed();
 				} else if (emoji.toString().equals("⏏")) {
 					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
 						connection.disconnect().thenAccept(a -> {
-							if (nowplaying != null) nowplaying.delete();
+							if (nowplaying != null)
+								nowplaying.delete();
 						});
 					}
 				}
@@ -122,15 +128,17 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	@Override
 	public void end(AudioTrack track, AudioTrackEndReason endReason) {
-		if (!connection.isPaused()) tracks.remove(track);
+		if (!connection.isPaused())
+			tracks.remove(track);
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
 			boundChannel.sendMessage("Failed to load track");
 		}
-		if (endReason.mayStartNext) startNext();
+		if (endReason.mayStartNext)
+			startNext();
 	}
 
 	public IGuildVoiceChannel getVoiceChannel() {
-		return connection.getChannel();
+		return (IGuildVoiceChannel) connection.getChannel();
 	}
 
 	public long getLength() {
@@ -150,7 +158,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	}
 
 	public String getTime(AudioTrack track) {
-		if (track == null) return "0:00/0:00";
+		if (track == null)
+			return "0:00/0:00";
 		long l = track.getDuration() / 1000l;
 		long s = l % 60l;
 		long m = l / 60l;
@@ -199,13 +208,15 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
 		}
 		embed.setThumbnail(pause);
-		if (nowplaying != null) nowplaying.delete();
+		if (nowplaying != null)
+			nowplaying.delete();
 		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
 			nowplaying = msg;
 			nowplaying.addReaction("▶").thenAccept(a -> {
 				nowplaying.addReaction("🔀").thenAccept(b -> {
 					nowplaying.addReaction("🔄").thenAccept(c -> {
-						if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+						if (tracks.size() > 1 && tracks.get(1) != null)
+							nowplaying.addReaction("⏭");
 					});
 				});
 			});
@@ -242,7 +253,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	}
 
 	public void shuffle() {
-		if (tracks.size() < 3) return;
+		if (tracks.size() < 3)
+			return;
 		if (connection.getPlayingTrack() != null) {
 			for (int i = tracks.size() - 2; i > 1; i--) {
 				int n = (int) Math.floor(Math.random() * (i));
@@ -312,7 +324,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			if (nowplaying.getID() == boundChannel.getLastMessageID()) {
 				RichEmbed embed = RichEmbed.from(nowplaying.getEmbeds().get(0));
 				AudioTrackInfo info = getPlayingTrack() == null ? null : getPlayingTrack().getInfo();
-				if (info != null) embed.getFields().get(0).setValue(String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+				if (info != null)
+					embed.getFields().get(0).setValue(String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 				embed.getFields().get(1).setValue(String.format("%d", connection.getVolume()) + "%");
 				embed.getFields().get(2).setValue(getTime());
 				if (embed.getFields().size() >= 4 && tracks.size() > 1 && tracks.get(1) != null) {
@@ -344,11 +357,11 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 							nowplaying.addReaction("🔀").thenAccept(b -> {
 								nowplaying.addReaction("🔄").thenAccept(c -> {
 									nowplaying.addReaction("⏏").thenAccept(z -> {
-										if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
+										if (tracks.size() > 1 && tracks.get(1) != null)
+											nowplaying.addReaction("⏭");
 										nowplaying.addReaction("🔇").thenAccept(d -> {
 											nowplaying.addReaction("🔉").thenAccept(e -> {
-												nowplaying.addReaction("🔊").thenAccept(f -> {
-												});
+												nowplaying.addReaction("🔊").thenAccept(f -> {});
 											});
 										});
 									});
@@ -372,15 +385,17 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			embed.setThumbnail(connection.isPaused() ? pause : playing);
 			boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
 				nowplaying = msg;
-				if (boundChannel.permissionsOf(boundChannel.getGuild().getCurrentMember()).hasPermission(Permissions.ADD_REACTIONS)) nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
-					nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(v -> {
-						nowplaying.addReaction("🔀").thenAccept(b -> {
-							nowplaying.addReaction("🔄").thenAccept(c -> {
-								nowplaying.addReaction("⏏").thenAccept(z -> {
-									if (tracks.size() > 1 && tracks.get(1) != null) nowplaying.addReaction("⏭");
-									nowplaying.addReaction("🔇").thenAccept(d -> {
-										nowplaying.addReaction("🔉").thenAccept(e -> {
-											nowplaying.addReaction("🔊").thenAccept(f -> {
+				if (boundChannel.permissionsOf(boundChannel.getGuild().getCurrentMember()).hasPermission(Permissions.ADD_REACTIONS))
+					nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(v -> {
+							nowplaying.addReaction("🔀").thenAccept(b -> {
+								nowplaying.addReaction("🔄").thenAccept(c -> {
+									nowplaying.addReaction("⏏").thenAccept(z -> {
+										if (tracks.size() > 1 && tracks.get(1) != null)
+											nowplaying.addReaction("⏭");
+										nowplaying.addReaction("🔇").thenAccept(d -> {
+											nowplaying.addReaction("🔉").thenAccept(e -> {
+												nowplaying.addReaction("🔊").thenAccept(f -> {});
 											});
 										});
 									});
@@ -388,8 +403,15 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 							});
 						});
 					});
-				});
 			});
 		}
+	}
+
+	public long getPosition() {
+		return position;
+	}
+
+	public void setPosition(long position) {
+		this.position = position;
 	}
 }

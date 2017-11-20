@@ -32,7 +32,7 @@ public class CommandLeave extends Command {
 		embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
 		if (guild != null && guild.getVoiceConnection() != null) {
 			guild.getVoiceConnection().disconnect().thenAcceptAsync(vc -> {
-				embed.addField("Shutting down", String.format("Left the VoiceChannel *%s*", vc.getChannel().getName()));
+				embed.addField("Shutting down", String.format("Left the VoiceChannel *%s*", vc.getChannel()));
 				RBMusic.plManagers.remove(guild.getID());
 			});
 		} else {
