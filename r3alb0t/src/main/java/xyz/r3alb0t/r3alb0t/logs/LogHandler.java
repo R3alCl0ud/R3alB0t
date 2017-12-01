@@ -34,7 +34,8 @@ import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 import io.discloader.discloader.entity.user.IUser;
-import io.discloader.discloader.util.DLUtil;
+import redis.clients.jedis.Transaction;
+import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class LogHandler extends EventListenerAdapter {
 
@@ -50,6 +51,13 @@ public class LogHandler extends EventListenerAdapter {
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
 
 	public static void load() {
+		Transaction t = DataBase.getClient().multi();
+		t.smembers("logs.guilds");
+		List<Object> res = t.exec();
+		for (int i = 0; i < res.size(); i++) {
+			System.out.println(res.get(i));
+		}
+		// Lists.newArrayList(t.e)
 		//
 		// System.out.println(jedis.dbSize());
 		// Transaction t = jedis.multi();
@@ -62,7 +70,8 @@ public class LogHandler extends EventListenerAdapter {
 	}
 
 	public static void save() {
-		String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new GuildStruct[0]));
+		// String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new
+		// GuildStruct[0]));
 	}
 
 	// @Override
@@ -83,7 +92,8 @@ public class LogHandler extends EventListenerAdapter {
 	@Override
 	public void GuildMemberAdd(GuildMemberAddEvent event) {
 		IGuild guild = event.getGuild();
-		if (guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l) return;
+		if (guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
+			return;
 		IGuildMember member = event.getMember();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		RichEmbed embed = new RichEmbed("Member Joined").setColor(0x2edbe6).setTimestamp(OffsetDateTime.now());
@@ -95,7 +105,8 @@ public class LogHandler extends EventListenerAdapter {
 	@Override
 	public void GuildMemberRemove(GuildMemberRemoveEvent event) {
 		IGuild guild = event.getGuild();
-		if (guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l) return;
+		if (guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
+			return;
 		IGuildMember member = event.getMember();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		RichEmbed embed = new RichEmbed("Member Left").setColor(0xf10000).setTimestamp(OffsetDateTime.now());
@@ -107,12 +118,14 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildMemberUpdate(GuildMemberUpdateEvent event) {
-		if (event.guild.getID() != 282226852616077312l && event.guild.getID() != 201544496654057472l) return;
+		if (event.guild.getID() != 282226852616077312l && event.guild.getID() != 201544496654057472l)
+			return;
 		IGuild guild = event.guild;
 		IGuildMember member = event.member, oldMember = event.oldMember;
 		IUser user = member.getUser(), oldUser = oldMember.getUser();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed().setTimestamp(OffsetDateTime.now());
 		embed.addField("Member", formatMember(member));
 		if (!member.getNickname().equals(oldMember.getNickname())) {
@@ -169,12 +182,14 @@ public class LogHandler extends EventListenerAdapter {
 	@Override
 	public void GuildMemberVoiceJoin(VoiceJoinEvent event) {
 
-		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l) return;
+		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l)
+			return;
 		IGuild guild = event.getGuild();
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getChannel();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Joined a Voice Channel").setTimestamp(OffsetDateTime.now()).setColor(0x00fa00);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
@@ -184,12 +199,14 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildMemberVoiceLeave(VoiceLeaveEvent event) {
-		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l) return;
+		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l)
+			return;
 		IGuild guild = event.getGuild();
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getVoiceChannel();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Left Voice Channel").setTimestamp(OffsetDateTime.now()).setColor(0xa93d3d);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Voice Channel", String.format("**%s** (ID: %d)", voiceChannel.getName(), voiceChannel.getID()), true);
@@ -199,13 +216,16 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildMemberVoiceSwitch(VoiceSwitchEvent event) {
-		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l) return;
+		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l)
+			return;
 		IGuild guild = event.getGuild();
 		IGuildMember member = event.getMember();
 		IGuildVoiceChannel voiceChannel = event.getVoiceChannel(), oldVoiceChannel = event.getOldVoiceChannel();
-		if (voiceChannel.getID() == oldVoiceChannel.getID()) return;
+		if (voiceChannel.getID() == oldVoiceChannel.getID())
+			return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Switched Voice Channels").setTimestamp(OffsetDateTime.now()).setColor(0xff7000);
 		embed.addField("Member", String.format("**%s** (ID: %d)", member.getNickname(), member.getID()));
 		embed.addField("Previous Voice Channel", String.format("**%s** (ID: %d)", oldVoiceChannel.getName(), oldVoiceChannel.getID()), true);
@@ -218,9 +238,11 @@ public class LogHandler extends EventListenerAdapter {
 	public void MessageUpdate(MessageUpdateEvent event) {
 		IMessage message = event.getMessage(), oldMessage = event.getOldMessage();
 		IGuild guild = message.getGuild();
-		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l) return;
+		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
+			return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Message Edited").setColor(0xfcf45a).setTimestamp(OffsetDateTime.now());
 		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()));
 		if (oldMessage != null) {
@@ -245,9 +267,11 @@ public class LogHandler extends EventListenerAdapter {
 	public void MessageDelete(MessageDeleteEvent event) {
 		IMessage message = event.getMessage();
 		IGuild guild = message.getGuild();
-		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l) return;
+		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
+			return;
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null) return;
+		if (channel == null)
+			return;
 		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now()).setColor(0xff2020);
 		embed.addField("Channel", event.getChannel().toMention(), true);
 		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()), true);

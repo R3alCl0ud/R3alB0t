@@ -56,7 +56,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		nowplaying = null;
 		tracks = new ArrayList<>();
 		connection.addListener(this);
-		connection.getLoader().addEventHandler(new EventListenerAdapter() {
+		connection.getLoader().addEventListener(new EventListenerAdapter() {
 
 			public void MessageReactionAdd(MessageReactionAddEvent e) {
 				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())

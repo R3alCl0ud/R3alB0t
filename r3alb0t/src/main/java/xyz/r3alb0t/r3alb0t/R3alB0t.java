@@ -53,7 +53,7 @@ public class R3alB0t {
 
 				public void ShardLaunched(Shard shard) {
 					logger.info(String.format("Shard #%d: Launched", shard.getShardID()));
-					shard.getLoader().addEventHandler(new EventHandler(shard));
+					shard.getLoader().addEventListener(new EventHandler(shard));
 				}
 			});
 			logger.info("Launching shards");

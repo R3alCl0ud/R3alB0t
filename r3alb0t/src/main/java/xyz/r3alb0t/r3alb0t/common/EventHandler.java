@@ -56,8 +56,8 @@ public class EventHandler extends EventListenerAdapter {
 			CustomCommands.loadCommands();
 			registered = true;
 		}
-		event.getLoader().addEventHandler(currency);
-		event.getLoader().addEventHandler(ccmds);
+		event.getLoader().addEventListener(currency);
+		event.getLoader().addEventListener(ccmds);
 		event.getLoader().user.setGame("Testing all the things");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
@@ -68,7 +68,7 @@ public class EventHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildCreate(GuildCreateEvent e) {
-		ITextChannel logChannel = EntityRegistry.getTextChannelByID("190559195031011330");
+		ITextChannel logChannel = EntityRegistry.getTextChannelByID(228370138645266432l);
 		if (logChannel == null)
 			return;
 		RichEmbed embed = new RichEmbed("Guild Joined");
