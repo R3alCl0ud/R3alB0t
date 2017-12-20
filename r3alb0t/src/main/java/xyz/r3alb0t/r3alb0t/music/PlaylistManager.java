@@ -49,80 +49,99 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 
 	String emo = "🔁 🔂";
 
+	private boolean useReactions = false;
+
 	public PlaylistManager(VoiceConnection connection, IGuildTextChannel boundChannel) {
 		this.connection = connection;
 		this.boundChannel = boundChannel;
-		// channel = connection.getChannel();
 		nowplaying = null;
 		tracks = new ArrayList<>();
 		connection.addListener(this);
-		connection.getLoader().addEventListener(new EventListenerAdapter() {
+		if (useReactions) {
+			connection.getLoader().addEventListener(new EventListenerAdapter() {
 
-			public void MessageReactionAdd(MessageReactionAddEvent e) {
-				if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())
-					return;
-				IGuildMember member = boundChannel.getGuild().getMember(e.getUser().getID());
-				IEmoji emoji = e.getReaction().getEmoji();
-				if (emoji.toString().equals("⏸")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
-						pause();
-				} else if (emoji.toString().equals("🔀")) {
-					shuffle();
-					e.getReaction().removeUserReaction(e.getUser());
-					sendEmbed();
-				} else if (emoji.toString().equals("⏭") && tracks.size() >= 2) {
-					connection.play(tracks.get(1));
-				} else if (emoji.toString().equals("🔄")) {
-					e.getReaction().removeUserReaction(e.getUser());
-					sendEmbed();
-				} else if (emoji.toString().equals("▶")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
-						startNext();
-				} else if (emoji.toString().equals("🔇")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
-						volume = connection.getVolume();
-						connection.setVolume(0);
-					}
-					e.getReaction().removeUserReaction(e.getUser());
-					sendEmbed();
-				} else if (emoji.toString().equals("🔊")) {
-					int nv = connection.getVolume() + 5;
-					if (connection.getVolume() == 0) {
-						connection.setVolume(volume == 0 ? nv : volume);
-					} else if (nv < 100) {
-						connection.setVolume(nv);
-					} else {
-						connection.setVolume(nv);
-						e.getReaction().removeReaction();
-					}
-					e.getReaction().removeUserReaction(e.getUser());
-					if (nowplaying.getReaction("🔉") == null && nv > 0)
-						nowplaying.addReaction("🔉");
-					sendEmbed();
-				} else if (emoji.toString().equals("🔉")) {
-					int nv = connection.getVolume() - 5;
-					if (connection.getVolume() == 0) {
-						connection.setVolume(volume == 0 ? nv : volume);
-					} else if (nv > 0) {
-						connection.setVolume(nv);
-					} else if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
-						connection.setVolume(nv);
-						e.getReaction().removeReaction();
-					}
-					e.getReaction().removeUserReaction(e.getUser());
-					if (nowplaying.getReaction("🔊") == null && nv < 100)
-						nowplaying.addReaction("🔊");
-					sendEmbed();
-				} else if (emoji.toString().equals("⏏")) {
-					if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
-						connection.disconnect().thenAccept(a -> {
-							if (nowplaying != null)
-								nowplaying.delete();
-						});
+				public void MessageReactionAdd(MessageReactionAddEvent e) {
+					if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())
+						return;
+					IGuildMember member = boundChannel.getGuild().getMember(e.getUser().getID());
+					IEmoji emoji = e.getReaction().getEmoji();
+					switch (emoji.toString()) {
+					case "⏸":
+						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+							pause();
+						}
+						break;
+					case "🔀":
+						shuffle();
+						e.getReaction().removeUserReaction(e.getUser());
+						sendEmbed();
+						break;
+					case "⏭":
+						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS) && tracks.size() >= 2)
+							connection.play(tracks.get(1));
+						break;
+					case "🔄":
+						e.getReaction().removeUserReaction(e.getUser());
+						sendEmbed();
+						break;
+					case "▶":
+						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
+							startNext();
+						break;
+					case "🔇":
+						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+							volume = connection.getVolume();
+							connection.setVolume(0);
+						}
+						e.getReaction().removeUserReaction(e.getUser());
+						sendEmbed();
+						break;
+					case "🔊":
+						int nv = connection.getVolume() + 5;
+						if (connection.getVolume() == 0) {
+							connection.setVolume(volume == 0 ? nv : volume);
+						} else if (nv < 100) {
+							connection.setVolume(nv);
+						} else {
+							connection.setVolume(nv);
+							e.getReaction().removeReaction();
+						}
+						e.getReaction().removeUserReaction(e.getUser());
+						if (nowplaying.getReaction("🔉") == null && nv > 0)
+							nowplaying.addReaction("🔉");
+						sendEmbed();
+						break;
+					case "🔉":
+						int nv1 = connection.getVolume() - 5;
+						if (connection.getVolume() == 0) {
+							connection.setVolume(volume == 0 ? nv1 : volume);
+						} else if (nv1 > 0) {
+							connection.setVolume(nv1);
+						} else if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
+							connection.setVolume(nv1);
+							e.getReaction().removeReaction();
+						}
+						e.getReaction().removeUserReaction(e.getUser());
+						if (nowplaying.getReaction("🔊") == null && nv1 < 100)
+							nowplaying.addReaction("🔊");
+						sendEmbed();
+						break;
+					case "⏏":
+						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
+							connection.disconnect().thenAccept(a -> {
+								if (nowplaying != null) {
+									nowplaying.delete();
+								}
+								connection.getLoader().removeEventListener(this);
+							});
+						}
+						break;
+					default:
+						break;
 					}
 				}
-			}
-		});
+			});
+		}
 
 	}
 

@@ -247,7 +247,7 @@ public class CommandRewards extends CommandTree {
 
 		public AccountStatus() {
 			super();
-			setUnlocalizedName("status").setDescription("Check your account's status");
+			setUnlocalizedName("status").setDescription("Checks your account's status");
 		}
 
 		public void execute(MessageCreateEvent e, String[] args) {

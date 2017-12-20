@@ -39,17 +39,10 @@ import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class LogHandler extends EventListenerAdapter {
 
-	private Resource vswitch = new Resource("r3alb0t", "texture/icon/logs/voiceSwitch.png");
-	private Resource vjoin = new Resource("r3alb0t", "texture/icon/logs/voiceJoin.png");
-	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
-	private Resource mdelete = new Resource("r3alb0t", "texture/icon/logs/messageDelete.png");
-	private Resource medit = new Resource("r3alb0t", "texture/icon/logs/messageEdit.png");
-	private Resource nameChange = new Resource("r3alb0t", "texture/icon/logs/nameChange.png");
-	private Resource sjoin = new Resource("r3alb0t", "texture/icon/logs/joinServer.png");
-	private Resource sleave = new Resource("r3alb0t", "texture/icon/logs/leaveServer.png");
-
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
-
+	public static String formatMember(IGuildMember member) {
+		return String.format("**%s** (ID: %d)", member.getNickname(), member.getID());
+	}
 	public static void load() {
 		Transaction t = DataBase.getClient().multi();
 		t.smembers("logs.guilds");
@@ -68,11 +61,43 @@ public class LogHandler extends EventListenerAdapter {
 		// }
 		// jedis.a
 	}
-
 	public static void save() {
 		// String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new
 		// GuildStruct[0]));
 	}
+	public static List<String> wrapText(String txt, FontMetrics fm, int maxWidth) {
+		StringTokenizer st = new StringTokenizer(txt);
+
+		List<String> list = new ArrayList<>();
+		String line = "";
+		String lineBeforeAppend = "";
+		while (st.hasMoreTokens()) {
+			String seg = st.nextToken();
+			lineBeforeAppend = line;
+			line += seg + " ";
+			int width = fm.stringWidth(line);
+			if (width < maxWidth) {
+				continue;
+			} else { // new Line.
+				list.add(lineBeforeAppend);
+				line = seg + " ";
+			}
+		}
+		// the remaining part.
+		if (line.length() > 0) {
+			list.add(line);
+		}
+		return list;
+	}
+	private Resource vswitch = new Resource("r3alb0t", "texture/icon/logs/voiceSwitch.png");
+	private Resource vjoin = new Resource("r3alb0t", "texture/icon/logs/voiceJoin.png");
+	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
+
+	private Resource mdelete = new Resource("r3alb0t", "texture/icon/logs/messageDelete.png");
+
+	private Resource medit = new Resource("r3alb0t", "texture/icon/logs/messageEdit.png");
+
+	private Resource nameChange = new Resource("r3alb0t", "texture/icon/logs/nameChange.png");
 
 	// @Override
 	// public void GuildBanAdd(GuildBanAddEvent event) {
@@ -88,6 +113,10 @@ public class LogHandler extends EventListenerAdapter {
 	// user.asMention(), user.getID()));
 	// channel.sendEmbed(embed);
 	// }
+
+	private Resource sjoin = new Resource("r3alb0t", "texture/icon/logs/joinServer.png");
+
+	private Resource sleave = new Resource("r3alb0t", "texture/icon/logs/leaveServer.png");
 
 	@Override
 	public void GuildMemberAdd(GuildMemberAddEvent event) {
@@ -235,6 +264,28 @@ public class LogHandler extends EventListenerAdapter {
 	}
 
 	@Override
+	public void MessageDelete(MessageDeleteEvent event) {
+		IMessage message = event.getMessage();
+		IGuild guild = message.getGuild();
+		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
+			return;
+		ITextChannel channel = guild.getTextChannelByName("serverlog");
+		if (channel == null)
+			return;
+		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now()).setColor(0xff2020);
+		embed.addField("Channel", event.getChannel().toMention(), true);
+		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()), true);
+		if (message.getContent().length() > 1000) {
+			embed.addField("Message Contents", message.getContent().substring(0, message.getContent().length() / 2), true);
+			embed.addField("\u200b", message.getContent().substring(message.getContent().length() / 2), true);
+		} else {
+			embed.addField("Message Contents", message.getContent(), true);
+		}
+		embed.setThumbnail(mdelete);
+		channel.sendEmbed(embed);
+	}
+
+	@Override
 	public void MessageUpdate(MessageUpdateEvent event) {
 		IMessage message = event.getMessage(), oldMessage = event.getOldMessage();
 		IGuild guild = message.getGuild();
@@ -261,56 +312,5 @@ public class LogHandler extends EventListenerAdapter {
 		}
 		embed.setThumbnail(medit);
 		channel.sendEmbed(embed);
-	}
-
-	@Override
-	public void MessageDelete(MessageDeleteEvent event) {
-		IMessage message = event.getMessage();
-		IGuild guild = message.getGuild();
-		if (guild == null || guild.getID() != 282226852616077312l && guild.getID() != 201544496654057472l)
-			return;
-		ITextChannel channel = guild.getTextChannelByName("serverlog");
-		if (channel == null)
-			return;
-		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now()).setColor(0xff2020);
-		embed.addField("Channel", event.getChannel().toMention(), true);
-		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()), true);
-		if (message.getContent().length() > 1000) {
-			embed.addField("Message Contents", message.getContent().substring(0, message.getContent().length() / 2), true);
-			embed.addField("\u200b", message.getContent().substring(message.getContent().length() / 2), true);
-		} else {
-			embed.addField("Message Contents", message.getContent(), true);
-		}
-		embed.setThumbnail(mdelete);
-		channel.sendEmbed(embed);
-	}
-
-	public static String formatMember(IGuildMember member) {
-		return String.format("**%s** (ID: %d)", member.getNickname(), member.getID());
-	}
-
-	public static List<String> wrapText(String txt, FontMetrics fm, int maxWidth) {
-		StringTokenizer st = new StringTokenizer(txt);
-
-		List<String> list = new ArrayList<>();
-		String line = "";
-		String lineBeforeAppend = "";
-		while (st.hasMoreTokens()) {
-			String seg = st.nextToken();
-			lineBeforeAppend = line;
-			line += seg + " ";
-			int width = fm.stringWidth(line);
-			if (width < maxWidth) {
-				continue;
-			} else { // new Line.
-				list.add(lineBeforeAppend);
-				line = seg + " ";
-			}
-		}
-		// the remaining part.
-		if (line.length() > 0) {
-			list.add(line);
-		}
-		return list;
 	}
 }

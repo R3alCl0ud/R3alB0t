@@ -30,8 +30,6 @@ public class CommandEnable extends Command {
 		MessageBuilder builder = new MessageBuilder(e.getChannel());
 		builder.append("Currency: ").code("enabled").append('.').newLine().newLine().append("DISCLAIMER", Formatting.UNDERLINE, Formatting.BOLD).newLine();
 		builder.append("By enabling currency on the guild ").code(guild.getName()).append(", you have given explicit permission for ").mention(e.getLoader().user).append(" to store ").italics("End User Data");
-		// System.out.println(builder.getContent());
-		// builder.sendMessage();
 		e.getChannel().sendMessage(builder.getContent());
 	}
 	
