@@ -371,6 +371,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					}
 					embed.setThumbnail(playing);
 					boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
+						if (!useReactions)
+							return;
 						nowplaying = msg;
 						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
 							nowplaying.addReaction("🔀").thenAccept(b -> {

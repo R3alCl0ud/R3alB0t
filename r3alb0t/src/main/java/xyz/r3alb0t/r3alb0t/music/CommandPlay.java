@@ -89,6 +89,8 @@ public class CommandPlay extends Command {
 			} else {
 				plManager.startNext();
 			}
+		} else if (guild != null && !RBMusic.plManagers.containsKey(guild.getID())) {
+
 		}
 	}
 }
