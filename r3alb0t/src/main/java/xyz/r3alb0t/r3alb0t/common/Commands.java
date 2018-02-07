@@ -53,7 +53,8 @@ public class Commands {
 		// Register misc/test commands
 		CommandRegistry.registerCommand(commandInfo = new CommandInfo(), commandInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandServerInfo = new CommandServerInfo(), commandServerInfo.getUnlocalizedName());
-		CommandRegistry.registerCommand(commandTest = new CommandTest(), commandTest.getUnlocalizedName());
+		// CommandRegistry.registerCommand(commandTest = new CommandTest(),
+		// commandTest.getUnlocalizedName());
 
 		// Register Music commands
 		CommandRegistry.registerCommand(join = new CommandJoin(), join.getUnlocalizedName());

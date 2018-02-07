@@ -12,7 +12,6 @@ import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMentions;
 import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.entity.util.Permissions;
-import io.discloader.discloader.entity.util.SnowflakeUtil;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
 import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
@@ -27,7 +26,8 @@ public class CommandGive extends Command {
 		super();
 		setUnlocalizedName("give");
 		setUsage("currency give <@user> <amount>");
-		setArgsRegex("<@!?(\\d+)> -?(\\d+)");
+		setDescription("Gives the mentioned user credits.\nIf you give a user negative credits, the amount will be subtracted from their account.");
+		setArgsRegex("<@!?(\\d+)> (-?\\d+)");
 	}
 
 	public void execute(MessageCreateEvent e, String[] args) {
@@ -37,7 +37,7 @@ public class CommandGive extends Command {
 		if (args.length < 2 || mentions.getUsers().size() > 1) {
 			e.getChannel().sendMessage(getUsage());
 		} else if (!Currency.getGuilds().contains(guild.getID())) {
-
+			e.getChannel().sendMessage("Currency is currently `disabled` in this guild.");
 		} else if (mentions.getUsers().size() == 1) {
 			try {
 				IUser mentioned = mentions.getUsers().get(0);
@@ -47,15 +47,16 @@ public class CommandGive extends Command {
 				} else {
 					account = DLUtil.gson.fromJson(db.get(Currency.userBal(guild.getID(), mentioned.getID())), AccountJSON.class);
 				}
-				account.setBalance(account.getBalance() + SnowflakeUtil.parse(args[1]));
+				int dif = Integer.parseInt(args[1], 10);
+				account.setBalance(account.getBalance() + dif);
 				db.set(Currency.userBal(guild.getID(), mentioned.getID()), account.toString());
 				RichEmbed embed = new RichEmbed("Currency").setColor(0xf4cb42).setThumbnail(getResourceLocation());
 				embed.setAuthor(mentioned.getUsername(), "", mentioned.getAvatar().toString());
 				embed.setDescription("Funds have been transfered");
 				embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-				embed.addField("Previous Balance", "¥" + (account.getBalance() - SnowflakeUtil.parse(args[1])), true);
+				embed.addField("Previous Balance", "¥" + (account.getBalance() - dif), true);
 				embed.addField("New Balance", "¥" + account.getBalance(), true);
-				embed.addField("Amount Given", "¥" + SnowflakeUtil.parse(args[1]));
+				embed.addField("Amount Given", "¥" + dif);
 				e.getChannel().sendEmbed(embed);
 			} catch (NumberFormatException e1) {
 				e.getChannel().sendMessage("Error encountered while attempting to give a user credits:\n**" + e1.getClass().toString().substring(6) + "**: " + e1.getMessage());

@@ -104,26 +104,32 @@ public class CommandRewards extends CommandTree {
 				rewards.add(rj);
 				rwsj.put(rj.name, rj);
 			}
-			rewards.sort((a, b) -> {
-				if (a.id.equals(b.required) || (a.required != null && a.required.equals(b.required) && a.price > b.price) || (a.required == null && b.required == null && a.price > b.price))
-					return 1;
-				if (b.id.equals(a.required) || (a.required != null && a.required.equals(b.required) && a.price < b.price) || (a.required == null && b.required == null && a.price < b.price))
-					return -1;
-				if (a.price == b.price) {
-					if (a.name.compareToIgnoreCase(b.name) > 0)
-						return 1;
-					if (a.name.compareToIgnoreCase(b.name) < 0)
-						return -1;
-				}
+			rewards.sort((a,b) -> {
+				if (a.price > b.price) return 1;
+				if (a.price < b.price) return 0;
 				return 0;
 			});
+			
+//			rewards.sort((a, b) -> {
+//				if (a.id.equals(b.required) || (a.required != null && a.required.equals(b.required) && a.price > b.price) || (a.required == null && b.required == null && a.price > b.price))
+//					return 1;
+//				if (b.id.equals(a.required) || (a.required != null && a.required.equals(b.required) && a.price < b.price) || (a.required == null && b.required == null && a.price < b.price))
+//					return -1;
+//				if (a.price == b.price) {
+//					if (a.name.compareToIgnoreCase(b.name) > 0)
+//						return 1;
+//					if (a.name.compareToIgnoreCase(b.name) < 0)
+//						return -1;
+//				}
+//				return 0;
+//			});
 			RichEmbed embed = new RichEmbed("Rewards").setColor(0xf4a742);// .setColor(color)
 			embed.setThumbnail(CommandRewards.this.getResourceLocation());
 			embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-			for (int i = 0 + (5 * (page - 1)); i < rewards.size(); i++) {
+			for (int i = 0 + (5 * (page - 1)); i < 10 + (5 * (page - 1)) && i < rewards.size(); i++) {
 				RewardJSON rj = rewards.get(i);
 				String text = String.format("**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.price, rj.required == null ? "none" : rwsj.get(rj.required).name, roles.contains(guild.getRoleByID(rj.id)));
-				embed.addField(rj.name, text);
+				embed.addField(rj.name, text, true);
 			}
 			e.getChannel().sendEmbed(embed);
 		}

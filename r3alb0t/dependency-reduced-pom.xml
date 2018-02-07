@@ -4,7 +4,7 @@
   <groupId>xyz.r3alb0t</groupId>
   <artifactId>r3alb0t</artifactId>
   <name>r3alb0t</name>
-  <version>4.1.0-SNAPSHOT</version>
+  <version>4.1.1-SNAPSHOT</version>
   <url>https://r3alb0t.xyz</url>
   <build>
     <finalName>${project.artifactId}-${project.version}</finalName>
