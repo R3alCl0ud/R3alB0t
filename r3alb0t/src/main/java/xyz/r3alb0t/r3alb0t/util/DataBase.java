@@ -10,12 +10,6 @@ public class DataBase {
 
 	private static Jedis db = null;
 
-	/**
-	 * 
-	 */
-	public DataBase() {
-	}
-
 	public static void connect() {
 		if (db == null) db = new Jedis(R3alB0t.config.auth.dbIP);
 		if (db.isConnected()) return;

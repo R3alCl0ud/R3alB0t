@@ -15,35 +15,27 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
 
 import io.discloader.discloader.client.logger.DLLogger;
 import io.discloader.discloader.client.render.util.Resource;
-import io.discloader.discloader.common.event.EventListenerAdapter;
-import io.discloader.discloader.common.event.message.MessageReactionAddEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.core.entity.user.DLUser;
-import io.discloader.discloader.entity.IEmoji;
 import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
-import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.message.IMessage;
 import io.discloader.discloader.entity.user.IUser;
-import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
 
 	private VoiceConnection connection;
-	// private IGuildVoiceChannel channel;
 	private IGuildTextChannel boundChannel;
 	private IMessage nowplaying;
 
 	private List<AudioTrack> tracks;
 
-	private int volume = 0;
-
 	private long position = 0l;
 
-	private Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
-	private Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
+	public static Resource playing = new Resource("r3alb0t", "texture/command/Play.png");
+	public static Resource pause = new Resource("r3alb0t", "texture/command/Pause.png");
 
 	public static final Logger logger = new DLLogger(PlaylistManager.class).getLogger();
 
@@ -58,89 +50,49 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		tracks = new ArrayList<>();
 		connection.addListener(this);
 		if (useReactions) {
-			connection.getLoader().addEventListener(new EventListenerAdapter() {
-
-				public void MessageReactionAdd(MessageReactionAddEvent e) {
-					if (nowplaying == null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())
-						return;
-					IGuildMember member = boundChannel.getGuild().getMember(e.getUser().getID());
-					IEmoji emoji = e.getReaction().getEmoji();
-					switch (emoji.toString()) {
-					case "⏸":
-						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
-							pause();
-						}
-						break;
-					case "🔀":
-						shuffle();
-						e.getReaction().removeUserReaction(e.getUser());
-						sendEmbed();
-						break;
-					case "⏭":
-						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS) && tracks.size() >= 2)
-							connection.play(tracks.get(1));
-						break;
-					case "🔄":
-						e.getReaction().removeUserReaction(e.getUser());
-						sendEmbed();
-						break;
-					case "▶":
-						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS))
-							startNext();
-						break;
-					case "🔇":
-						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
-							volume = connection.getVolume();
-							connection.setVolume(0);
-						}
-						e.getReaction().removeUserReaction(e.getUser());
-						sendEmbed();
-						break;
-					case "🔊":
-						int nv = connection.getVolume() + 5;
-						if (connection.getVolume() == 0) {
-							connection.setVolume(volume == 0 ? nv : volume);
-						} else if (nv < 100) {
-							connection.setVolume(nv);
-						} else {
-							connection.setVolume(nv);
-							e.getReaction().removeReaction();
-						}
-						e.getReaction().removeUserReaction(e.getUser());
-						if (nowplaying.getReaction("🔉") == null && nv > 0)
-							nowplaying.addReaction("🔉");
-						sendEmbed();
-						break;
-					case "🔉":
-						int nv1 = connection.getVolume() - 5;
-						if (connection.getVolume() == 0) {
-							connection.setVolume(volume == 0 ? nv1 : volume);
-						} else if (nv1 > 0) {
-							connection.setVolume(nv1);
-						} else if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MUTE_MEMBERS)) {
-							connection.setVolume(nv1);
-							e.getReaction().removeReaction();
-						}
-						e.getReaction().removeUserReaction(e.getUser());
-						if (nowplaying.getReaction("🔊") == null && nv1 < 100)
-							nowplaying.addReaction("🔊");
-						sendEmbed();
-						break;
-					case "⏏":
-						if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.MOVE_MEMBERS, Permissions.CONNECT)) {
-							connection.disconnect().thenAccept(a -> {
-								if (nowplaying != null) {
-									nowplaying.delete();
-								}
-								connection.getLoader().removeEventListener(this);
-							});
-						}
-						break;
-					default:
-						break;
-					}
-				}
-			});
+			/*
+			 * connection.getLoader().addEventListener(new EventListenerAdapter() {
+			 * 
+			 * public void MessageReactionAdd(MessageReactionAddEvent e) { if (nowplaying ==
+			 * null || e.getMessage().getID() != nowplaying.getID() || e.getUser().isBot())
+			 * return; IGuildMember member =
+			 * boundChannel.getGuild().getMember(e.getUser().getID()); IEmoji emoji =
+			 * e.getReaction().getEmoji(); switch (emoji.toString()) { case "⏸": if
+			 * (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MUTE_MEMBERS)) { pause(); } break; case "🔀": shuffle();
+			 * e.getReaction().removeUserReaction(e.getUser()); sendEmbed(); break; case
+			 * "⏭": if (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MUTE_MEMBERS) && tracks.size() >= 2) connection.play(tracks.get(1)); break;
+			 * case "🔄": e.getReaction().removeUserReaction(e.getUser()); sendEmbed();
+			 * break; case "▶": if
+			 * (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MUTE_MEMBERS)) startNext(); break; case "🔇": if
+			 * (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MUTE_MEMBERS)) { volume = connection.getVolume(); connection.setVolume(0); }
+			 * e.getReaction().removeUserReaction(e.getUser()); sendEmbed(); break; case
+			 * "🔊": int nv = connection.getVolume() + 5; if (connection.getVolume() == 0) {
+			 * connection.setVolume(volume == 0 ? nv : volume); } else if (nv < 100) {
+			 * connection.setVolume(nv); } else { connection.setVolume(nv);
+			 * e.getReaction().removeReaction(); }
+			 * e.getReaction().removeUserReaction(e.getUser()); if
+			 * (nowplaying.getReaction("🔉") == null && nv > 0)
+			 * nowplaying.addReaction("🔉"); sendEmbed(); break; case "🔉": int nv1 =
+			 * connection.getVolume() - 5; if (connection.getVolume() == 0) {
+			 * connection.setVolume(volume == 0 ? nv1 : volume); } else if (nv1 > 0) {
+			 * connection.setVolume(nv1); } else if
+			 * (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MUTE_MEMBERS)) { connection.setVolume(nv1); e.getReaction().removeReaction();
+			 * } e.getReaction().removeUserReaction(e.getUser()); if
+			 * (nowplaying.getReaction("🔊") == null && nv1 < 100)
+			 * nowplaying.addReaction("🔊"); sendEmbed(); break; case "⏏": if
+			 * (getVoiceChannel().permissionsOf(member).hasPermission(Permissions.
+			 * MOVE_MEMBERS, Permissions.CONNECT)) { connection.disconnect().thenAccept(a ->
+			 * { if (nowplaying != null) { nowplaying.delete(); }
+			 * connection.getLoader().removeEventListener(this); }); } break; default:
+			 * break; } }
+			 * 
+			 * });
+			 */
 		}
 
 	}
@@ -160,6 +112,10 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		return (IGuildVoiceChannel) connection.getChannel();
 	}
 
+	public VoiceConnection getVoiceConnection() {
+		return connection;
+	}
+
 	public long getLength() {
 		long l = 0;
 		for (AudioTrack track : tracks) {
@@ -169,7 +125,8 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	}
 
 	public AudioTrack getPlayingTrack() {
-		return connection.getPlayingTrack();
+		AudioTrack track = connection.getPlayingTrack();
+		return track == null && connection.isPaused() ? tracks.get(0) : track;
 	}
 
 	public String getTime() {
@@ -231,14 +188,12 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			nowplaying.delete();
 		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
 			nowplaying = msg;
-			nowplaying.addReaction("▶").thenAccept(a -> {
-				nowplaying.addReaction("🔀").thenAccept(b -> {
-					nowplaying.addReaction("🔄").thenAccept(c -> {
-						if (tracks.size() > 1 && tracks.get(1) != null)
-							nowplaying.addReaction("⏭");
-					});
-				});
-			});
+			/*
+			 * nowplaying.addReaction("▶").thenAccept(a -> {
+			 * nowplaying.addReaction("🔀").thenAccept(b -> {
+			 * nowplaying.addReaction("🔄").thenAccept(c -> { if (tracks.size() > 1 &&
+			 * tracks.get(1) != null) nowplaying.addReaction("⏭"); }); }); });
+			 */
 		});
 	}
 
@@ -357,11 +312,11 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 					nowplaying = msg;
 				});
 				return;
-			} else {
+			} else if (boundChannel.getMessage(nowplaying.getID()) != null) {
 				nowplaying.delete().thenAcceptAsync(n -> {
 					AudioTrackInfo info = connection.getPlayingTrack().getInfo();
 					RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
-					embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+					embed.setFooter("R3alB0t 2018").setTimestamp(OffsetDateTime.now());
 					embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 					embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
 					embed.addField("Current Time", getTime(), true);
@@ -374,58 +329,49 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 						if (!useReactions)
 							return;
 						nowplaying = msg;
-						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
-							nowplaying.addReaction("🔀").thenAccept(b -> {
-								nowplaying.addReaction("🔄").thenAccept(c -> {
-									nowplaying.addReaction("⏏").thenAccept(z -> {
-										if (tracks.size() > 1 && tracks.get(1) != null)
-											nowplaying.addReaction("⏭");
-										nowplaying.addReaction("🔇").thenAccept(d -> {
-											nowplaying.addReaction("🔉").thenAccept(e -> {
-												nowplaying.addReaction("🔊").thenAccept(f -> {});
-											});
-										});
-									});
-								});
-							});
-						});
+						/*
+						 * nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+						 * nowplaying.addReaction("🔀").thenAccept(b -> {
+						 * nowplaying.addReaction("🔄").thenAccept(c -> {
+						 * nowplaying.addReaction("⏏").thenAccept(z -> { if (tracks.size() > 1 &&
+						 * tracks.get(1) != null) nowplaying.addReaction("⏭");
+						 * nowplaying.addReaction("🔇").thenAccept(d -> {
+						 * nowplaying.addReaction("🔉").thenAccept(e -> {
+						 * nowplaying.addReaction("🔊").thenAccept(f -> {}); }); }); }); }); }); });
+						 */
 					});
 				});
+				return;
 			}
-		} else {
-			AudioTrackInfo info = connection.getPlayingTrack().getInfo();
-			RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
-			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
-			embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
-			embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
-			embed.addField("Current Time", getTime(), true);
-			if (tracks.size() > 1 && tracks.get(1) != null) {
-				AudioTrackInfo next = tracks.get(1).getInfo();
-				embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
-			}
-			embed.setThumbnail(connection.isPaused() ? pause : playing);
-			boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
-				nowplaying = msg;
-				if (boundChannel.permissionsOf(boundChannel.getGuild().getCurrentMember()).hasPermission(Permissions.ADD_REACTIONS))
-					nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
-						nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(v -> {
-							nowplaying.addReaction("🔀").thenAccept(b -> {
-								nowplaying.addReaction("🔄").thenAccept(c -> {
-									nowplaying.addReaction("⏏").thenAccept(z -> {
-										if (tracks.size() > 1 && tracks.get(1) != null)
-											nowplaying.addReaction("⏭");
-										nowplaying.addReaction("🔇").thenAccept(d -> {
-											nowplaying.addReaction("🔉").thenAccept(e -> {
-												nowplaying.addReaction("🔊").thenAccept(f -> {});
-											});
-										});
-									});
-								});
-							});
-						});
-					});
-			});
 		}
+		AudioTrackInfo info = connection.getPlayingTrack().getInfo();
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
+		embed.setFooter("R3alB0t 2018").setTimestamp(OffsetDateTime.now());
+		embed.addField("Now Playing", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+		embed.addField("Volume", String.format("%d", connection.getVolume()) + "%", true);
+		embed.addField("Current Time", getTime(), true);
+		if (tracks.size() > 1 && tracks.get(1) != null) {
+			AudioTrackInfo next = tracks.get(1).getInfo();
+			embed.addField("Up Next", String.format("[*%s*](%s) - %s", next.title, next.uri, next.author));
+		}
+		embed.setThumbnail(connection.isPaused() ? pause : playing);
+		boundChannel.sendEmbed(embed).thenAcceptAsync(msg -> {
+			nowplaying = msg;
+			/*
+			 * if (boundChannel.permissionsOf(boundChannel.getGuild().getCurrentMember()).
+			 * hasPermission(Permissions.ADD_REACTIONS))
+			 * nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(a -> {
+			 * nowplaying.addReaction(connection.isPaused() ? "▶" : "⏸").thenAccept(v -> {
+			 * nowplaying.addReaction("🔀").thenAccept(b -> {
+			 * nowplaying.addReaction("🔄").thenAccept(c -> {
+			 * nowplaying.addReaction("⏏").thenAccept(z -> { if (tracks.size() > 1 &&
+			 * tracks.get(1) != null) nowplaying.addReaction("⏭");
+			 * nowplaying.addReaction("🔇").thenAccept(d -> {
+			 * nowplaying.addReaction("🔉").thenAccept(e -> {
+			 * nowplaying.addReaction("🔊").thenAccept(f -> {}); }); }); }); }); }); }); });
+			 */
+		});
+
 	}
 
 	public long getPosition() {

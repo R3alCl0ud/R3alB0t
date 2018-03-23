@@ -23,6 +23,7 @@ import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.entity.util.SnowflakeUtil;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.currency.RewardJSON;
@@ -104,28 +105,34 @@ public class CommandRewards extends CommandTree {
 				rewards.add(rj);
 				rwsj.put(rj.name, rj);
 			}
-			rewards.sort((a,b) -> {
-				if (a.price > b.price) return 1;
-				if (a.price < b.price) return 0;
+			rewards.sort((a, b) -> {
+				if (a.price > b.price)
+					return 1;
+				if (a.price < b.price)
+					return 0;
 				return 0;
 			});
-			
-//			rewards.sort((a, b) -> {
-//				if (a.id.equals(b.required) || (a.required != null && a.required.equals(b.required) && a.price > b.price) || (a.required == null && b.required == null && a.price > b.price))
-//					return 1;
-//				if (b.id.equals(a.required) || (a.required != null && a.required.equals(b.required) && a.price < b.price) || (a.required == null && b.required == null && a.price < b.price))
-//					return -1;
-//				if (a.price == b.price) {
-//					if (a.name.compareToIgnoreCase(b.name) > 0)
-//						return 1;
-//					if (a.name.compareToIgnoreCase(b.name) < 0)
-//						return -1;
-//				}
-//				return 0;
-//			});
+
+			// rewards.sort((a, b) -> {
+			// if (a.id.equals(b.required) || (a.required != null &&
+			// a.required.equals(b.required) && a.price > b.price) || (a.required == null &&
+			// b.required == null && a.price > b.price))
+			// return 1;
+			// if (b.id.equals(a.required) || (a.required != null &&
+			// a.required.equals(b.required) && a.price < b.price) || (a.required == null &&
+			// b.required == null && a.price < b.price))
+			// return -1;
+			// if (a.price == b.price) {
+			// if (a.name.compareToIgnoreCase(b.name) > 0)
+			// return 1;
+			// if (a.name.compareToIgnoreCase(b.name) < 0)
+			// return -1;
+			// }
+			// return 0;
+			// });
 			RichEmbed embed = new RichEmbed("Rewards").setColor(0xf4a742);// .setColor(color)
 			embed.setThumbnail(CommandRewards.this.getResourceLocation());
-			embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+			embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp(OffsetDateTime.now());
 			for (int i = 0 + (5 * (page - 1)); i < 10 + (5 * (page - 1)) && i < rewards.size(); i++) {
 				RewardJSON rj = rewards.get(i);
 				String text = String.format("**Price**: ¥%d\n**Requires**: %s\n**Purchased**: %b", rj.price, rj.required == null ? "none" : rwsj.get(rj.required).name, roles.contains(guild.getRoleByID(rj.id)));
@@ -186,7 +193,7 @@ public class CommandRewards extends CommandTree {
 				embed.setAuthor(author.getUsername(), "", author.getAvatar().toString());
 				embed.addField("Item", String.format("**Name:** %s\n**ID:** %d\n**Price:** %d\n**Quantity:** x1", role.getName(), role.getID(), rj.price), true);
 				embed.addField("Total Payed", "¥" + rj.price, true).addField("Remaining Balance", "¥" + (balance - rj.price), true);
-				embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+				embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp(OffsetDateTime.now());
 				embed.setThumbnail(CommandRewards.this.getResourceLocation());
 				e.getChannel().sendEmbed(embed);
 				author.sendEmbed(embed);
@@ -204,7 +211,7 @@ public class CommandRewards extends CommandTree {
 		public CreateRewards() {
 			super();
 			setUnlocalizedName("create");
-			setUsage("create <role>:<price>[:requiredRole]");
+			setUsage("rewards create <role>:<price>[:requiredRole]");
 			setDescription("Creates rewards that can be purchased using credits obtained from chatting.");
 			setArgsRegex("([^:]+):-?(\\d+)(?>:([^:]+))?");
 		}
@@ -234,7 +241,7 @@ public class CommandRewards extends CommandTree {
 			db.set(Currency.reward(guild.getID(), role.getName().toLowerCase()), DLUtil.gson.toJson(reward));
 			db.sadd(Currency.rewards(guild.getID()), role.getName().toLowerCase());
 			RichEmbed embed = new RichEmbed("Rewards").setColor(0xf4a742);
-			embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+			embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp(OffsetDateTime.now());
 			embed.setThumbnail(CommandRewards.this.getResourceLocation());
 			embed.setDescription("New reward created");
 			embed.addField("Name", role.getName(), true).addField("Price", "¥" + reward.price, true);
@@ -278,7 +285,7 @@ public class CommandRewards extends CommandTree {
 				}
 				embed.setDescription("Showing account status for " + user);
 				embed.addField("Balance", "¥" + account.getBalance());
-				embed.setFooter("©R3alB0t 2017").setTimestamp();
+				embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp();
 				embed.setThumbnail(CommandRewards.this.getResourceLocation());
 			} else {
 				String accountLocation = Currency.userBal(guild.getID(), author.getID());
@@ -290,7 +297,7 @@ public class CommandRewards extends CommandTree {
 				}
 				embed.setDescription("Showing account status for " + author);
 				embed.addField("Balance", "¥" + account.getBalance());
-				embed.setFooter("©R3alB0t 2017").setTimestamp();
+				embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp();
 				embed.setThumbnail(CommandRewards.this.getResourceLocation());
 			}
 			e.getChannel().sendEmbed(embed);

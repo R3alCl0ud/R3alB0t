@@ -53,24 +53,37 @@ public class CustomCommands {
 		return cmds;
 	}
 
+	public static String guildCommands(IGuild guild) {
+		return String.format("Commands.%d", guild.getID());
+	}
+
+	public static String guildCommand(IGuild guild, String label) {
+		return String.format("Commands.%d:%s", guild.getID(), label);
+	}
+
+	public static void setCommand(IGuild guild, String label, String response) {
+		if (!DB.sismember(guildCommands(guild), label)) {
+			DB.sadd(guildCommands(guild), label);
+		}
+		DB.set(guildCommand(guild, label), response);
+		System.out.println("This was executed");
+	}
+
 	public static class PubSub extends JedisPubSub {
 
 		public void onMessage(String channel, String message) {
 			System.out.printf("Channel: %s\nMessage: %s\n", channel, message);
 		}
 
-		public void onSubscribe(String channel, int subscribedChannels) {
-		}
+		public void onSubscribe(String channel, int subscribedChannels) {}
 
-		public void onUnsubscribe(String channel, int subscribedChannels) {
-		}
+		public void onUnsubscribe(String channel, int subscribedChannels) {}
 
 		public void onPSubscribe(String pattern, int subscribedChannels) {
 			System.out.printf("Subscribed to the [%s] pattern\n", pattern);
 		}
 
-		public void onPUnsubscribe(String pattern, int subscribedChannels) {
-		}
+		public void onPUnsubscribe(String pattern, int subscribedChannels) {}
 
 		public void onPMessage(String pattern, String channel, String message) {
 			// String info = channel.substring(9);

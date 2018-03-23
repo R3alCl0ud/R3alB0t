@@ -28,7 +28,7 @@ public class CommandVolume extends Command {
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setThumbnail(getResourceLocation());
-		embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+		embed.setFooter("©R3alB0t 2018").setTimestamp(OffsetDateTime.now());
 		VoiceConnection connection = EntityRegistry.getVoiceConnectionByGuild(message.getGuild());
 		if (message.getGuild() != null && connection != null) {
 			if (args.length > 0) {

@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
 
 import io.discloader.discloader.client.command.Command;
+import io.discloader.discloader.client.command.CommandHandler;
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
@@ -65,8 +66,8 @@ public class CommandPlay extends Command {
 							String t = String.format("[*%s*](%s)  by %s", info.title, info.uri, info.author);
 							embed.addField(name, t);
 						}
-						embed.addField("Select a track", "Type `c!select <number>` to select a track from the search results");
-						embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+						embed.addField("Select a track", String.format("Type `%sselect <number>` to select a track from the search results", CommandHandler.prefix));
+						embed.setFooter("R3alB0t 2018").setTimestamp(OffsetDateTime.now());
 						channel.sendEmbed(embed);
 					}
 
@@ -90,7 +91,7 @@ public class CommandPlay extends Command {
 				plManager.startNext();
 			}
 		} else if (guild != null && !RBMusic.plManagers.containsKey(guild.getID())) {
-
+			e.getChannel().sendMessage("I can only play music in a guild");
 		}
 	}
 }

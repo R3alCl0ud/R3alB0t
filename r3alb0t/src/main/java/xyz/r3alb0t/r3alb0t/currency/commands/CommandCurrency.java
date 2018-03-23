@@ -55,6 +55,7 @@ public class CommandCurrency extends CommandTree {
 				return member.getPermissions().hasAny(Permissions.MANAGE_GUILD, Permissions.ADMINISTRATOR);
 			}
 		}
+
 		public class CommandInterest extends Command {
 
 			public CommandInterest() {
@@ -87,7 +88,7 @@ public class CommandCurrency extends CommandTree {
 				return member.getPermissions().hasAny(Permissions.MANAGE_GUILD, Permissions.ADMINISTRATOR);
 			}
 		}
-		
+
 		public class CommandUseXP extends Command {
 			public CommandUseXP() {
 				super();
@@ -97,10 +98,10 @@ public class CommandCurrency extends CommandTree {
 				setUsage("usexp [yes/no]");
 			}
 		}
+
 		private Map<String, Command> subs;
 
 		private Command coolDown;
-
 		private Command interest;
 
 		public CommandSet() {
@@ -115,6 +116,7 @@ public class CommandCurrency extends CommandTree {
 			return subs;
 		}
 	}
+
 	private static Command enable;
 	private static Command disable;
 	private static Command give;
@@ -128,8 +130,7 @@ public class CommandCurrency extends CommandTree {
 	public CommandCurrency() {
 		super("currency");
 		setDescription("Base command for managing currency.");
-		setFullDescription(
-				"Base command for managing currency.\nBy enabling currency you **__explicitly__** authorize <@132347121520214016> to store *EndUserData(EUD)* such as *Usernames/Nicknames/names* of the members/roles/channels of this guild.");
+		setFullDescription("Base command for managing currency.\nBy enabling currency you **__explicitly__** authorize <@132347121520214016> to store *EndUserData(EUD)* such as *Usernames/Nicknames/names* of the members/roles/channels of this guild.");
 		subs = new HashMap<>();
 		enable = new CommandEnable();
 		disable = new CommandDisable();
@@ -141,9 +142,18 @@ public class CommandCurrency extends CommandTree {
 		subs.put(set.getUnlocalizedName(), set);
 	}
 
+	@Override
 	public void defaultResponse(MessageCreateEvent e) {
-		String text = "Available option(s) are:\n" + this.subsText(this, 0);
-		e.getChannel().sendMessage(text);
+		System.out.println("Currency");
+		// try {
+		// String text = ;
+		// System.out.println(text);
+		e.getChannel().sendMessage("Available option(s) are: " + this.subsText(this, 0)).thenAcceptAsync(msg -> {
+			System.out.println(msg.getContent());
+		});
+		// } catch (Exception e1) {
+		// e1.printStackTrace();
+		// }
 	}
 
 	public Resource getResourceLocation() {

@@ -11,4 +11,9 @@ public class Config {
 		public String dbPassword = "PASSWORD";
 	}
 
+	public void update(Config config) {
+		prefix = config.prefix;
+		auth = config.auth;
+	}
+
 }

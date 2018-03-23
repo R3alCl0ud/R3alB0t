@@ -4,7 +4,6 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.registry.CommandRegistry;
 import xyz.r3alb0t.r3alb0t.common.commands.CommandInfo;
 import xyz.r3alb0t.r3alb0t.common.commands.CommandServerInfo;
-import xyz.r3alb0t.r3alb0t.common.commands.CommandTest;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandBalance;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandCurrency;
 import xyz.r3alb0t.r3alb0t.currency.commands.CommandRewards;
@@ -12,6 +11,7 @@ import xyz.r3alb0t.r3alb0t.custom.commands.CommandCommands;
 import xyz.r3alb0t.r3alb0t.logs.commands.CommandLogs;
 import xyz.r3alb0t.r3alb0t.music.CommandJoin;
 import xyz.r3alb0t.r3alb0t.music.CommandLeave;
+import xyz.r3alb0t.r3alb0t.music.CommandNowPlaying;
 import xyz.r3alb0t.r3alb0t.music.CommandPause;
 import xyz.r3alb0t.r3alb0t.music.CommandPlay;
 import xyz.r3alb0t.r3alb0t.music.CommandQueue;
@@ -30,7 +30,8 @@ public class Commands {
 	public static Command shuffle;
 	public static Command select;
 	public static Command queue;
-
+	public static Command nowPlaying;
+	
 	// Misc commands
 	public static Command commandInfo;
 	public static Command commandServerInfo;
@@ -65,7 +66,8 @@ public class Commands {
 		CommandRegistry.registerCommand(shuffle = new CommandShuffle(), shuffle.getUnlocalizedName());
 		CommandRegistry.registerCommand(queue = new CommandQueue(), queue.getUnlocalizedName());
 		CommandRegistry.registerCommand(select = new CommandSelect(), select.getUnlocalizedName());
-
+		CommandRegistry.registerCommand(nowPlaying = new CommandNowPlaying(), nowPlaying.getUnlocalizedName());;
+		
 		// Register Logs commands
 		CommandRegistry.registerCommand(logs = new CommandLogs(), logs.getUnlocalizedName());
 

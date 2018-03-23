@@ -10,6 +10,7 @@ import io.discloader.discloader.client.command.CommandTree;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ChannelTypes;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 
 public class CommandLogs extends CommandTree {
 
@@ -34,6 +35,7 @@ public class CommandLogs extends CommandTree {
 	public void executeEnable(MessageCreateEvent event, String[] args) {
 		if (event.getChannel().getType() != ChannelTypes.TEXT) {
 			RichEmbed embed = new RichEmbed("Enable Logging").setColor(0xff0101).addField("Error", "This command can only be executed in a **GuildTextChannel**").setTimestamp(OffsetDateTime.now(ZoneId.systemDefault()));
+			embed.setFooter("©R3alB0t " + R3alB0t.getYear());
 			event.getChannel().sendEmbed(embed);
 			return;
 		}

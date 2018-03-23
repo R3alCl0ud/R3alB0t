@@ -13,6 +13,7 @@ import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
@@ -44,10 +45,9 @@ public class CommandBalance extends Command {
 			return;
 		}
 		RichEmbed embed = new RichEmbed().setColor(0xf4cb42).setThumbnail(getResourceLocation());
-		embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+		embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp(OffsetDateTime.now());
 		IUser user = e.getMessage().getAuthor();
-		if (e.getMessage().getMentions().getUsers().size() > 0
-				&& guild.getMember(user.getID()).getPermissions().hasAny(Permissions.MANAGE_GUILD)) {
+		if (e.getMessage().getMentions().getUsers().size() > 0 && guild.getMember(user.getID()).getPermissions().hasAny(Permissions.MANAGE_GUILD)) {
 			user = e.getMessage().getMentions().getUsers().get(0);
 		}
 		embed.setAuthor(user.toString(), "", user.getAvatar().toString());

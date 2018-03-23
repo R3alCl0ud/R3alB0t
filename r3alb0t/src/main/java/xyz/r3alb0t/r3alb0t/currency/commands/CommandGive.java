@@ -14,6 +14,7 @@ import io.discloader.discloader.entity.user.IUser;
 import io.discloader.discloader.entity.util.Permissions;
 import io.discloader.discloader.util.DLUtil;
 import redis.clients.jedis.Jedis;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.currency.AccountJSON;
 import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
@@ -32,14 +33,19 @@ public class CommandGive extends Command {
 
 	public void execute(MessageCreateEvent e, String[] args) {
 		IGuild guild = e.getMessage().getGuild();
-		if (guild == null) return;
+		if (guild == null)
+			return;
 		IMentions mentions = e.getMessage().getMentions();
+		if (!e.getMessage().getMember().getPermissions().hasAny(Permissions.MANAGE_GUILD, Permissions.ADMINISTRATOR)) {
+			return;
+		}
 		if (args.length < 2 || mentions.getUsers().size() > 1) {
 			e.getChannel().sendMessage(getUsage());
 		} else if (!Currency.getGuilds().contains(guild.getID())) {
 			e.getChannel().sendMessage("Currency is currently `disabled` in this guild.");
 		} else if (mentions.getUsers().size() == 1) {
 			try {
+
 				IUser mentioned = mentions.getUsers().get(0);
 				AccountJSON account = null;
 				if (!db.exists(Currency.userBal(guild.getID(), mentioned.getID()))) {
@@ -53,7 +59,7 @@ public class CommandGive extends Command {
 				RichEmbed embed = new RichEmbed("Currency").setColor(0xf4cb42).setThumbnail(getResourceLocation());
 				embed.setAuthor(mentioned.getUsername(), "", mentioned.getAvatar().toString());
 				embed.setDescription("Funds have been transfered");
-				embed.setFooter("©R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+				embed.setFooter("© R3alB0t " + R3alB0t.getYear()).setTimestamp(OffsetDateTime.now());
 				embed.addField("Previous Balance", "¥" + (account.getBalance() - dif), true);
 				embed.addField("New Balance", "¥" + account.getBalance(), true);
 				embed.addField("Amount Given", "¥" + dif);
@@ -72,6 +78,6 @@ public class CommandGive extends Command {
 	@Override
 	public boolean shouldExecute(IGuildMember member, IGuildTextChannel channel) {
 		System.out.println(member.getRoles().get(0).getName());
-		return member.getGuild().isOwner(member) || member.getPermissions().hasPermission(Permissions.ADMINISTRATOR) || member.getPermissions().hasPermission(Permissions.MANAGE_GUILD);
+		return member.getGuild().isOwner(member) || member.getPermissions().hasPermission(Permissions.ADMINISTRATOR, Permissions.MANAGE_GUILD);
 	}
 }
