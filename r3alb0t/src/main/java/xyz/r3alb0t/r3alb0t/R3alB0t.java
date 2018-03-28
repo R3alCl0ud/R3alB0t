@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
-import com.google.gson.annotations.Expose;
 
 import io.discloader.discloader.client.logger.DLLogger;
 import io.discloader.discloader.common.DLOptions;
@@ -33,18 +32,9 @@ public class R3alB0t {
 	public static final Gson gson = new Gson();
 	private static ShardManager manager;
 
-	private static class TestGson {
-		@Expose(serialize = false)
-		private String test;
-	}
-
 	public static void main(String[] args) {
 		try {
 			readConfig();
-			TestGson tt = new TestGson();
-			tt.test = "this is a test string";
-			String log = gson.toJson(tt);
-			logger.info(log);
 			DataBase.connect();
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true);
 			dlOptions.setSharding(0, 2);
