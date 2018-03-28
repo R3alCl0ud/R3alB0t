@@ -58,7 +58,7 @@ public class EventHandler extends EventListenerAdapter {
 		}
 		event.getLoader().addEventListener(currency);
 		event.getLoader().addEventListener(ccmds);
-		event.getLoader().user.setActivity("Doing Stuff");
+		event.getLoader().getSelfUser().setStream("Coding R3alB0t/DiscLoader", "https://twitch.tv/r3alcl0ud");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
 		for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {

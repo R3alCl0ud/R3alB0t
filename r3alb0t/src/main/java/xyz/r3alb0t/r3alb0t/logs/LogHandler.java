@@ -147,10 +147,10 @@ public class LogHandler extends EventListenerAdapter {
 
 	@Override
 	public void GuildMemberUpdate(GuildMemberUpdateEvent event) {
-		if (event.guild.getID() != 282226852616077312l && event.guild.getID() != 201544496654057472l)
+		if (event.getGuild().getID() != 282226852616077312l && event.getGuild().getID() != 201544496654057472l)
 			return;
-		IGuild guild = event.guild;
-		IGuildMember member = event.member, oldMember = event.oldMember;
+		IGuild guild = event.getGuild();
+		IGuildMember member = event.getMember(), oldMember = event.getOldMember();
 		IUser user = member.getUser(), oldUser = oldMember.getUser();
 		ITextChannel channel = guild.getTextChannelByName("serverlog");
 		if (channel == null)
