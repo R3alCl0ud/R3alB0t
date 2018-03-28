@@ -6,9 +6,9 @@ import io.discloader.discloader.client.logger.DLLogger;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
 
 public class LogHandler {
-
-	public static final Logger logger = new DLLogger(R3alB0t.class).getLogger();
-
+	
+	public static final Logger logger = DLLogger.getLogger(R3alB0t.class);
+	
 	public static void throwing(Throwable ex) {
 		print(ex, "", "");
 		for (StackTraceElement el : ex.getStackTrace())
@@ -17,7 +17,7 @@ public class LogHandler {
 			print(sup, "Suppressed: ", "\t");
 		if (ex.getCause() != null) print(ex.getCause(), "Caused by: ", "");
 	}
-
+	
 	public static void print(Throwable ex, String caption, String prefix) {
 		logger.severe(String.format("%s%s%s", prefix, caption, ex));
 		for (StackTraceElement el : ex.getStackTrace())
@@ -26,5 +26,5 @@ public class LogHandler {
 			print(sup, "Suppressed: ", prefix + "\t");
 		if (ex.getCause() != null) print(ex.getCause(), "Caused by: ", prefix);
 	}
-
+	
 }

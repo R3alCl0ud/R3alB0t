@@ -9,6 +9,7 @@ import io.discloader.discloader.common.event.IEventListener;
 import io.discloader.discloader.common.event.RawEvent;
 import io.discloader.discloader.common.event.ReadyEvent;
 import io.discloader.discloader.common.event.guild.GuildCreateEvent;
+import io.discloader.discloader.common.event.guild.GuildDeleteEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ITextChannel;
@@ -58,7 +59,7 @@ public class EventHandler extends EventListenerAdapter {
 		}
 		event.getLoader().addEventListener(currency);
 		event.getLoader().addEventListener(ccmds);
-		event.getLoader().user.setActivity("Doing Stuff");
+		event.getLoader().getSelfUser().setGame("Doing Stuff");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
 		for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {
@@ -75,6 +76,18 @@ public class EventHandler extends EventListenerAdapter {
 		embed.setTimestamp().addField("Guild Name", e.getGuild().getName(), true).setColor(0x00df70);
 		embed.addField("Total Guilds", String.format("%d guild(s) across %d shard(s)", EntityRegistry.getGuilds().size(), e.getLoader().getShard().getShardCount()), true);
 		DataBase.getClient().sadd("guilds", SnowflakeUtil.asString(e.getGuild()));
+		logChannel.sendEmbed(embed);
+	}
+	
+	@Override
+	public void GuildDelete(GuildDeleteEvent e) {
+		ITextChannel logChannel = EntityRegistry.getTextChannelByID(228370138645266432l);
+		if (logChannel == null)
+			return;
+		RichEmbed embed = new RichEmbed("Guild Left");
+		embed.setTimestamp().addField("Guild Name", e.getGuild().getName(), true).setColor(0xFF0000);
+		embed.addField("Total Guilds", String.format("%d guild(s) across %d shard(s)", EntityRegistry.getGuilds().size(), e.getLoader().getShard().getShardCount()), true);
+		DataBase.getClient().srem("guilds", SnowflakeUtil.asString(e.getGuild()));
 		logChannel.sendEmbed(embed);
 	}
 

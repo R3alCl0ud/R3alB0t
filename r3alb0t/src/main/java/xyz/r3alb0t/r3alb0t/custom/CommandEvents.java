@@ -18,9 +18,9 @@ public class CommandEvents extends EventListenerAdapter {
 		if (!content.startsWith(CommandHandler.prefix) || e.getMessage().getAuthor().isBot())
 			return;
 		Map<String, CommandJSON> cmds = CustomCommands.getCommands(e.getGuild());
-		if (cmds.containsKey(content.substring(2))) {
-			String msg = cmds.get(content.substring(2)).message;
-			System.out.println(msg.contains("{author}"));
+		String label = content.substring(CommandHandler.prefix.length()).split(" ")[0];
+		if (cmds.containsKey(label)) {
+			String msg = cmds.get(label).message;
 			msg = msg.replace("{author}", e.getMessage().getAuthor().getUsername());
 			msg = msg.replace("{@author}", e.getMessage().getAuthor().asMention());
 			if (msg.contains("{mentioned}")) {
