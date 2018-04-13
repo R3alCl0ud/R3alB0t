@@ -22,7 +22,7 @@ public class CommandEvents extends EventListenerAdapter {
 		if (cmds.containsKey(label)) {
 			String msg = cmds.get(label).message;
 			msg = msg.replace("{author}", e.getMessage().getAuthor().getUsername());
-			msg = msg.replace("{@author}", e.getMessage().getAuthor().asMention());
+			msg = msg.replace("{@author}", e.getMessage().getAuthor().toMention());
 			if (msg.contains("{mentioned}")) {
 				IMentions mentions = e.getMessage().getMentions();
 				if (mentions.size() > 0) {
@@ -36,9 +36,9 @@ public class CommandEvents extends EventListenerAdapter {
 				IMentions mentions = e.getMessage().getMentions();
 				if (mentions.size() > 0) {
 					if (mentions.getUsers().size() > 0) {
-						msg = msg.replace("{@mentioned}", mentions.getUsers().get(0).asMention());
+						msg = msg.replace("{@mentioned}", mentions.getUsers().get(0).toMention());
 					} else if (mentions.getRoles().size() > 0) {
-						msg = msg.replace("{@mentioned}", mentions.getRoles().get(0).asMention());
+						msg = msg.replace("{@mentioned}", mentions.getRoles().get(0).toMention());
 					}
 				}
 			}

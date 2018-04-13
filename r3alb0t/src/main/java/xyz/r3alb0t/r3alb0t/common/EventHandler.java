@@ -2,6 +2,7 @@ package xyz.r3alb0t.r3alb0t.common;
 
 import com.neovisionaries.ws.client.WebSocketFrame;
 
+import io.discloader.discloader.client.command.CommandHandler;
 import io.discloader.discloader.common.Shard;
 import io.discloader.discloader.common.event.DLPreInitEvent;
 import io.discloader.discloader.common.event.EventListenerAdapter;
@@ -20,7 +21,7 @@ import xyz.r3alb0t.r3alb0t.currency.Currency;
 import xyz.r3alb0t.r3alb0t.currency.CurrencyEvents;
 import xyz.r3alb0t.r3alb0t.custom.CommandEvents;
 import xyz.r3alb0t.r3alb0t.custom.CustomCommands;
-import xyz.r3alb0t.r3alb0t.logs.LogHandler;
+import xyz.r3alb0t.r3alb0t.logs.LogEventHandler;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class EventHandler extends EventListenerAdapter {
@@ -37,7 +38,7 @@ public class EventHandler extends EventListenerAdapter {
 	public void PreInit(DLPreInitEvent e) {
 		R3alB0t.logger.info("Registering music commands");
 		Commands.registerCommands();
-		LogHandler.load();
+		LogEventHandler.load();
 		DataBase.getClient().connect();
 
 	}
@@ -50,7 +51,7 @@ public class EventHandler extends EventListenerAdapter {
 				DataBase.connect();
 			R3alB0t.logger.info("Registering music commands");
 			Commands.registerCommands();
-			LogHandler.load();
+			LogEventHandler.load();
 			Currency.load();
 			currency = new CurrencyEvents();
 			ccmds = new CommandEvents();
@@ -59,7 +60,7 @@ public class EventHandler extends EventListenerAdapter {
 		}
 		event.getLoader().addEventListener(currency);
 		event.getLoader().addEventListener(ccmds);
-		event.getLoader().getSelfUser().setGame("Doing Stuff");
+		event.getLoader().getSelfUser().setGame(CommandHandler.prefix + "help || " + CommandHandler.prefix + "invite");
 		R3alB0t.logger.info("Ready on shard: " + shard.getShardID());
 		R3alB0t.logger.info("Shard connected to " + EntityRegistry.getGuildsOnShard(shard).size() + " guild(s)");
 		for (IGuild guild : EntityRegistry.getGuildsOnShard(shard)) {
@@ -78,7 +79,7 @@ public class EventHandler extends EventListenerAdapter {
 		DataBase.getClient().sadd("guilds", SnowflakeUtil.asString(e.getGuild()));
 		logChannel.sendEmbed(embed);
 	}
-	
+
 	@Override
 	public void GuildDelete(GuildDeleteEvent e) {
 		ITextChannel logChannel = EntityRegistry.getTextChannelByID(228370138645266432l);

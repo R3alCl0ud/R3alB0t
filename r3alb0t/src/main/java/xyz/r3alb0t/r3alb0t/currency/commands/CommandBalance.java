@@ -51,7 +51,7 @@ public class CommandBalance extends Command {
 			user = e.getMessage().getMentions().getUsers().get(0);
 		}
 		embed.setAuthor(user.toString(), "", user.getAvatar().toString());
-		embed.setDescription(String.format("Showing the balance of %s", user.asMention()));
+		embed.setDescription(String.format("Showing the balance of %s", user.toMention()));
 		AccountJSON account = null;
 		if (!db.exists(Currency.userBal(guild.getID(), user.getID()))) {
 			db.set(Currency.userBal(guild.getID(), user.getID()), (account = new AccountJSON(user)).toString());

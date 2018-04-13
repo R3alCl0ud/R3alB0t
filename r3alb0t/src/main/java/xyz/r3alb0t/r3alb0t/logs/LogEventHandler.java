@@ -37,12 +37,14 @@ import io.discloader.discloader.entity.user.IUser;
 import redis.clients.jedis.Transaction;
 import xyz.r3alb0t.r3alb0t.util.DataBase;
 
-public class LogHandler extends EventListenerAdapter {
+public class LogEventHandler extends EventListenerAdapter {
 
 	public static Map<Long, GuildStruct> enabledGuilds = new HashMap<>();
+
 	public static String formatMember(IGuildMember member) {
 		return String.format("**%s** (ID: %d)", member.getNickname(), member.getID());
 	}
+
 	public static void load() {
 		Transaction t = DataBase.getClient().multi();
 		t.smembers("logs.guilds");
@@ -61,10 +63,12 @@ public class LogHandler extends EventListenerAdapter {
 		// }
 		// jedis.a
 	}
+
 	public static void save() {
 		// String json = DLUtil.gson.toJson(enabledGuilds.values().toArray(new
 		// GuildStruct[0]));
 	}
+
 	public static List<String> wrapText(String txt, FontMetrics fm, int maxWidth) {
 		StringTokenizer st = new StringTokenizer(txt);
 
@@ -89,6 +93,7 @@ public class LogHandler extends EventListenerAdapter {
 		}
 		return list;
 	}
+
 	private Resource vswitch = new Resource("r3alb0t", "texture/icon/logs/voiceSwitch.png");
 	private Resource vjoin = new Resource("r3alb0t", "texture/icon/logs/voiceJoin.png");
 	private Resource vleave = new Resource("r3alb0t", "texture/icon/logs/voiceLeave.png");
@@ -274,7 +279,7 @@ public class LogHandler extends EventListenerAdapter {
 			return;
 		RichEmbed embed = new RichEmbed("Message Deleted").setTimestamp(OffsetDateTime.now()).setColor(0xff2020);
 		embed.addField("Channel", event.getChannel().toMention(), true);
-		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()), true);
+		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().toMention(), message.getAuthor().getID()), true);
 		if (message.getContent().length() > 1000) {
 			embed.addField("Message Contents", message.getContent().substring(0, message.getContent().length() / 2), true);
 			embed.addField("\u200b", message.getContent().substring(message.getContent().length() / 2), true);
@@ -295,7 +300,7 @@ public class LogHandler extends EventListenerAdapter {
 		if (channel == null)
 			return;
 		RichEmbed embed = new RichEmbed("Message Edited").setColor(0xfcf45a).setTimestamp(OffsetDateTime.now());
-		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().asMention(), message.getAuthor().getID()));
+		embed.addField("Author", String.format("%s (ID: %d)", message.getAuthor().toMention(), message.getAuthor().getID()));
 		if (oldMessage != null) {
 			if (oldMessage.getContent().length() > 1000) {
 				embed.addField("Old Content", oldMessage.getContent().substring(0, oldMessage.getContent().length() / 2), true);

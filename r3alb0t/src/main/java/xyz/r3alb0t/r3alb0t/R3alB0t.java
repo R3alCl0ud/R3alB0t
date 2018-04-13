@@ -10,12 +10,12 @@ import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 
-import io.discloader.discloader.client.logger.DLLogger;
 import io.discloader.discloader.common.DLOptions;
 import io.discloader.discloader.common.Shard;
 import io.discloader.discloader.common.ShardManager;
 import io.discloader.discloader.common.event.sharding.ShardLaunchedEvent;
 import io.discloader.discloader.common.event.sharding.ShardingListenerAdapter;
+import io.discloader.discloader.common.logger.DLLogger;
 import xyz.r3alb0t.r3alb0t.common.EventHandler;
 import xyz.r3alb0t.r3alb0t.common.LogHandler;
 import xyz.r3alb0t.r3alb0t.config.Config;
@@ -37,6 +37,7 @@ public class R3alB0t {
 			readConfig();
 			DataBase.connect();
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true);
+			dlOptions.setDebug(true);
 			dlOptions.setSharding(0, 2);
 			ShardManager manager = new ShardManager(dlOptions);
 			manager.addShardingListener(new ShardingListenerAdapter() {
@@ -47,6 +48,7 @@ public class R3alB0t {
 					logger.info(String.format("Shard #%d: Launched", shard.getShardID()));
 					shard.getLoader().addEventListener(new EventHandler(shard));
 				}
+				
 			});
 			logger.info("Launching shards");
 			manager.launchShards();
@@ -79,6 +81,10 @@ public class R3alB0t {
 
 	public static int getYear() {
 		return 1970 + (int) (System.currentTimeMillis() / 31556952000l);
+	}
+
+	public static String getCopyrightInfo() {
+		return String.format("©R3alB0t.xyz %d", getYear());
 	}
 
 }

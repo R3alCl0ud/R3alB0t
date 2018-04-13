@@ -26,7 +26,7 @@ public class CommandSelect extends Command {
 			AudioPlaylist playlist = RBMusic.searchResults.get(guild.getID());
 			int selection = Integer.parseInt(args[0], 10);
 			if (selection > 0 && selection <= playlist.getTracks().size()) {
-				RBMusic.plManagers.get(guild.getID()).trackLoaded(playlist.getTracks().get(selection - 1));
+				RBMusic.plManagers.get(guild.getID()).trackLoaded(playlist.getTracks().get(selection - 1), message.getAuthor());
 				RBMusic.searchResults.remove(guild.getID());
 			}
 		}

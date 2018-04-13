@@ -1,10 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>xyz.r3alb0t</groupId>
 	<artifactId>r3alb0t</artifactId>
-	<version>4.2.0-SNAPSHOT</version>
+	<version>4.3.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
 	<name>r3alb0t</name>
@@ -18,7 +19,7 @@
 		<dependency>
 			<groupId>io.discloader</groupId>
 			<artifactId>discloader</artifactId>
-			<version>0.2.6</version>
+			<version>0.2.7</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -85,4 +86,11 @@
 			</plugin>
 		</plugins>
 	</build>
+	<repositories>
+		<repository>
+			<id>jcenter</id>
+			<name>jcenter-bintray</name>
+			<url>http://jcenter.bintray.com</url>
+		</repository>
+	</repositories>
 </project>

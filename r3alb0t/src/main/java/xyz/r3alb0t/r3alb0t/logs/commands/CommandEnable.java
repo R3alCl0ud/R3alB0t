@@ -10,7 +10,7 @@ import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ChannelTypes;
 import io.discloader.discloader.entity.guild.IGuild;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
-import xyz.r3alb0t.r3alb0t.logs.LogHandler;
+import xyz.r3alb0t.r3alb0t.logs.LogEventHandler;
 
 public class CommandEnable extends CommandTree {
 
@@ -30,7 +30,7 @@ public class CommandEnable extends CommandTree {
 			return;
 		}
 		IGuild guild = e.getMessage().getGuild();
-		if (LogHandler.enabledGuilds.containsKey(guild.getID())) {
+		if (LogEventHandler.enabledGuilds.containsKey(guild.getID())) {
 
 		}
 	}

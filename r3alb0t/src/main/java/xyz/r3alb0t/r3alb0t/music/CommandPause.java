@@ -23,10 +23,7 @@ public class CommandPause extends Command {
 	public void execute(MessageCreateEvent e) {
 		IMessage message = e.getMessage();
 		IGuild guild = message.getGuild();
-		// ITextChannel channel = message.getChannel();
-		// RichEmbed embed = new RichEmbed("Music
-		// Player").setColor(0xfadd38).setThumbnail(getResourceLocation());
-		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) RBMusic.plManagers.get(guild.getID()).pause();
-		// channel.sendEmbed(embed);
+		if (guild != null && RBMusic.plManagers.containsKey(guild.getID()))
+			RBMusic.plManagers.get(guild.getID()).pause();
 	}
 }
