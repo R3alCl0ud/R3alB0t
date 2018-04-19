@@ -38,6 +38,7 @@ public class R3alB0t {
 			DataBase.connect();
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true);
 			dlOptions.setDebug(true);
+			dlOptions.useDefaultCommands(false);
 			dlOptions.setSharding(0, 2);
 			ShardManager manager = new ShardManager(dlOptions);
 			manager.addShardingListener(new ShardingListenerAdapter() {
