@@ -11,12 +11,6 @@ public class LogHandler {
 
 	public static void throwing(Throwable ex) {
 		print(ex, "", "");
-		// for (StackTraceElement el : ex.getStackTrace())
-		// logger.severe("\tat " + el);
-		// for (Throwable sup : ex.getSuppressed())
-		// print(sup, "Suppressed: ", "\t");
-		// if (ex.getCause() != null)
-		// print(ex.getCause(), "Caused by: ", "");
 	}
 
 	public static void print(Throwable ex, String caption, String prefix) {

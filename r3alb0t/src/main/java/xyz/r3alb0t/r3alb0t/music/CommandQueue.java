@@ -1,6 +1,5 @@
 package xyz.r3alb0t.r3alb0t.music;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -12,29 +11,30 @@ import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.message.IMessage;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 
 public class CommandQueue extends Command {
-	
+
 	public CommandQueue() {
 		setUnlocalizedName("queue");
-		setDescription("adds a track/set to the playlist\nCurrently only works with YouTube");
+		setDescription("Displays the current queue of songs, if there is any songs in the queue.");
 		setArgsRegex("(\\d+)");
 	}
-	
+
 	@Override
 	public void execute(MessageCreateEvent e, String[] args) {
 		IMessage message = e.getMessage();
 		IGuild guild = message.getGuild();
 		ITextChannel channel = message.getChannel();
 		int page = 1;
-		if (args.length >= 1 && args[0] != null) page = Integer.parseInt(args[0], 10);
-		for (String arg : args)
-			System.out.println(arg);
+		if (args.length >= 1 && args[0] != null) {
+			page = Integer.parseInt(args[0], 10);
+		}
 		if (guild != null && RBMusic.plManagers.containsKey(guild.getID())) {
 			PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 			List<AudioTrack> tracks = plManager.getTracks();
 			RichEmbed embed = new RichEmbed("Queue").setDescription("The current playlist").setColor(0x2566C7);
-			embed.setFooter("R3alB0t 2017").setTimestamp(OffsetDateTime.now());
+			embed.setFooter(R3alB0t.getCopyrightInfo()).setTimestamp();
 			for (int i = 10 * (page - 1); i < 10 * page && i < tracks.size(); i++) {
 				AudioTrackInfo info = tracks.get(i).getInfo();
 				try {

@@ -1,6 +1,5 @@
 package xyz.r3alb0t.r3alb0t.music;
 
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +9,7 @@ import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.core.entity.RichEmbed;
 import io.discloader.discloader.entity.guild.IGuild;
+import xyz.r3alb0t.r3alb0t.R3alB0t;
 
 public class CommandNowPlaying extends Command {
 
@@ -33,7 +33,7 @@ public class CommandNowPlaying extends Command {
 			return;
 		PlaylistManager plManager = RBMusic.plManagers.get(guild.getID());
 		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7);
-		embed.setFooter("R3alB0t 2018").setTimestamp(OffsetDateTime.now());
+		embed.setFooter(R3alB0t.getCopyrightInfo()).setTimestamp();
 		AudioTrack track = plManager.getPlayingTrack();
 		if (track != null) {
 			embed.addField("Now Playing", String.format("[%s](%s) - %s", track.getInfo().title, track.getInfo().uri, track.getInfo().author), true);

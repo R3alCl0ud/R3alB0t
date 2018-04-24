@@ -6,15 +6,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 
+import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.DLOptions;
 import io.discloader.discloader.common.Shard;
 import io.discloader.discloader.common.ShardManager;
 import io.discloader.discloader.common.event.sharding.ShardLaunchedEvent;
 import io.discloader.discloader.common.event.sharding.ShardingListenerAdapter;
+import io.discloader.discloader.common.language.Language;
+import io.discloader.discloader.common.language.LanguageRegistry;
 import io.discloader.discloader.common.logger.DLLogger;
 import xyz.r3alb0t.r3alb0t.common.EventHandler;
 import xyz.r3alb0t.r3alb0t.common.LogHandler;
@@ -31,10 +35,12 @@ public class R3alB0t {
 	public static final Config config = new Config();
 	public static final Gson gson = new Gson();
 	private static ShardManager manager;
+	public static final Language enUS = new Language(new Resource("r3alb0t", "lang/en-US.lang").getResourceAsStream(), Locale.US);
 
 	public static void main(String[] args) {
 		try {
 			readConfig();
+			LanguageRegistry.registerLanguage(enUS);
 			DataBase.connect();
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true);
 			dlOptions.setDebug(true);
@@ -49,7 +55,7 @@ public class R3alB0t {
 					logger.info(String.format("Shard #%d: Launched", shard.getShardID()));
 					shard.getLoader().addEventListener(new EventHandler(shard));
 				}
-				
+
 			});
 			logger.info("Launching shards");
 			manager.launchShards();

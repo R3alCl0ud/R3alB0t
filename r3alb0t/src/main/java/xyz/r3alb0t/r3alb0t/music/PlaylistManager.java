@@ -222,6 +222,14 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		}
 	}
 
+	public void skip() {
+		if (connection.getPlayingTrack() == null) {
+			startNext();
+		} else if (tracks.size() >= 2 && tracks.get(1) != null) {
+			connection.play(tracks.get(1));
+		}
+	}
+
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		tracks.add(track);

@@ -20,10 +20,11 @@ import xyz.r3alb0t.r3alb0t.music.CommandPlay;
 import xyz.r3alb0t.r3alb0t.music.CommandQueue;
 import xyz.r3alb0t.r3alb0t.music.CommandSelect;
 import xyz.r3alb0t.r3alb0t.music.CommandShuffle;
+import xyz.r3alb0t.r3alb0t.music.CommandSkip;
 import xyz.r3alb0t.r3alb0t.music.CommandVolume;
 
 public class Commands {
-	
+
 	// Music commands
 	public static Command commandJoin;
 	public static Command commandPlay;
@@ -34,7 +35,8 @@ public class Commands {
 	public static Command commandSelect;
 	public static Command commandQueue;
 	public static Command commandNowPlaying;
-	
+	public static Command commandSkip;
+
 	// Misc commands
 	public static Command commandInfo;
 	public static Command commandUserInfo;
@@ -42,27 +44,28 @@ public class Commands {
 	public static Command commandTest; // using for testing emoji stuff
 	public static Command commandInvite;
 	public static Command commandHelp;
-	
+
 	// Logs commands
 	public static Command commandLogs;
-	
+
 	// Currency commands
 	public static Command commandCurrency;
 	public static Command commandCalance;
 	public static Command commandRewards;
-	
+
 	// Custom Commands commands
 	public static Command commandCommands;
-	
+
 	public static void registerCommands() {
-		
+
 		// Register misc/test commands
 		CommandRegistry.registerCommand(commandInfo = new CommandInfo(), commandInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandServerInfo = new CommandServerInfo(), commandServerInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandUserInfo = new CommandUserInfo(), commandUserInfo.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandHelp = new CommandHelp(), "help");
 		CommandRegistry.registerCommand(commandInvite = new CommandInvite(), "invite");
-		
+		// CommandRegistry.registerCommand(commandTest = new CommandTest(), "test");
+
 		// Register Music commands
 		CommandRegistry.registerCommand(commandJoin = new CommandJoin(), commandJoin.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandPlay = new CommandPlay(), commandPlay.getUnlocalizedName());
@@ -73,15 +76,16 @@ public class Commands {
 		CommandRegistry.registerCommand(commandQueue = new CommandQueue(), commandQueue.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandSelect = new CommandSelect(), commandSelect.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandNowPlaying = new CommandNowPlaying(), commandNowPlaying.getUnlocalizedName());;
-		
+		CommandRegistry.registerCommand(commandSkip = new CommandSkip(), commandSkip.getUnlocalizedName());
+
 		// Register Logs commands
 		CommandRegistry.registerCommand(commandLogs = new CommandLogs(), commandLogs.getUnlocalizedName());
-		
+
 		// Register Currency commands;
 		CommandRegistry.registerCommand(commandCurrency = new CommandCurrency(), commandCurrency.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandCalance = new CommandBalance(), commandCalance.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandRewards = new CommandRewards("rewards"), commandRewards.getUnlocalizedName());
-		
+
 		// Register CC commands
 		CommandRegistry.registerCommand(commandCommands = new CommandCommands(), commandCommands.getUnlocalizedName());
 	}
