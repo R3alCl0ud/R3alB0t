@@ -5,7 +5,7 @@
 
 	<groupId>xyz.r3alb0t</groupId>
 	<artifactId>r3alb0t</artifactId>
-	<version>4.3.3</version>
+	<version>4.3.5</version>
 	<packaging>jar</packaging>
 
 	<name>r3alb0t</name>
@@ -19,7 +19,7 @@
 		<dependency>
 			<groupId>io.discloader</groupId>
 			<artifactId>discloader</artifactId>
-			<version>0.2.12</version>
+			<version>0.2.13</version>
 		</dependency>
 		<dependency>
 			<groupId>redis.clients</groupId>

@@ -45,7 +45,7 @@ public class R3alB0t {
 			DLOptions dlOptions = new DLOptions(config.auth.token, config.prefix, true);
 			dlOptions.setDebug(true);
 			dlOptions.useDefaultCommands(false);
-			dlOptions.setSharding(0, 2);
+			dlOptions.setSharding(0, 1);
 			ShardManager manager = new ShardManager(dlOptions);
 			manager.addShardingListener(new ShardingListenerAdapter() {
 
