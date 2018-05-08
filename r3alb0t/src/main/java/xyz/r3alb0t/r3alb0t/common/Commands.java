@@ -22,6 +22,7 @@ import xyz.r3alb0t.r3alb0t.music.CommandSelect;
 import xyz.r3alb0t.r3alb0t.music.CommandShuffle;
 import xyz.r3alb0t.r3alb0t.music.CommandSkip;
 import xyz.r3alb0t.r3alb0t.music.CommandVolume;
+import xyz.r3alb0t.r3alb0t.role.commands.CommandRoles;
 
 public class Commands {
 
@@ -52,6 +53,9 @@ public class Commands {
 	public static Command commandCurrency;
 	public static Command commandCalance;
 	public static Command commandRewards;
+
+	// Ranking commands
+	public static Command commandRoles;
 
 	// Custom Commands commands
 	public static Command commandCommands;
@@ -85,6 +89,9 @@ public class Commands {
 		CommandRegistry.registerCommand(commandCurrency = new CommandCurrency(), commandCurrency.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandCalance = new CommandBalance(), commandCalance.getUnlocalizedName());
 		CommandRegistry.registerCommand(commandRewards = new CommandRewards("rewards"), commandRewards.getUnlocalizedName());
+
+		// Register Ranking commands
+		CommandRegistry.registerCommand(commandRoles = new CommandRoles("roles"), commandRoles.getUnlocalizedName());
 
 		// Register CC commands
 		CommandRegistry.registerCommand(commandCommands = new CommandCommands(), commandCommands.getUnlocalizedName());

@@ -95,10 +95,12 @@ public class EventHandler extends EventListenerAdapter {
 	@Override
 	public void RawPacket(RawEvent data) {
 		WebSocketFrame frame = data.getFrame();
-		if (data.isGateway() && frame.isTextFrame() && !frame.getPayloadText().contains("PRESENCE_UPDATE") && !frame.getPayloadText().contains("GUILD_CREATE") && !frame.getPayloadText().contains("READY")) {
-			// R3alB0t.logger.info(frame.getPayloadText());
-		} else if (data.isREST() && data.getHttpResponse() != null && data.getHttpResponse().getBody() != null) {
-			// R3alB0t.logger.info(data.getHttpResponse().getBody());
+		if (shard.getLoader().getOptions().isDebugging()) {
+			if (data.isGateway() && frame.isTextFrame() && !frame.getPayloadText().contains("PRESENCE_UPDATE") && !frame.getPayloadText().contains("GUILD_CREATE") && !frame.getPayloadText().contains("READY")) {
+				R3alB0t.logger.config(frame.getPayloadText());
+			} else if (data.isREST() && data.getHttpResponse() != null && data.getHttpResponse().getBody() != null) {
+				R3alB0t.logger.config(data.getHttpResponse().getBody());
+			}
 		}
 	}
 }

@@ -34,7 +34,6 @@ public class Currency {
 		for (String guild : guilds) {
 			Guilds.add(SnowflakeUtil.parse(guild));
 		}
-
 	}
 
 	public static String reward(long guildID, long id) {
