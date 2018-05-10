@@ -1,4 +1,4 @@
-package xyz.r3alb0t.r3alb0t.role;
+package xyz.r3alb0t.r3alb0t.roles;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,15 +16,18 @@ public class Roles {
 	public static final Gson gson = new Gson();
 
 	public static RankJSON getRank(IGuild guild, long level) {
-		if (guild == null || !DataBase.getClient().sismember(guildLevels(guild), Long.toUnsignedString(level, 10)))
+		if (guild == null || !DataBase.getClient().sismember(guildRanks(guild), Long.toUnsignedString(level, 10)))
 			return null;
-		return gson.fromJson(DataBase.getClient().get(guildRank(guild, level)), RankJSON.class);
+		for (RankJSON rank : getRanks(guild)) {
+			if (rank.getLevel() == level) return rank;
+		}
+		return null;
 	}
 
 	public static List<RankJSON> getRanks(IGuild guild) {
 		List<RankJSON> list = new ArrayList<>();
 		if (guild != null && isGuildEnabled(guild)) {
-			for (String level : DataBase.getClient().smembers(guildLevels(guild))) {
+			for (String level : DataBase.getClient().smembers(guildRanks(guild))) {
 				list.add(gson.fromJson(DataBase.getClient().get(guildRank(guild, level)), RankJSON.class));
 			}
 		}
@@ -65,7 +68,7 @@ public class Roles {
 		return gson.fromJson(DataBase.getClient().get(guildRank(guild, playerID)), PlayerJSON.class);
 	}
 
-	public static String guildLevels(IGuild guild) {
+	public static String guildRanks(IGuild guild) {
 		return String.format("ranks.%d:ranks", guild.getID());
 	}
 
@@ -90,17 +93,18 @@ public class Roles {
 	}
 
 	public static void setRank(IRole role, long level) {
-		DataBase.getClient().sadd(guildLevels(role.getGuild()), Long.toUnsignedString(level, 10));
-		DataBase.getClient().set(guildRank(role.getGuild(), level), gson.toJson(new RankJSON(role, level)));
+		DataBase.getClient().sadd(guildRanks(role.getGuild()), Long.toUnsignedString(level, 10));
+		String huh = DataBase.getClient().set(guildRank(role.getGuild(), level), gson.toJson(new RankJSON(role, level)));
+		System.out.println(huh);
 	}
 
 	public static void setPlayer(IGuild guild, PlayerJSON player) {
-		DataBase.getClient().sadd(guildLevels(guild), Long.toUnsignedString(player.getID(), 10));
+		DataBase.getClient().sadd(guildRanks(guild), Long.toUnsignedString(player.getID(), 10));
 		DataBase.getClient().set(guildPlayer(guild, player.getID()), gson.toJson(player));
 	}
 
 	public static void delRank(IGuild guild, long level) {
-		DataBase.getClient().srem(guildLevels(guild), Long.toUnsignedString(level, 10));
+		DataBase.getClient().srem(guildRanks(guild), Long.toUnsignedString(level, 10));
 		DataBase.getClient().del(guildRank(guild, level));
 	}
 

@@ -1,10 +1,11 @@
-package xyz.r3alb0t.r3alb0t.role;
+package xyz.r3alb0t.r3alb0t.roles;
 
 import io.discloader.discloader.entity.guild.IRole;
+import io.discloader.discloader.entity.util.SnowflakeUtil;
 
 public class RankJSON {
 
-	private long id;
+	private String id;
 	private String name;
 	private int color;
 	private long level;
@@ -13,7 +14,7 @@ public class RankJSON {
 
 	public RankJSON(IRole role, long level) {
 		this.name = role.getName();
-		this.id = role.getID();
+		this.id = SnowflakeUtil.asString(role);
 		this.color = role.getColor();
 		this.level = level;
 	}
@@ -28,7 +29,7 @@ public class RankJSON {
 	/**
 	 * @return the id
 	 */
-	public long getID() {
+	public String getID() {
 		return id;
 	}
 
@@ -58,7 +59,7 @@ public class RankJSON {
 	 * @param id
 	 *            the id to set
 	 */
-	public void setID(long id) {
+	public void setID(String id) {
 		this.id = id;
 	}
 

@@ -1,11 +1,11 @@
-package xyz.r3alb0t.r3alb0t.role.commands;
+package xyz.r3alb0t.r3alb0t.roles.commands;
 
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.util.Permissions;
-import xyz.r3alb0t.r3alb0t.role.Roles;
+import xyz.r3alb0t.r3alb0t.roles.Roles;
 
 public class CommandClear extends Command {
 	public CommandClear() {

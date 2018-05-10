@@ -1,4 +1,4 @@
-package xyz.r3alb0t.r3alb0t.role.commands;
+package xyz.r3alb0t.r3alb0t.roles.commands;
 
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
@@ -6,7 +6,7 @@ import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.guild.IGuildMember;
 import io.discloader.discloader.entity.guild.IRole;
 import io.discloader.discloader.entity.util.Permissions;
-import xyz.r3alb0t.r3alb0t.role.Roles;
+import xyz.r3alb0t.r3alb0t.roles.Roles;
 
 public class CommandSet extends Command {
 
@@ -42,9 +42,9 @@ public class CommandSet extends Command {
 				try {
 					role = e.getMessage().getGuild().getRoleByID(args[1].trim());
 				} catch (Exception ignored) {}
-				if (role == null) {
-					role = e.getMessage().getGuild().getRoleByName(args[1].trim());
-				}
+			}
+			if (role == null) {
+				role = e.getMessage().getGuild().getRoleByName(args[1].trim());
 			}
 			if (role == null) {
 				e.getChannel().sendMessage("Unknown Role: `" + args[1].trim() + "`");

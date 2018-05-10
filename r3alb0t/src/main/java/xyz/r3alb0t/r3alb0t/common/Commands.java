@@ -22,7 +22,7 @@ import xyz.r3alb0t.r3alb0t.music.CommandSelect;
 import xyz.r3alb0t.r3alb0t.music.CommandShuffle;
 import xyz.r3alb0t.r3alb0t.music.CommandSkip;
 import xyz.r3alb0t.r3alb0t.music.CommandVolume;
-import xyz.r3alb0t.r3alb0t.role.commands.CommandRoles;
+import xyz.r3alb0t.r3alb0t.roles.commands.CommandRoles;
 
 public class Commands {
 

@@ -1,4 +1,4 @@
-package xyz.r3alb0t.r3alb0t.role.commands;
+package xyz.r3alb0t.r3alb0t.roles.commands;
 
 import java.util.ArrayList;
 import java.util.HashMap;

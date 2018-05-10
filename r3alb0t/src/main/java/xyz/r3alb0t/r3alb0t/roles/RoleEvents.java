@@ -1,4 +1,4 @@
-package xyz.r3alb0t.r3alb0t.role;
+package xyz.r3alb0t.r3alb0t.roles;
 
 import io.discloader.discloader.common.event.EventListenerAdapter;
 import io.discloader.discloader.common.event.message.GuildMessageCreateEvent;
@@ -16,7 +16,11 @@ public class RoleEvents extends EventListenerAdapter {
 		}
 
 		if (System.currentTimeMillis() - player.getLastSpoke() >= 60000l) {
-			player.addExp(PlayerUtil.getEXPFromMessage(e.getMessage().getContent()));
+			player.addExp(e);
+		}
+		RankJSON rank = Roles.getRank(e.getGuild(), PlayerUtil.getLevelFromEXP(player.getExp()));
+		if (rank != null && !e.getMessage().getMember().hasRole(rank.getID())) {
+			e.getMessage().getMember().giveRole("Level " + PlayerUtil.getLevelFromEXP(player.getExp()), e.getGuild().getRoleByID(rank.getID()));
 		}
 		Roles.setPlayer(e.getGuild(), player);
 	}

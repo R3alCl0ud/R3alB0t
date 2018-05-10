@@ -1,4 +1,4 @@
-package xyz.r3alb0t.r3alb0t.role;
+package xyz.r3alb0t.r3alb0t.roles;
 
 public class PlayerUtil {
 
