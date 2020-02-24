@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -24,6 +27,7 @@ import io.discloader.discloader.entity.voice.VoiceConnection;
 import io.discloader.discloader.entity.voice.VoiceEventAdapter;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
 import xyz.r3alb0t.r3alb0t.common.LogHandler;
+import xyz.r3alb0t.r3alb0t.util.DataBase;
 
 public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResultHandler {
 
@@ -56,11 +60,13 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 			tracks.remove(track);
 		if (endReason == AudioTrackEndReason.LOAD_FAILED) {
 			DLUser user = connection.getLoader().getSelfUser();
-			RichEmbed embed = new RichEmbed("Music Player").setDescription("An error occurred while trying to play audio");
+			RichEmbed embed = new RichEmbed("Music Player")
+					.setDescription("An error occurred while trying to play audio");
 			embed.setAuthor(user.getUsername(), "http://r3alb0t.xyz", user.getAvatar().toString());
 			embed.setFooter(R3alB0t.getCopyrightInfo()).setTimestamp();
 			AudioTrackInfo info = track.getInfo();
-			embed.addField("Error", "Failed to load track", true).addField("Track", String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
+			embed.addField("Error", "Failed to load track", true).addField("Track",
+					String.format("[*%s*](%s) - %s", info.title, info.uri, info.author));
 			boundChannel.sendMessage("Failed to load track");
 		}
 		if (endReason.mayStartNext)
@@ -208,6 +214,24 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		sendEmbed();
 	}
 
+	private void pushDB() {
+		JSONArray l = new JSONArray();
+		for (AudioTrack t : tracks) {
+			JSONObject tj = new JSONObject(), tji = new JSONObject(), tja = new JSONObject();
+			AudioTrackInfo ti = t.getInfo();
+			tji.put("title", ti.title).put("url", ti.uri).put("author", ti.author);
+			IUser req = t.getUserData(IUser.class);
+			if (req != null) {
+				tja.put("name", req.getUsername()).put("disc", req.getDiscriminator()).put("avatar",
+						req.getAvatar().toString());
+			}
+			tj.put("info", tji).put("requester", tja);
+			l.put(tj);
+		}
+		logger.info("Saving songs to DB");
+		DataBase.getClient().set(String.format("music.%d:songs", boundChannel.getGuild().getID()), l.toString());
+	}
+
 	public void startNext() {
 		if (connection.isPaused()) {
 			connection.resume();
@@ -220,6 +244,7 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 		} else {
 			logger.info("not starting a new track");
 		}
+		pushDB();
 	}
 
 	public void skip() {
@@ -233,11 +258,13 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	@Override
 	public void trackLoaded(AudioTrack track) {
 		tracks.add(track);
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter(R3alB0t.getCopyrightInfo()).setTimestamp();
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter(R3alB0t.getCopyrightInfo())
+				.setTimestamp();
 		DLUser user = connection.getLoader().user;
 		AudioTrackInfo info = track.getInfo();
 		embed.setAuthor(user.getUsername(), info.uri, user.getAvatar().toString());
-		embed.addField("Added Track", String.format("The track [*%s*](%s) by *%s* has been added to the playlist", info.title, info.uri, info.author));
+		embed.addField("Added Track", String.format("The track [*%s*](%s) by *%s* has been added to the playlist",
+				info.title, info.uri, info.author));
 		boundChannel.sendEmbed(embed);
 		startNext();
 	}
@@ -245,11 +272,13 @@ public class PlaylistManager extends VoiceEventAdapter implements AudioLoadResul
 	public void trackLoaded(AudioTrack track, IUser requester) {
 		track.setUserData(requester);
 		tracks.add(track);
-		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter(R3alB0t.getCopyrightInfo()).setTimestamp();
+		RichEmbed embed = new RichEmbed("Music Player").setColor(0x2566C7).setFooter(R3alB0t.getCopyrightInfo())
+				.setTimestamp();
 		DLUser user = connection.getLoader().getSelfUser();
 		AudioTrackInfo info = track.getInfo();
 		embed.setAuthor(user.getUsername(), info.uri, user.getAvatar().toString());
-		embed.addField("Added Track", String.format("The track [*%s*](%s) by *%s* has been added to the playlist", info.title, info.uri, info.author), true);
+		embed.addField("Added Track", String.format("The track [*%s*](%s) by *%s* has been added to the playlist",
+				info.title, info.uri, info.author), true);
 		embed.addField("Requested By", requester.toMention(), true);
 		boundChannel.sendEmbed(embed);
 		startNext();
