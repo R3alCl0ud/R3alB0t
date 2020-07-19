@@ -13,44 +13,44 @@ import io.discloader.discloader.entity.IMentionable;
  *
  */
 public class CommandEvents extends EventListenerAdapter {
-	
-	@Override
-	public void GuildMessageCreate(GuildMessageCreateEvent e) {
-		String content = e.getMessage().getContent();
-		if (!content.startsWith(CommandHandler.prefix) || e.getMessage().getAuthor().isBot())
-			return;
-		Map<String, CommandJSON> cmds = CustomCommands.getCommands(e.getGuild());
-		String label = content.substring(CommandHandler.prefix.length()).split(" ")[0];
-		if (cmds.containsKey(label)) {
-			String msg = cmds.get(label).message, mentioned = "";
-			msg = msg.replace("{author}", e.getMessage().getAuthor().getUsername());
-			msg = msg.replace("{@author}", e.getMessage().getAuthor().toMention());
-			if (msg.contains("{mentioned}")) {
-				List<IMentionable> mentions = e.getMessage().getMentions().toList();
-				if (mentions.size() > 0) {
-					for (int i = 0; i < mentions.size(); i++) {
-						if (i != 0) {
-							mentioned += ", ";
-						}
-						mentioned += mentions.get(i).toString();
-					}
-					
-				}
-				msg = msg.replace("{mentioned}", mentioned);
-			} else if (msg.contains("{@mentioned}")) {
-				List<IMentionable> mentions = e.getMessage().getMentions().toList();
-				if (mentions.size() > 0) {
-					for (int i = 0; i < mentions.size(); i++) {
-						if (i != 0) {
-							mentioned += ", ";
-						}
-						mentioned += mentions.get(i).toMention();
-					}
-				}
-				msg = msg.replace("{@mentioned}", mentioned);
-			}
-			e.getChannel().sendMessage(msg);
-		}
-	}
-	
+
+    @Override
+    public void GuildMessageCreate(GuildMessageCreateEvent e) {
+        String content = e.getMessage().getContent();
+        if (!content.startsWith(CommandHandler.prefix) || e.getMessage().getAuthor().isBot()) return;
+        Map<String, CommandJSON> cmds = CustomCommands.getCommands(e.getGuild());
+        String label = content.substring(CommandHandler.prefix.length()).split(" ")[0];
+        if (cmds.containsKey(label)) {
+            String msg = cmds.get(label).message, mentioned = "";
+            msg = msg.replace("{author}", e.getMessage().getAuthor().getUsername());
+            msg = msg.replace("{@author}", e.getMessage().getAuthor().toMention());
+            if (msg.contains("{mentioned}")) {
+                List<IMentionable> mentions = e.getMessage().getMentions().toList();
+                if (mentions.size() > 0) {
+                    for (int i = 0; i < mentions.size(); i++) {
+                        if (i != 0) {
+                            mentioned += ", ";
+                        }
+                        mentioned += mentions.get(i).toString();
+                    }
+
+                }
+                msg = msg.replace("{mentioned}", mentioned);
+            } else if (msg.contains("{@mentioned}")) {
+                List<IMentionable> mentions = e.getMessage().getMentions().toList();
+                if (mentions.size() > 0) {
+                    for (int i = 0; i < mentions.size(); i++) {
+                        if (i != 0) {
+                            mentioned += ", ";
+                        }
+                        mentioned += mentions.get(i).toMention();
+                    }
+                }
+                msg = msg.replace("{@mentioned}", mentioned);
+            }
+            System.out.println();
+            e.getChannel().sendMessage(msg);
+        }
+    }
+
 }

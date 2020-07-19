@@ -17,7 +17,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackState;
 
 import io.discloader.discloader.client.render.util.Resource;
 import io.discloader.discloader.common.logger.DLLogger;
-import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.core.entity.message.embed.RichEmbed;
 import io.discloader.discloader.core.entity.user.DLUser;
 import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;

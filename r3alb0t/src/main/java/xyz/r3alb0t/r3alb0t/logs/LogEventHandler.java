@@ -27,7 +27,7 @@ import io.discloader.discloader.common.event.guild.member.GuildMemberRemoveEvent
 import io.discloader.discloader.common.event.guild.member.GuildMemberUpdateEvent;
 import io.discloader.discloader.common.event.message.MessageDeleteEvent;
 import io.discloader.discloader.common.event.message.MessageUpdateEvent;
-import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.core.entity.message.embed.RichEmbed;
 import io.discloader.discloader.entity.channel.IGuildVoiceChannel;
 import io.discloader.discloader.entity.channel.ITextChannel;
 import io.discloader.discloader.entity.guild.IGuild;

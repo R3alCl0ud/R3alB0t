@@ -3,7 +3,7 @@ package xyz.r3alb0t.r3alb0t.common.commands;
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
 import io.discloader.discloader.common.registry.EntityRegistry;
-import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.core.entity.message.embed.RichEmbed;
 import xyz.r3alb0t.r3alb0t.R3alB0t;
 
 /**

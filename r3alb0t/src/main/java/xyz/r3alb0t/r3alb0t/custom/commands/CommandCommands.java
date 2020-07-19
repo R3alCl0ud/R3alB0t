@@ -6,7 +6,7 @@ import java.util.Map;
 import io.discloader.discloader.client.command.Command;
 import io.discloader.discloader.client.command.CommandTree;
 import io.discloader.discloader.common.event.message.MessageCreateEvent;
-import io.discloader.discloader.core.entity.RichEmbed;
+import io.discloader.discloader.core.entity.message.embed.RichEmbed;
 import io.discloader.discloader.entity.channel.IGuildTextChannel;
 import io.discloader.discloader.entity.guild.IGuild;
 import io.discloader.discloader.entity.guild.IGuildMember;
